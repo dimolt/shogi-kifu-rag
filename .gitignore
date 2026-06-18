@@ -1,3 +1,9 @@
-.venv/
+.venv_local/
+.venv_remote/
 scratch/
 ref/
+.vscode/
+.mypy_cache/
+.ruff_cache/
+.pytest_cache/
+__pycache__/
