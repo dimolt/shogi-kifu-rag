@@ -1,7 +1,23 @@
 """KIFパーサモジュール"""
 
+import chardet
 import shogi
 import shogi.KIF
+
+
+def detect_encoding(file_path: str) -> str:
+    """ファイルのエンコーディングを検出する
+
+    Args:
+        file_path: ファイルパス
+
+    Returns:
+        エンコーディング名（cp932または検出結果）
+    """
+    with open(file_path, "rb") as f:
+        raw = f.read()
+    enc = chardet.detect(raw).get("encoding", "utf-8") or "utf-8"
+    return "cp932" if enc.lower() in ("shift_jis", "shift-jis", "sjis") else enc
 
 
 def kif_to_positions(kif_content: str) -> list[dict]:
