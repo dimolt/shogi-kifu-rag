@@ -1,6 +1,8 @@
 """やねうら王エンジン連携モジュール"""
 
+import re
 import subprocess
+import time
 from typing import Optional
 
 
@@ -66,8 +68,98 @@ class YaneuraOuAnalyzer:
                 self.process.stdin.flush()
 
         # 結果を解析（簡易実装）
+        # 実際にはエンジンからの出力をパースする必要がある
         return {
             "best_move": "",
             "score_cp": 0,
             "pv": [],
+        }
+
+    def analyze_position_with_time(
+        self, sfen: str, think_time: float = 3.0, usi_hash: int = 256
+    ) -> dict:
+        """思考時間指定で局面を解析する
+
+        Args:
+            sfen: SFEN形式の局面
+            think_time: 思考時間（秒）
+            usi_hash: USI_Hash設定値（MB）
+
+        Returns:
+            解析結果（best_move, score_cp, pvなど）
+        """
+        if self.process is None:
+            raise RuntimeError("Engine is not running")
+
+        # USI初期化コマンド
+        init_cmds = [
+            "usi",
+            f"setoption name USI_Hash value {usi_hash}",
+            "setoption name ResignValue value 99999",
+            "setoption name DrawValueBlack value 0",
+            "setoption name DrawValueWhite value 0",
+            "isready",
+            f"position sfen {sfen}",
+            "go infinite",
+        ]
+
+        for cmd in init_cmds:
+            if self.process.stdin:
+                self.process.stdin.write(cmd + "\n")
+                self.process.stdin.flush()
+
+        time.sleep(think_time)
+
+        if self.process.stdin:
+            self.process.stdin.write("stop\n")
+            self.process.stdin.flush()
+
+        time.sleep(0.3)
+
+        if self.process.stdin:
+            self.process.stdin.write("quit\n")
+            self.process.stdin.flush()
+
+        try:
+            out, _ = self.process.communicate(timeout=10)
+        except subprocess.TimeoutExpired:
+            self.process.kill()
+            out, _ = self.process.communicate()
+
+        # 結果をパース
+        best_move = "resign"
+        score_cp = 0
+        pv = ""
+
+        info_lines = [
+            line
+            for line in out.splitlines()
+            if line.startswith("info depth")
+        ]
+        if info_lines:
+            last = info_lines[-1]
+
+            # 通常評価値
+            m = re.search(r"score cp\s+(-?\d+)", last)
+            if m:
+                score_cp = int(m.group(1))
+
+            # 詰み: score mate N → ±30000cpに変換
+            m = re.search(r"score mate\s+(-?\d+)", last)
+            if m:
+                mate_n = int(m.group(1))
+                score_cp = 30000 if mate_n > 0 else -30000
+
+            m = re.search(r"\bpv\s+(.+)", last)
+            if m:
+                pv = " ".join(m.group(1).split()[:8])
+
+        m = re.search(r"bestmove\s+(\S+)", out)
+        if m:
+            best_move = m.group(1)
+
+        return {
+            "best_move": best_move,
+            "score_cp": score_cp,
+            "pv": pv,
         }
