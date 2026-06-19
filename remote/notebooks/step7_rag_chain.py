@@ -154,16 +154,3 @@ def rag_query(query: str, collection_name: str = "positions", n_results: int = 5
         "answer": answer,
         "documents": documents,
     }
-
-# テストクエリ
-test_queries = [
-    "この局面で最善の手は何ですか？",
-    "矢倉囲いの特徴を教えてください",
-    "振り飛車の戦法について説明してください",
-]
-
-for query in test_queries:
-    print(f"\nQuery: {query}")
-    result = rag_query(query, collection_name="positions", n_results=3)
-    print(f"Answer: {result['answer']}")
-    time.sleep(1)  # Rate limiting
