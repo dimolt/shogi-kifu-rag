@@ -24,9 +24,6 @@ from pyspark.sql.types import (
     BooleanType,
 )
 
-# SparkSessionの初期化
-spark = SparkSession.builder.getOrCreate()
-
 # Silver Tableの読み込み
 silver_df = spark.table("shogi.shogi_silver.positions")
 
@@ -93,7 +90,7 @@ position_features = gold_df.select(
     "search_text",
 )
 
-position_features.write.format("delta").mode("overwrite").saveAsTable(
+position_features.write.format("delta").mode("append").saveAsTable(
     "shogi.shogi_gold.position_features"
 )
 
@@ -122,6 +119,6 @@ game_summary = game_summary.withColumn("score_series_json", to_json("score_serie
     "score_series"
 )
 
-game_summary.write.format("delta").mode("overwrite").saveAsTable(
+game_summary.write.format("delta").mode("append").saveAsTable(
     "shogi.shogi_gold.game_summary"
 )
