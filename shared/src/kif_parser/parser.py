@@ -17,7 +17,10 @@ def detect_encoding(file_path: str) -> str:
     with open(file_path, "rb") as f:
         raw = f.read()
     enc = chardet.detect(raw).get("encoding", "utf-8") or "utf-8"
-    return "cp932" if enc.lower() in ("shift_jis", "shift-jis", "sjis") else enc
+    # cp1006はcp932のエイリアスとして扱う
+    if enc.lower() in ("shift_jis", "shift-jis", "sjis", "cp1006"):
+        return "cp932"
+    return enc
 
 
 def kif_to_positions(kif_content: str) -> list[dict]:
