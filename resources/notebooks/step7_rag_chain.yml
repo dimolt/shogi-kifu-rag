@@ -1,0 +1,5 @@
+resources:
+  notebooks:
+    step7_rag_chain:
+      source: remote/notebooks/step7_rag_chain.py
+      path: /Workspace/Users/${workspace.current_user.userName}/shogi-kifu-rag/step7_rag_chain.py

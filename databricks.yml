@@ -1,0 +1,94 @@
+bundle:
+  name: shogi-kifu-rag
+  version: 0.1.0
+
+resources:
+  notebooks:
+    step2_silver_table:
+      source: remote/notebooks/step2_silver_table.py
+      path: /Workspace/Users/${workspace.current_user.userName}/shogi-kifu-rag/step2_silver_table.py
+    
+    step3_gold_table:
+      source: remote/notebooks/step3_gold_table.py
+      path: /Workspace/Users/${workspace.current_user.userName}/shogi-kifu-rag/step3_gold_table.py
+    
+    step4_floodgate:
+      source: remote/notebooks/step4_floodgate.py
+      path: /Workspace/Users/${workspace.current_user.userName}/shogi-kifu-rag/step4_floodgate.py
+    
+    step5_wikipedia:
+      source: remote/notebooks/step5_wikipedia.py
+      path: /Workspace/Users/${workspace.current_user.userName}/shogi-kifu-rag/step5_wikipedia.py
+    
+    step6_chromadb:
+      source: remote/notebooks/step6_chromadb.py
+      path: /Workspace/Users/${workspace.current_user.userName}/shogi-kifu-rag/step6_chromadb.py
+    
+    step7_rag_chain:
+      source: remote/notebooks/step7_rag_chain.py
+      path: /Workspace/Users/${workspace.current_user.userName}/shogi-kifu-rag/step7_rag_chain.py
+    
+    step8_gradio_ui:
+      source: remote/notebooks/step8_gradio_ui.py
+      path: /Workspace/Users/${workspace.current_user.userName}/shogi-kifu-rag/step8_gradio_ui.py
+  
+  libraries:
+    shared:
+      source: shared/
+      path: /Workspace/Users/${workspace.current_user.userName}/shogi-kifu-rag/libraries/shared
+  
+  workflows:
+    data_pipeline:
+      name: shogi-kifu-rag-data-pipeline
+      tasks:
+        - task_key: silver_table
+          notebook_task:
+            notebook_path: /Workspace/Users/${workspace.current_user.userName}/shogi-kifu-rag/step2_silver_table.py
+          depends_on: []
+        
+        - task_key: gold_table
+          notebook_task:
+            notebook_path: /Workspace/Users/${workspace.current_user.userName}/shogi-kifu-rag/step3_gold_table.py
+          depends_on:
+            - task_key: silver_table
+        
+        - task_key: floodgate
+          notebook_task:
+            notebook_path: /Workspace/Users/${workspace.current_user.userName}/shogi-kifu-rag/step4_floodgate.py
+          depends_on:
+            - task_key: gold_table
+        
+        - task_key: wikipedia
+          notebook_task:
+            notebook_path: /Workspace/Users/${workspace.current_user.userName}/shogi-kifu-rag/step5_wikipedia.py
+          depends_on:
+            - task_key: gold_table
+        
+        - task_key: chromadb
+          notebook_task:
+            notebook_path: /Workspace/Users/${workspace.current_user.userName}/shogi-kifu-rag/step6_chromadb.py
+          depends_on:
+            - task_key: gold_table
+            - task_key: floodgate
+            - task_key: wikipedia
+
+targets:
+  dev:
+    mode: development
+    workspace:
+      host: ${env.DATABRICKS_HOST}
+      token: ${env.DATABRICKS_TOKEN}
+    resources:
+      workflows:
+        data_pipeline:
+          name: shogi-kifu-rag-data-pipeline-dev
+  
+  prod:
+    mode: production
+    workspace:
+      host: ${env.DATABRICKS_HOST}
+      token: ${env.DATABRICKS_TOKEN}
+    resources:
+      workflows:
+        data_pipeline:
+          name: shogi-kifu-rag-data-pipeline-prod
