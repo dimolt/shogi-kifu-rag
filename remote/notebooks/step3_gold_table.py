@@ -125,10 +125,3 @@ game_summary = game_summary.withColumn("score_series_json", to_json("score_serie
 game_summary.write.format("delta").mode("overwrite").saveAsTable(
     "shogi.shogi_gold.game_summary"
 )
-
-# 確認
-print("position_features:")
-spark.table("shogi.shogi_gold.position_features").show(5)
-
-print("game_summary:")
-spark.table("shogi.shogi_gold.game_summary").show(5)

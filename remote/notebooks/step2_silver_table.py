@@ -36,12 +36,5 @@ df = spark.read.csv(
     schema=schema,
 )
 
-# データの確認
-print(f"Total rows: {df.count()}")
-df.show(5)
-
 # Silver Tableへの書き込み
 df.write.format("delta").mode("append").saveAsTable("shogi.shogi_silver.positions")
-
-# 確認
-spark.table("shogi.shogi_silver.positions").show(5)
