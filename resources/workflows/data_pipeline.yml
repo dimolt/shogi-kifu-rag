@@ -1,0 +1,35 @@
+resources:
+  workflows:
+    data_pipeline:
+      name: shogi-kifu-rag-data-pipeline
+      tasks:
+        - task_key: silver_table
+          notebook_task:
+            notebook_path: /Workspace/Users/${workspace.current_user.userName}/shogi-kifu-rag/step2_silver_table.py
+          depends_on: []
+        
+        - task_key: gold_table
+          notebook_task:
+            notebook_path: /Workspace/Users/${workspace.current_user.userName}/shogi-kifu-rag/step3_gold_table.py
+          depends_on:
+            - task_key: silver_table
+        
+        - task_key: floodgate
+          notebook_task:
+            notebook_path: /Workspace/Users/${workspace.current_user.userName}/shogi-kifu-rag/step4_floodgate.py
+          depends_on:
+            - task_key: gold_table
+        
+        - task_key: wikipedia
+          notebook_task:
+            notebook_path: /Workspace/Users/${workspace.current_user.userName}/shogi-kifu-rag/step5_wikipedia.py
+          depends_on:
+            - task_key: gold_table
+        
+        - task_key: chromadb
+          notebook_task:
+            notebook_path: /Workspace/Users/${workspace.current_user.userName}/shogi-kifu-rag/step6_chromadb.py
+          depends_on:
+            - task_key: gold_table
+            - task_key: floodgate
+            - task_key: wikipedia
