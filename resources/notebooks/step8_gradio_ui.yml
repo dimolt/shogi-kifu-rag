@@ -1,0 +1,5 @@
+resources:
+  notebooks:
+    step8_gradio_ui:
+      source: remote/notebooks/step8_gradio_ui.py
+      path: /Workspace/Users/${workspace.current_user.userName}/shogi-kifu-rag/step8_gradio_ui.py
