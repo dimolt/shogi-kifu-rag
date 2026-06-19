@@ -11,9 +11,6 @@ from pyspark.sql.types import (
     StructField,
 )
 
-# SparkSessionの初期化
-spark = SparkSession.builder.getOrCreate()
-
 # スキーマ定義
 schema = StructType([
     StructField("game_id", StringType(), True),
