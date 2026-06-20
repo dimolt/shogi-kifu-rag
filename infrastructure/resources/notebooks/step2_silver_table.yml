@@ -1,5 +1,5 @@
 resources:
   notebooks:
     step2_silver_table:
-      source: remote/notebooks/step2_silver_table.py
+      source: code/remote/notebooks/step2_silver_table.py
       path: /Workspace/Users/${workspace.current_user.userName}/shogi-kifu-rag/step2_silver_table.py

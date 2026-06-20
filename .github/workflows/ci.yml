@@ -26,14 +26,14 @@ jobs:
       
       - name: Run unit tests
         run: |
-          uv run pytest local/ -v
-          uv run pytest shared/tests/ -v
-      
+          uv run pytest code/local/ -v
+          uv run pytest code/shared/tests/ -v
+
       - name: Run Ruff
         run: |
           uv run ruff check .
-      
+
       - name: Run mypy
         run: |
-          uv run mypy shared/ --exclude 'tests'
-          uv run mypy local/ --exclude 'tests'
+          uv run mypy code/shared/ --exclude 'tests'
+          uv run mypy code/local/ --exclude 'tests'

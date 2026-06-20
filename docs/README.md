@@ -24,8 +24,14 @@ ShogiApp/
 ├─ requirements-remote.txt
 ├─ .venv_local/
 ├─ .venv_remote/
-├─ src/
-└─ tests/
+├─ code/
+│  ├─ local/
+│  ├─ remote/
+│  └─ shared/
+├─ tests/
+├─ infrastructure/
+├─ docs/
+└─ data/
 ```
 
 ---

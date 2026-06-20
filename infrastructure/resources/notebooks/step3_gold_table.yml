@@ -1,5 +1,5 @@
 resources:
   notebooks:
     step3_gold_table:
-      source: remote/notebooks/step3_gold_table.py
+      source: code/remote/notebooks/step3_gold_table.py
       path: /Workspace/Users/${workspace.current_user.userName}/shogi-kifu-rag/step3_gold_table.py
