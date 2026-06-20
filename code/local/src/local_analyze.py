@@ -9,7 +9,7 @@ local_src_path = Path(__file__).parent
 sys.path.insert(0, str(local_src_path))
 
 # sharedモジュールをパスに追加
-shared_path = Path(__file__).parent.parent.parent / "shared" / "src"
+shared_path = Path(__file__).parent.parent.parent.parent / "shared" / "src"
 sys.path.insert(0, str(shared_path))
 
 from config.settings import LocalSettings
@@ -18,8 +18,8 @@ from kif_parser.parser import detect_encoding, kif_to_positions
 
 
 def main():
-    kif_path = sys.argv[1] if len(sys.argv) > 1 else "kif_files/sample.kif"
-    out_csv = sys.argv[2] if len(sys.argv) > 2 else "output/analysis.csv"
+    kif_path = sys.argv[1] if len(sys.argv) > 1 else "data/kif_files/sample.kif"
+    out_csv = sys.argv[2] if len(sys.argv) > 2 else "data/output/analysis.csv"
 
     # 設定を読み込み
     settings = LocalSettings()

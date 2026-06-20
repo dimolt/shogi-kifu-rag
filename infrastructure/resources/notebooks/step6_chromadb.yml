@@ -1,5 +1,5 @@
 resources:
   notebooks:
     step6_chromadb:
-      source: remote/notebooks/step6_chromadb.py
+      source: code/remote/notebooks/step6_chromadb.py
       path: /Workspace/Users/${workspace.current_user.userName}/shogi-kifu-rag/step6_chromadb.py

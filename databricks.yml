@@ -5,36 +5,36 @@ bundle:
 resources:
   notebooks:
     step2_silver_table:
-      source: remote/notebooks/step2_silver_table.py
+      source: code/remote/notebooks/step2_silver_table.py
       path: /Workspace/Users/${workspace.current_user.userName}/shogi-kifu-rag/step2_silver_table.py
-    
+
     step3_gold_table:
-      source: remote/notebooks/step3_gold_table.py
+      source: code/remote/notebooks/step3_gold_table.py
       path: /Workspace/Users/${workspace.current_user.userName}/shogi-kifu-rag/step3_gold_table.py
-    
+
     step4_floodgate:
-      source: remote/notebooks/step4_floodgate.py
+      source: code/remote/notebooks/step4_floodgate.py
       path: /Workspace/Users/${workspace.current_user.userName}/shogi-kifu-rag/step4_floodgate.py
-    
+
     step5_wikipedia:
-      source: remote/notebooks/step5_wikipedia.py
+      source: code/remote/notebooks/step5_wikipedia.py
       path: /Workspace/Users/${workspace.current_user.userName}/shogi-kifu-rag/step5_wikipedia.py
-    
+
     step6_chromadb:
-      source: remote/notebooks/step6_chromadb.py
+      source: code/remote/notebooks/step6_chromadb.py
       path: /Workspace/Users/${workspace.current_user.userName}/shogi-kifu-rag/step6_chromadb.py
-    
+
     step7_rag_chain:
-      source: remote/notebooks/step7_rag_chain.py
+      source: code/remote/notebooks/step7_rag_chain.py
       path: /Workspace/Users/${workspace.current_user.userName}/shogi-kifu-rag/step7_rag_chain.py
-    
+
     step8_gradio_ui:
-      source: remote/notebooks/step8_gradio_ui.py
+      source: code/remote/notebooks/step8_gradio_ui.py
       path: /Workspace/Users/${workspace.current_user.userName}/shogi-kifu-rag/step8_gradio_ui.py
-  
+
   libraries:
     shared:
-      source: shared/
+      source: code/shared/
       path: /Workspace/Users/${workspace.current_user.userName}/shogi-kifu-rag/libraries/shared
   
   workflows:

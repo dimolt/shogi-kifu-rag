@@ -1,0 +1,39 @@
+name: CI
+
+on:
+  pull_request:
+    branches: [master]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      
+      - name: Install uv
+        uses: astral-sh/setup-uv@v3
+      
+      - name: Install dependencies
+        run: |
+          uv sync --group dev
+      
+      - name: Run unit tests
+        run: |
+          uv run pytest code/local/ -v
+          uv run pytest code/shared/tests/ -v
+
+      - name: Run Ruff
+        run: |
+          uv run ruff check .
+
+      - name: Run mypy
+        run: |
+          uv run mypy code/shared/ --exclude 'tests'
+          uv run mypy code/local/ --exclude 'tests'

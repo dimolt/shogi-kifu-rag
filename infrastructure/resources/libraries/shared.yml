@@ -1,5 +1,5 @@
 resources:
   libraries:
     shared:
-      source: shared/
+      source: code/shared/
       path: /Workspace/Users/${workspace.current_user.userName}/shogi-kifu-rag/libraries/shared

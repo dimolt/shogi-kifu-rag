@@ -17,8 +17,8 @@ class LocalSettings(BaseSettings):
     yaneuraou_options: str = ""
 
     # 入出力パス設定
-    kif_input_dir: str = "kif_files"
-    csv_output_dir: str = "output"
+    kif_input_dir: str = "data/kif_files"
+    csv_output_dir: str = "data/output"
 
     # エンジン解析設定
     analysis_depth: int = 20
