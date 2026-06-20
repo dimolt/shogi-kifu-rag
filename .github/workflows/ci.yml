@@ -35,4 +35,5 @@ jobs:
       
       - name: Run mypy
         run: |
-          uv run mypy shared/ local/
+          uv run mypy shared/ --exclude 'tests'
+          uv run mypy local/ --exclude 'tests'

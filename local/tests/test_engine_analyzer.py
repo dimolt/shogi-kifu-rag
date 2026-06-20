@@ -1,6 +1,5 @@
 """やねうら王エンジン連携のテスト"""
 
-import pytest
 from unittest.mock import Mock, patch
 
 

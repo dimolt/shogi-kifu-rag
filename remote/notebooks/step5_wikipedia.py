@@ -8,8 +8,8 @@ from bs4 import BeautifulSoup
 from pyspark.sql import SparkSession
 from pyspark.sql.types import (
     StringType,
-    StructType,
     StructField,
+    StructType,
 )
 
 # SparkSessionの初期化

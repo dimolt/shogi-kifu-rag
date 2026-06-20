@@ -1,7 +1,5 @@
 """ローカル設定管理のテスト"""
 
-import pytest
-from pydantic import ValidationError
 
 
 def test_local_settings_default_values():
@@ -9,7 +7,7 @@ def test_local_settings_default_values():
     # Arrange & Act
     from config.settings import LocalSettings
     from pydantic_settings import SettingsConfigDict
-    
+
     # テスト用にenv_fileを無効化
     class TestLocalSettings(LocalSettings):
         model_config = SettingsConfigDict(
@@ -17,7 +15,7 @@ def test_local_settings_default_values():
             env_file_encoding="utf-8",
             extra="ignore",
         )
-    
+
     settings = TestLocalSettings()
 
     # Assert

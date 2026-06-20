@@ -3,11 +3,11 @@
 Gold TableとSilver TableからChromaDB Vector Storeを構築するノートブック
 """
 
-from pyspark.sql import SparkSession
+
 import chromadb
 from chromadb.config import Settings
+from pyspark.sql import SparkSession
 from sentence_transformers import SentenceTransformer
-import os
 
 # SparkSessionの初期化
 spark = SparkSession.builder.getOrCreate()
@@ -27,7 +27,7 @@ position_features_df = spark.table("shogi.shogi_gold.position_features").toPanda
 # positionsコレクションの作成
 try:
     chroma_client.delete_collection("positions")
-except:
+except Exception:
     pass
 
 positions_collection = chroma_client.create_collection(
@@ -37,7 +37,9 @@ positions_collection = chroma_client.create_collection(
 
 # positionsコレクションにデータを追加
 if len(position_features_df) > 0:
-    embeddings = embedding_model.encode(position_features_df["search_text"].tolist()).tolist()
+    embeddings = embedding_model.encode(
+        position_features_df["search_text"].tolist()
+    ).tolist()
     positions_collection.add(
         embeddings=embeddings,
         documents=position_features_df["search_text"].tolist(),
@@ -56,14 +58,14 @@ if len(position_features_df) > 0:
 # Silver Tableからfloodgate_positionsを読み込み
 try:
     floodgate_df = spark.table("shogi.shogi_silver.floodgate_positions").toPandas()
-except:
+except Exception:
     floodgate_df = None
 
 # floodgate_positionsコレクションの作成
 if floodgate_df is not None and len(floodgate_df) > 0:
     try:
         chroma_client.delete_collection("floodgate_positions")
-    except:
+    except Exception:
         pass
 
     floodgate_collection = chroma_client.create_collection(
@@ -72,7 +74,10 @@ if floodgate_df is not None and len(floodgate_df) > 0:
     )
 
     # floodgate_positionsコレクションにデータを追加
-    search_texts = [f"局面: {row['sfen']} 指し手: {row['move_usi']}" for _, row in floodgate_df.iterrows()]
+    search_texts = [
+        f"局面: {row['sfen']} 指し手: {row['move_usi']}"
+        for _, row in floodgate_df.iterrows()
+    ]
     embeddings = embedding_model.encode(search_texts).tolist()
     floodgate_collection.add(
         embeddings=embeddings,
@@ -90,14 +95,14 @@ if floodgate_df is not None and len(floodgate_df) > 0:
 # Silver Tableからjoseki_knowledgeを読み込み
 try:
     joseki_df = spark.table("shogi.shogi_silver.joseki_knowledge").toPandas()
-except:
+except Exception:
     joseki_df = None
 
 # joseki_knowledgeコレクションの作成
 if joseki_df is not None and len(joseki_df) > 0:
     try:
         chroma_client.delete_collection("joseki_knowledge")
-    except:
+    except Exception:
         pass
 
     joseki_collection = chroma_client.create_collection(
