@@ -1,7 +1,7 @@
 """Tests for ChromaDB Vector Store notebook"""
 
-import pytest
 import chromadb
+import pytest
 from chromadb.config import Settings
 from sentence_transformers import SentenceTransformer
 
@@ -70,16 +70,16 @@ def test_chromadb_positions_can_query(chroma_client, embedding_model):
     """Test that positions collection can be queried"""
     try:
         collection = chroma_client.get_collection("positions")
-        
+
         # Test query
         query_text = "この局面で最善の手は何ですか？"
         query_embedding = embedding_model.encode(query_text).tolist()
-        
+
         results = collection.query(
             query_embeddings=[query_embedding],
             n_results=3,
         )
-        
+
         assert results is not None, "Query returned None"
         assert "documents" in results, "Query results missing documents"
         assert len(results["documents"]) > 0, "Query returned no documents"
@@ -92,15 +92,15 @@ def test_chromadb_positions_metadata_structure(chroma_client):
     """Test that positions collection has correct metadata structure"""
     try:
         collection = chroma_client.get_collection("positions")
-        
+
         # Get a sample document
         results = collection.get(limit=1)
-        
+
         if len(results["metadatas"]) == 0:
             pytest.skip("positions collection is empty")
-        
+
         metadata = results["metadatas"][0]
-        
+
         # Check required metadata fields
         required_fields = ["game_id", "move_number", "sfen", "move_usi"]
         for field in required_fields:
@@ -113,16 +113,16 @@ def test_chromadb_joseki_knowledge_can_query(chroma_client, embedding_model):
     """Test that joseki_knowledge collection can be queried"""
     try:
         collection = chroma_client.get_collection("joseki_knowledge")
-        
+
         # Test query
         query_text = "矢倉囲いの特徴を教えてください"
         query_embedding = embedding_model.encode(query_text).tolist()
-        
+
         results = collection.query(
             query_embeddings=[query_embedding],
             n_results=2,
         )
-        
+
         assert results is not None, "Query returned None"
         assert "documents" in results, "Query results missing documents"
         assert len(results["documents"]) > 0, "Query returned no documents"

@@ -10,6 +10,7 @@ dependencies = [
     "pydantic",
     "pydantic-settings",
     "python-dotenv",
+    "chardet>=7.4.3",
 ]
 
 [dependency-groups]
@@ -33,6 +34,7 @@ dev = [
     "ruff",
     "mypy",
     "ipykernel",
+    "databricks-cli",
 ]
 
 [tool.uv]

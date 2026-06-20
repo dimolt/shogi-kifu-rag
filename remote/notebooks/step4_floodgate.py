@@ -3,27 +3,14 @@
 Floodgate棋譜を取得して解析するノートブック
 """
 
-from pyspark.sql import SparkSession
-from pyspark.sql.functions import (
-    col,
-    lit,
-    when,
-    lag,
-    abs,
-    collect_list,
-    struct,
-    max as max_,
-    sum as sum_,
-    first,
-)
-from pyspark.sql.window import Window
-from pyspark.sql.types import (
-    StringType,
-    IntegerType,
-    BooleanType,
-)
-import requests
 from datetime import datetime, timedelta
+
+import requests
+from pyspark.sql import SparkSession
+from pyspark.sql.types import (
+    IntegerType,
+    StringType,
+)
 
 # SparkSessionの初期化
 spark = SparkSession.builder.getOrCreate()
@@ -63,7 +50,7 @@ def parse_csa(csa_text: str) -> dict:
     lines = csa_text.split("\n")
     moves = []
     current_player = "black"
-    
+
     for line in lines:
         if line.startswith("'"):
             # コメント行
@@ -77,7 +64,7 @@ def parse_csa(csa_text: str) -> dict:
                     "player": current_player,
                 })
                 current_player = "white" if current_player == "black" else "black"
-    
+
     return {"moves": moves}
 
 # 棋譜の解析と特徴量計算
@@ -93,10 +80,10 @@ def analyze_game(game: dict) -> list:
     csa_text = game.get("csa", "")
     parsed = parse_csa(csa_text)
     moves = parsed["moves"]
-    
+
     positions = []
     sfen = "lnsgkgsnl/1r5b1/ppppppppp/9/9/9/PPPPPPPPP/1B5R1/LNSGKGSNL b - 1"  # 初期局面
-    
+
     for i, move in enumerate(moves):
         positions.append({
             "game_id": game.get("id", ""),
@@ -109,7 +96,7 @@ def analyze_game(game: dict) -> list:
         })
         # SFENの更新（簡易実装）
         # 実際にはUSIからSFENへの変換ライブラリを使用
-    
+
     return positions
 
 # Floodgate棋譜の取得
@@ -122,7 +109,7 @@ for game in games:
     all_positions.extend(positions)
 
 # DataFrameの作成
-from pyspark.sql.types import StructType, StructField
+from pyspark.sql.types import StructField, StructType  # noqa: E402
 
 schema = StructType([
     StructField("game_id", StringType(), True),

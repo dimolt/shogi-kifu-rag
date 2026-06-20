@@ -12,9 +12,11 @@ sys.path.insert(0, str(local_src_path))
 shared_path = Path(__file__).parent.parent.parent / "shared" / "src"
 sys.path.insert(0, str(shared_path))
 
-from config.settings import LocalSettings
-from engine_analyzer.analyzer import YaneuraOuAnalyzer
-from kif_parser.parser import detect_encoding, kif_to_positions
+from config.settings import LocalSettings  # noqa: E402
+from engine_analyzer.analyzer import YaneuraOuAnalyzer  # noqa: E402
+from kif_parser.parser import kif_to_positions  # noqa: E402
+
+from shared.src.kif_parser.parser import detect_encoding  # noqa: E402
 
 
 def main():

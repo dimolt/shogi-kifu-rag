@@ -3,12 +3,11 @@
 analysis.csvをshogi.shogi_silver.positionsテーブルに登録するノートブック
 """
 
-from pyspark.sql import SparkSession
 from pyspark.sql.types import (
-    StringType,
     IntegerType,
-    StructType,
+    StringType,
     StructField,
+    StructType,
 )
 
 # スキーマ定義
@@ -27,7 +26,7 @@ schema = StructType([
 ])
 
 # CSVファイルの読み込み
-df = spark.read.csv(
+df = spark.read.csv(  # noqa: F821
     "/Volumes/shogi/landing/kif/analysis.csv",
     header=True,
     schema=schema,

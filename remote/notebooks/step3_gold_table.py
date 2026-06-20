@@ -3,29 +3,27 @@
 Silver TableからGold Tableを構築するノートブック
 """
 
-from pyspark.sql import SparkSession
 from pyspark.sql.functions import (
-    col,
-    lit,
-    when,
-    lag,
     abs,
+    col,
     collect_list,
-    struct,
-    count,
-    max as max_,
-    sum as sum_,
     first,
+    lag,
+    last,
+    lit,
+    struct,
+    when,
+)
+from pyspark.sql.functions import (
+    max as max_,
+)
+from pyspark.sql.functions import (
+    sum as sum_,
 )
 from pyspark.sql.window import Window
-from pyspark.sql.types import (
-    StringType,
-    IntegerType,
-    BooleanType,
-)
 
 # Silver Tableの読み込み
-silver_df = spark.table("shogi.shogi_silver.positions")
+silver_df = spark.table("shogi.shogi_silver.positions")  # noqa: F821
 
 # 特徴量の計算
 window = Window.partitionBy("game_id").orderBy("move_number")
@@ -66,7 +64,8 @@ gold_df = gold_df.withColumn(
 # search_text: ChromaDB登録用テキスト
 gold_df = gold_df.withColumn(
     "search_text",
-    f"局面: {col('sfen')} 指し手: {col('move_usi')} 推奨手: {col('best_move')} 評価値: {col('score_cp')}cp",
+    f"局面: {col('sfen')} 指し手: {col('move_usi')} "
+    f"推奨手: {col('best_move')} 評価値: {col('score_cp')}cp",
 )
 
 # position_featuresテーブルの作成
@@ -102,22 +101,22 @@ game_summary = (
         first("white_player").alias("white_player"),
         max_("move_number").alias("total_moves"),
         last("score_cp").alias("final_score_cp"),
-        sum_(when((col("player") == "black") & col("is_blunder"), 1).otherwise(0)).alias(
-            "black_blunders"
-        ),
-        sum_(when((col("player") == "white") & col("is_blunder"), 1).otherwise(0)).alias(
-            "white_blunders"
-        ),
+        sum_(
+            when((col("player") == "black") & col("is_blunder"), 1).otherwise(0)
+        ).alias("black_blunders"),
+        sum_(
+            when((col("player") == "white") & col("is_blunder"), 1).otherwise(0)
+        ).alias("white_blunders"),
         collect_list(struct("move_number", "score_cp")).alias("score_series"),
     )
 )
 
 # score_seriesをJSONに変換
-from pyspark.sql.functions import to_json
+from pyspark.sql.functions import to_json  # noqa: E402
 
-game_summary = game_summary.withColumn("score_series_json", to_json("score_series")).drop(
-    "score_series"
-)
+game_summary = game_summary.withColumn(
+    "score_series_json", to_json("score_series")
+).drop("score_series")
 
 game_summary.write.format("delta").mode("append").saveAsTable(
     "shogi.shogi_gold.game_summary"
