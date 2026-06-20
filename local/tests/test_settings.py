@@ -8,7 +8,17 @@ def test_local_settings_default_values():
     """デフォルト値が正しく設定されること"""
     # Arrange & Act
     from config.settings import LocalSettings
-    settings = LocalSettings()
+    from pydantic_settings import SettingsConfigDict
+    
+    # テスト用にenv_fileを無効化
+    class TestLocalSettings(LocalSettings):
+        model_config = SettingsConfigDict(
+            env_file=None,
+            env_file_encoding="utf-8",
+            extra="ignore",
+        )
+    
+    settings = TestLocalSettings()
 
     # Assert
     assert settings.yaneuraou_path == "YaneuraOu_nnue.exe"

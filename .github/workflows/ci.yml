@@ -26,7 +26,8 @@ jobs:
       
       - name: Run unit tests
         run: |
-          uv run pytest tests/ -v
+          uv run pytest local/ -v
+          uv run pytest shared/tests/ -v
       
       - name: Run Ruff
         run: |
