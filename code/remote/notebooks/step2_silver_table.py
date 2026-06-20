@@ -3,12 +3,11 @@
 analysis.csvをshogi.shogi_silver.positionsテーブルに登録するノートブック
 """
 
-from pyspark.sql import SparkSession
 from pyspark.sql.types import (
-    StringType,
     IntegerType,
-    StructType,
+    StringType,
     StructField,
+    StructType,
 )
 
 # スキーマ定義
