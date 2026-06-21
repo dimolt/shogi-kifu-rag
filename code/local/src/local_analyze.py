@@ -15,7 +15,6 @@ sys.path.insert(0, str(shared_path))
 from config.settings import LocalSettings  # noqa: E402
 from engine_analyzer.analyzer import YaneuraOuAnalyzer  # noqa: E402
 from kif_parser.parser import kif_to_positions  # noqa: E402
-
 from shared.src.kif_parser.parser import detect_encoding  # noqa: E402
 
 
