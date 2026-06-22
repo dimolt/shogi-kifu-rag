@@ -34,7 +34,6 @@ dev = [
     "ruff",
     "mypy",
     "ipykernel",
-    "databricks-cli",
 ]
 
 [tool.uv]
