@@ -1,15 +1,15 @@
 param(
-    [ValidateSet("local","remote")]
+    [ValidateSet("pyspark","dbx")]
     [string]$EnvType
 )
 
 $venv = ".venv_$EnvType"
 
-if ($EnvType -eq "local") {
-    $req = "requirements-local.txt"
+if ($EnvType -eq "pyspark") {
+    $req = "requirements-pyspark.txt"
 }
 else {
-    $req = "requirements-remote.txt"
+    $req = "requirements-dbx.txt"
 }
 
 uv pip sync `
