@@ -1,5 +1,5 @@
 param(
-    [ValidateSet("local","remote")]
+    [ValidateSet("pyspark","dbx")]
     [string]$EnvType
 )
 

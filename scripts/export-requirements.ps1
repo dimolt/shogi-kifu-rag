@@ -1,5 +1,5 @@
 uv export --group local --group dev `
-    -o requirements-local.txt
+    -o requirements-pyspark.txt
 
 uv export --group remote --group dev `
-    -o requirements-remote.txt
+    -o requirements-dbx.txt
