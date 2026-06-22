@@ -1,36 +1,35 @@
 bundle:
   name: shogi-kifu-rag
-  version: 0.1.0
 
 resources:
   notebooks:
     step2_silver_table:
-      source: code/remote/notebooks/step2_silver_table.py
-      path: /Workspace/Users/${workspace.current_user.userName}/shogi-kifu-rag/step2_silver_table.py
+      source: code/remote/notebooks/step2_silver_table.ipynb
+      path: /Workspace/Users/${workspace.current_user.userName}/shogi-kifu-rag/step2_silver_table.ipynb
 
     step3_gold_table:
-      source: code/remote/notebooks/step3_gold_table.py
-      path: /Workspace/Users/${workspace.current_user.userName}/shogi-kifu-rag/step3_gold_table.py
+      source: code/remote/notebooks/step3_gold_table.ipynb
+      path: /Workspace/Users/${workspace.current_user.userName}/shogi-kifu-rag/step3_gold_table.ipynb
 
     step4_floodgate:
-      source: code/remote/notebooks/step4_floodgate.py
-      path: /Workspace/Users/${workspace.current_user.userName}/shogi-kifu-rag/step4_floodgate.py
+      source: code/remote/notebooks/step4_floodgate.ipynb
+      path: /Workspace/Users/${workspace.current_user.userName}/shogi-kifu-rag/step4_floodgate.ipynb
 
     step5_wikipedia:
-      source: code/remote/notebooks/step5_wikipedia.py
-      path: /Workspace/Users/${workspace.current_user.userName}/shogi-kifu-rag/step5_wikipedia.py
+      source: code/remote/notebooks/step5_wikipedia.ipynb
+      path: /Workspace/Users/${workspace.current_user.userName}/shogi-kifu-rag/step5_wikipedia.ipynb
 
     step6_chromadb:
-      source: code/remote/notebooks/step6_chromadb.py
-      path: /Workspace/Users/${workspace.current_user.userName}/shogi-kifu-rag/step6_chromadb.py
+      source: code/remote/notebooks/step6_chromadb.ipynb
+      path: /Workspace/Users/${workspace.current_user.userName}/shogi-kifu-rag/step6_chromadb.ipynb
 
     step7_rag_chain:
-      source: code/remote/notebooks/step7_rag_chain.py
-      path: /Workspace/Users/${workspace.current_user.userName}/shogi-kifu-rag/step7_rag_chain.py
+      source: code/remote/notebooks/step7_rag_chain.ipynb
+      path: /Workspace/Users/${workspace.current_user.userName}/shogi-kifu-rag/step7_rag_chain.ipynb
 
     step8_gradio_ui:
-      source: code/remote/notebooks/step8_gradio_ui.py
-      path: /Workspace/Users/${workspace.current_user.userName}/shogi-kifu-rag/step8_gradio_ui.py
+      source: code/remote/notebooks/step8_gradio_ui.ipynb
+      path: /Workspace/Users/${workspace.current_user.userName}/shogi-kifu-rag/step8_gradio_ui.ipynb
 
   libraries:
     shared:
@@ -43,30 +42,30 @@ resources:
       tasks:
         - task_key: silver_table
           notebook_task:
-            notebook_path: /Workspace/Users/${workspace.current_user.userName}/shogi-kifu-rag/step2_silver_table.py
+            notebook_path: /Workspace/Users/${workspace.current_user.userName}/shogi-kifu-rag/step2_silver_table.ipynb
           depends_on: []
         
         - task_key: gold_table
           notebook_task:
-            notebook_path: /Workspace/Users/${workspace.current_user.userName}/shogi-kifu-rag/step3_gold_table.py
+            notebook_path: /Workspace/Users/${workspace.current_user.userName}/shogi-kifu-rag/step3_gold_table.ipynb
           depends_on:
             - task_key: silver_table
         
         - task_key: floodgate
           notebook_task:
-            notebook_path: /Workspace/Users/${workspace.current_user.userName}/shogi-kifu-rag/step4_floodgate.py
+            notebook_path: /Workspace/Users/${workspace.current_user.userName}/shogi-kifu-rag/step4_floodgate.ipynb
           depends_on:
             - task_key: gold_table
         
         - task_key: wikipedia
           notebook_task:
-            notebook_path: /Workspace/Users/${workspace.current_user.userName}/shogi-kifu-rag/step5_wikipedia.py
+            notebook_path: /Workspace/Users/${workspace.current_user.userName}/shogi-kifu-rag/step5_wikipedia.ipynb
           depends_on:
             - task_key: gold_table
         
         - task_key: chromadb
           notebook_task:
-            notebook_path: /Workspace/Users/${workspace.current_user.userName}/shogi-kifu-rag/step6_chromadb.py
+            notebook_path: /Workspace/Users/${workspace.current_user.userName}/shogi-kifu-rag/step6_chromadb.ipynb
           depends_on:
             - task_key: gold_table
             - task_key: floodgate
@@ -75,20 +74,6 @@ resources:
 targets:
   dev:
     mode: development
-    workspace:
-      host: ${env.DATABRICKS_HOST}
-      token: ${env.DATABRICKS_TOKEN}
-    resources:
-      workflows:
-        data_pipeline:
-          name: shogi-kifu-rag-data-pipeline-dev
-  
+
   prod:
     mode: production
-    workspace:
-      host: ${env.DATABRICKS_HOST}
-      token: ${env.DATABRICKS_TOKEN}
-    resources:
-      workflows:
-        data_pipeline:
-          name: shogi-kifu-rag-data-pipeline-prod
