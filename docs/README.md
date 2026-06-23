@@ -20,10 +20,10 @@
 ShogiApp/
 ├─ pyproject.toml
 ├─ uv.lock
-├─ requirements-local.txt
-├─ requirements-remote.txt
-├─ .venv_local/
-├─ .venv_remote/
+├─ requirements-pyspark.txt
+├─ requirements-dbx.txt
+├─ .venv_pyspark/
+├─ .venv_dbx/
 ├─ code/
 │  ├─ local/
 │  ├─ remote/
@@ -182,7 +182,7 @@ uv lock
 ## local
 
 ```powershell
-uv export --group local --group dev -o requirements-local.txt
+uv export --group local --group dev -o requirements-pyspark.txt
 ```
 
 ---
@@ -190,7 +190,7 @@ uv export --group local --group dev -o requirements-local.txt
 ## remote
 
 ```powershell
-uv export --group remote --group dev -o requirements-remote.txt
+uv export --group remote --group dev -o requirements-dbx.txt
 ```
 
 ---
@@ -200,25 +200,25 @@ uv export --group remote --group dev -o requirements-remote.txt
 ## local
 
 ```powershell
-uv venv .venv_local --python 3.12
+uv venv .venv_pyspark --python 3.12
 ```
 
 pip追加
 
 ```powershell
-.\.venv_local\Scripts\python.exe -m ensurepip --upgrade
+.\.venv_pyspark\Scripts\python.exe -m ensurepip --upgrade
 ```
 
 依存関係同期
 
 ```powershell
-uv pip sync requirements-local.txt --python .\.venv_local\Scripts\python.exe
+uv pip sync requirements-pyspark.txt --python .\.venv_pyspark\Scripts\python.exe
 ```
 
 有効化
 
 ```powershell
-.venv_local\Scripts\activate
+.venv_pyspark\Scripts\activate
 ```
 
 ---
@@ -226,25 +226,25 @@ uv pip sync requirements-local.txt --python .\.venv_local\Scripts\python.exe
 ## remote
 
 ```powershell
-uv venv .venv_remote --python 3.12
+uv venv .venv_dbx --python 3.12
 ```
 
 pip追加
 
 ```powershell
-.\.venv_remote\Scripts\python.exe -m ensurepip --upgrade
+.\.venv_dbx\Scripts\python.exe -m ensurepip --upgrade
 ```
 
 依存関係同期
 
 ```powershell
-uv pip sync requirements-remote.txt --python .\.venv_remote\Scripts\python.exe
+uv pip sync requirements-dbx.txt --python .\.venv_dbx\Scripts\python.exe
 ```
 
 有効化
 
 ```powershell
-.venv_remote\Scripts\activate
+.venv_dbx\Scripts\activate
 ```
 
 ---
@@ -268,15 +268,15 @@ uv lock
 ```
 
 ```powershell
-uv export --group local --group dev -o requirements-local.txt
+uv export --group local --group dev -o requirements-pyspark.txt
 
-uv export --group remote --group dev -o requirements-remote.txt
+uv export --group remote --group dev -o requirements-dbx.txt
 ```
 
 ```powershell
-uv pip sync requirements-local.txt --python .\.venv_local\Scripts\python.exe
+uv pip sync requirements-pyspark.txt --python .\.venv_pyspark\Scripts\python.exe
 
-uv pip sync requirements-remote.txt --python .\.venv_remote\Scripts\python.exe
+uv pip sync requirements-dbx.txt --python .\.venv_dbx\Scripts\python.exe
 ```
 
 ---
@@ -292,11 +292,11 @@ uv pip list
 特定環境
 
 ```powershell
-uv pip list --python .\.venv_local\Scripts\python.exe
+uv pip list --python .\.venv_pyspark\Scripts\python.exe
 ```
 
 ```powershell
-uv pip list --python .\.venv_remote\Scripts\python.exe
+uv pip list --python .\.venv_dbx\Scripts\python.exe
 ```
 
 ---
@@ -316,29 +316,29 @@ pytest
 仮想環境削除
 
 ```powershell
-Remove-Item .venv_local -Recurse -Force
+Remove-Item .venv_pyspark -Recurse -Force
 ```
 
 ```powershell
-Remove-Item .venv_remote -Recurse -Force
+Remove-Item .venv_dbx -Recurse -Force
 ```
 
 再作成
 
 ```powershell
-uv venv .venv_local --python 3.12
-uv venv .venv_remote --python 3.12
+uv venv .venv_pyspark --python 3.12
+uv venv .venv_dbx --python 3.12
 ```
 
 ```powershell
-.\.venv_local\Scripts\python.exe -m ensurepip --upgrade
-.\.venv_remote\Scripts\python.exe -m ensurepip --upgrade
+.\.venv_pyspark\Scripts\python.exe -m ensurepip --upgrade
+.\.venv_dbx\Scripts\python.exe -m ensurepip --upgrade
 ```
 
 ```powershell
-uv pip sync requirements-local.txt --python .\.venv_local\Scripts\python.exe
+uv pip sync requirements-pyspark.txt --python .\.venv_pyspark\Scripts\python.exe
 
-uv pip sync requirements-remote.txt --python .\.venv_remote\Scripts\python.exe
+uv pip sync requirements-dbx.txt --python .\.venv_dbx\Scripts\python.exe
 ```
 
 これにより開発環境を完全再現できる。
@@ -349,8 +349,8 @@ uv pip sync requirements-remote.txt --python .\.venv_remote\Scripts\python.exe
 
 * pyproject.toml を依存関係の唯一の定義元とする
 * uv.lock を必ずコミットする
-* requirements-local.txt は export 結果として管理する
-* requirements-remote.txt は export 結果として管理する
+* requirements-pyspark.txt は export 結果として管理する
+* requirements-dbx.txt は export 結果として管理する
 * 仮想環境はコミットしない
 * local環境で Databricks Connect を利用しない
 * remote環境で PySpark単体実行を行わない
