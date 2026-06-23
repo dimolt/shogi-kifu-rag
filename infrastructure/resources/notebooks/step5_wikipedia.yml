@@ -1,5 +1,0 @@
-resources:
-  notebooks:
-    step5_wikipedia:
-      source: code/remote/notebooks/step5_wikipedia.py
-      path: /Workspace/Users/${workspace.current_user.userName}/shogi-kifu-rag/step5_wikipedia.py

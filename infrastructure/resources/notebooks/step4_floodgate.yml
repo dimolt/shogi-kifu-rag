@@ -1,5 +1,0 @@
-resources:
-  notebooks:
-    step4_floodgate:
-      source: code/remote/notebooks/step4_floodgate.py
-      path: /Workspace/Users/${workspace.current_user.userName}/shogi-kifu-rag/step4_floodgate.py
