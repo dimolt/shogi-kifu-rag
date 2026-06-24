@@ -1,6 +1,18 @@
 bundle:
   name: shogi-kifu-rag
 
+include:
+  - infrastructure/resources/workflows/*.yml
+
+artifacts:
+  default:
+    type: whl
+    build: uv build --wheel
+
+sync:
+  paths:
+    - code
+
 variables:
   catalog:
     description: The catalog to use
@@ -14,13 +26,6 @@ variables:
   gold_schema:
     description: The schema to use
     default: "shogi_gold"
-
-include:
-  - infrastructure/resources/workflows/*.yml
-
-sync:
-  paths:
-    - code
 
 targets:
   dev:

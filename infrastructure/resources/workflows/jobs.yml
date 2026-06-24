@@ -2,6 +2,14 @@ resources:
   jobs:
     shogi_kif_rag_main_job:
       name: shogi_kif_rag_main_job
+
+      environments:
+        - environment_key: default
+          spec:
+            environment_version: "4"
+            dependencies:
+              - "/Workspace${workspace.root_path}/artifacts/.internal/shogiapp-0.1.0-py3-none-any.whl"
+
       tasks:
         - task_key: silver_pipeline
           pipeline_task:
@@ -20,9 +28,10 @@ resources:
           depends_on: []
 
         - task_key: wikipedia
-          notebook_task:
-            notebook_path: /Workspace/Users/${workspace.current_user.userName}/.bundle/${bundle.name}/${bundle.target}/files/code/remote/notebooks/step5_wikipedia
-          depends_on: []
+          environment_key: default
+          python_wheel_task:
+            package_name: ShogiApp
+            entry_point: wikipedia
 
         - task_key: chromadb
           notebook_task:

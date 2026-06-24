@@ -1,9 +1,19 @@
-.venv*/
 scratch/
 ref/
 .vscode/
 .mypy_cache/
 .ruff_cache/
 .pytest_cache/
-__pycache__/
 requirements*.txt
+
+# Python build artifacts
+*.egg-info/
+dist/
+build/
+
+# local virtual env
+.venv*/
+
+# uv / setuptools cache
+__pycache__/
+*.pyc

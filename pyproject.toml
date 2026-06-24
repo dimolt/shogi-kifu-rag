@@ -37,4 +37,13 @@ devTools = [
 ]
 
 [tool.uv]
-package = false
+package = true
+
+[tool.setuptools]
+package-dir = {"" = "code/remote/src"}
+
+[tool.setuptools.packages.find]
+where = ["code/remote/src"]
+
+[project.scripts]
+wikipedia = "shogi_app.jobs.wikipedia:main"
