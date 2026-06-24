@@ -1,5 +1,5 @@
-uv export --group local --group dev `
+uv export --group pyspark --group devTools `
     -o requirements-pyspark.txt
 
-uv export --group remote --group dev `
+uv export --group dbx --group devTools `
     -o requirements-dbx.txt

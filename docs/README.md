@@ -102,16 +102,16 @@ python --version
 ```toml
 [dependency-groups]
 
-local = [
+pyspark = [
     "pyspark",
 ]
 
-remote = [
+dbx = [
     "databricks-connect>=15.4,<15.5",
     "databricks-dlt",
 ]
 
-dev = [
+devTools = [
     "pytest",
     "ruff",
     "mypy",
@@ -182,7 +182,7 @@ uv lock
 ## local
 
 ```powershell
-uv export --group local --group dev -o requirements-pyspark.txt
+uv export --group pyspark --group devTools -o requirements-pyspark.txt
 ```
 
 ---
@@ -190,7 +190,7 @@ uv export --group local --group dev -o requirements-pyspark.txt
 ## remote
 
 ```powershell
-uv export --group remote --group dev -o requirements-dbx.txt
+uv export --group dbx --group devTools -o requirements-dbx.txt
 ```
 
 ---
@@ -268,9 +268,9 @@ uv lock
 ```
 
 ```powershell
-uv export --group local --group dev -o requirements-pyspark.txt
+uv export --group pyspark --group devTools -o requirements-pyspark.txt
 
-uv export --group remote --group dev -o requirements-dbx.txt
+uv export --group dbx --group devTools -o requirements-dbx.txt
 ```
 
 ```powershell

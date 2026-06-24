@@ -14,11 +14,11 @@ dependencies = [
 ]
 
 [dependency-groups]
-local = [
+pyspark = [
     "pyspark",
 ]
 
-remote = [
+dbx = [
     "databricks-connect>=15.4,<15.5",
     "chromadb",
     "sentence-transformers",
@@ -29,7 +29,7 @@ remote = [
     "groq",
 ]
 
-dev = [
+devTools = [
     "pytest",
     "ruff",
     "mypy",
