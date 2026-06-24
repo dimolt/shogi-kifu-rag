@@ -11,14 +11,12 @@ resources:
         - task_key: floodgate
           notebook_task:
             notebook_path: /Workspace/Users/${workspace.current_user.userName}/.bundle/${bundle.name}/${bundle.target}/files/code/remote/notebooks/step4_floodgate
-          depends_on:
-            - task_key: shogi_kif_rag_pipeline
+          depends_on: []
 
         - task_key: wikipedia
           notebook_task:
             notebook_path: /Workspace/Users/${workspace.current_user.userName}/.bundle/${bundle.name}/${bundle.target}/files/code/remote/notebooks/step5_wikipedia
-          depends_on:
-            - task_key: shogi_kif_rag_pipeline
+          depends_on: []
 
         - task_key: chromadb
           notebook_task:
