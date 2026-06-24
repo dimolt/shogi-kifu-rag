@@ -1,3 +1,6 @@
 [lint]
 select = ["E", "F", "I", "N", "W"]
 exclude = ["*.ipynb"]
+
+[lint.per-file-ignores]
+"code/remote/pipelines/*.py" = ["F821", "W293"]
