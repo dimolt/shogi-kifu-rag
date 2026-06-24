@@ -4,8 +4,16 @@ bundle:
 variables:
   catalog:
     description: The catalog to use
-  schema:
+    default: "shogi"
+  bronze_schema:
     description: The schema to use
+    default: "shogi_bronze"
+  silver_schema:
+    description: The schema to use
+    default: "shogi_silver"
+  gold_schema:
+    description: The schema to use
+    default: "shogi_gold"
 
 include:
   - infrastructure/resources/workflows/*.yml
@@ -20,14 +28,8 @@ targets:
     default: true
     workspace:
       root_path: /Workspace/Users/${workspace.current_user.userName}/.bundle/${bundle.name}/${bundle.target}
-    variables:
-      catalog: shogi
-      schema: dev
 
   prod:
     mode: production
     workspace:
       root_path: /Workspace/Users/${workspace.current_user.userName}/.bundle/${bundle.name}/${bundle.target}
-    variables:
-      catalog: shogi
-      schema: prod

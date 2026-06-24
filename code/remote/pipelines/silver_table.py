@@ -8,7 +8,7 @@ from pyspark.sql.types import (
 
 
 @dp.table
-def silver_table():
+def positions():
     """Silver Table: analysis.csvから棋譜局面を登録"""
     schema = StructType([
         StructField("game_id", StringType(), True),

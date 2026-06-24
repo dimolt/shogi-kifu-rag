@@ -20,11 +20,13 @@ from pyspark.sql.functions import (
 )
 from pyspark.sql.window import Window
 
+catalog = spark.conf.get("catalog")
+silver_schema = spark.conf.get("silver_schema")
 
 @dp.table
 def position_features():
     """Gold Table: 局面特徴量"""
-    silver_df = spark.read.table("silver_table")
+    silver_df = spark.read.table(f"{catalog}.{silver_schema}.positions")
     
     window = Window.partitionBy("game_id").orderBy("move_number")
     
@@ -101,7 +103,7 @@ def position_features():
 @dp.table
 def game_summary():
     """Gold Table: ゲームサマリー"""
-    silver_df = spark.read.table("silver_table")
+    silver_df = spark.read.table(f"{catalog}.{silver_schema}.positions")
     
     window = Window.partitionBy("game_id").orderBy("move_number")
     
