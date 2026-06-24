@@ -3,6 +3,7 @@ from pyspark.sql.functions import (
     abs,
     col,
     collect_list,
+    concat,
     first,
     lag,
     last,
@@ -10,7 +11,6 @@ from pyspark.sql.functions import (
     struct,
     to_json,
     when,
-    concat,
 )
 from pyspark.sql.functions import (
     max as max_,
