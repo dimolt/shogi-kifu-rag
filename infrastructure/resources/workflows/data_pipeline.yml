@@ -3,33 +3,27 @@ resources:
     data_pipeline:
       name: shogi-kifu-rag-data-pipeline
       tasks:
-        - task_key: silver_table
+        - task_key: silver_gold_tables
           notebook_task:
-            notebook_path: /Workspace/Users/${workspace.current_user.userName}/.bundle/${bundle.name}/${bundle.target}/files/code/remote/notebooks/step2_silver_table
+            notebook_path: /Workspace/Users/${workspace.current_user.userName}/.bundle/${bundle.name}/${bundle.target}/files/code/remote/pipelines/gold_table.py
           depends_on: []
-
-        - task_key: gold_table
-          notebook_task:
-            notebook_path: /Workspace/Users/${workspace.current_user.userName}/.bundle/${bundle.name}/${bundle.target}/files/code/remote/notebooks/step3_gold_table
-          depends_on:
-            - task_key: silver_table
 
         - task_key: floodgate
           notebook_task:
             notebook_path: /Workspace/Users/${workspace.current_user.userName}/.bundle/${bundle.name}/${bundle.target}/files/code/remote/notebooks/step4_floodgate
           depends_on:
-            - task_key: gold_table
+            - task_key: silver_gold_tables
 
         - task_key: wikipedia
           notebook_task:
             notebook_path: /Workspace/Users/${workspace.current_user.userName}/.bundle/${bundle.name}/${bundle.target}/files/code/remote/notebooks/step5_wikipedia
           depends_on:
-            - task_key: gold_table
+            - task_key: silver_gold_tables
 
         - task_key: chromadb
           notebook_task:
             notebook_path: /Workspace/Users/${workspace.current_user.userName}/.bundle/${bundle.name}/${bundle.target}/files/code/remote/notebooks/step6_chromadb
           depends_on:
-            - task_key: gold_table
+            - task_key: silver_gold_tables
             - task_key: floodgate
             - task_key: wikipedia
