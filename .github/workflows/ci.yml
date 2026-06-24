@@ -22,7 +22,7 @@ jobs:
       
       - name: Install dependencies
         run: |
-          uv sync --group dev
+          uv sync --group devTools
       
       - name: Run unit tests
         run: |
