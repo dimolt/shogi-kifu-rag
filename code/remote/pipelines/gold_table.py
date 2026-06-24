@@ -23,8 +23,6 @@ from pyspark.sql.window import Window
 @dp.table
 def position_features():
     """Gold Table: 局面特徴量"""
-    from pyspark.sql.functions import col, when, abs
-    
     silver_df = spark.read.table("silver_table")
     
     window = Window.partitionBy("game_id").orderBy("move_number")
@@ -93,8 +91,6 @@ def position_features():
 @dp.table
 def game_summary():
     """Gold Table: ゲームサマリー"""
-    from pyspark.sql.functions import col, when
-    
     silver_df = spark.read.table("silver_table")
     
     window = Window.partitionBy("game_id").orderBy("move_number")
