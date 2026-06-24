@@ -1,13 +1,24 @@
 resources:
   pipelines:
-    shogi_kif_rag_pipeline:
-      name: shogi_kif_rag_pipeline
+    silver_pipeline:
+      name: silver_pipeline
       libraries:
-        - glob:
-            include: ../../../code/remote/pipelines/gold_table.py
         - glob:
             include: ../../../code/remote/pipelines/silver_table.py
       photon: true
-      catalog: shogi
-      schema: default
+      catalog: "${var.catalog}"
+      schema: "${var.silver_schema}"
+      serverless: true
+
+    gold_pipeline:
+      name: gold_pipeline
+      configuration:
+        catalog: "${var.catalog}"
+        silver_schema: "${var.silver_schema}"
+      libraries:
+        - glob:
+            include: ../../../code/remote/pipelines/gold_table.py
+      photon: true
+      catalog: "${var.catalog}"
+      schema: "${var.gold_schema}"
       serverless: true

@@ -3,10 +3,16 @@ resources:
     shogi_kif_rag_main_job:
       name: shogi_kif_rag_main_job
       tasks:
-        - task_key: shogi_kif_rag_pipeline
+        - task_key: silver_pipeline
           pipeline_task:
-            pipeline_id: ${resources.pipelines.shogi_kif_rag_pipeline.id}
+            pipeline_id: ${resources.pipelines.silver_pipeline.id}
           depends_on: []
+
+        - task_key: gold_pipeline
+          pipeline_task:
+            pipeline_id: ${resources.pipelines.gold_pipeline.id}
+          depends_on: 
+            - task_key: silver_pipeline
 
         - task_key: floodgate
           notebook_task:
@@ -22,6 +28,6 @@ resources:
           notebook_task:
             notebook_path: /Workspace/Users/${workspace.current_user.userName}/.bundle/${bundle.name}/${bundle.target}/files/code/remote/notebooks/step6_chromadb
           depends_on:
-            - task_key: shogi_kif_rag_pipeline
+            - task_key: gold_pipeline
             - task_key: floodgate
             - task_key: wikipedia
