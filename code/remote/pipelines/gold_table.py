@@ -10,6 +10,7 @@ from pyspark.sql.functions import (
     struct,
     to_json,
     when,
+    concat,
 )
 from pyspark.sql.functions import (
     max as max_,
@@ -63,8 +64,17 @@ def position_features():
     # search_text: ChromaDB登録用テキスト
     gold_df = gold_df.withColumn(
         "search_text",
-        f"局面: {col('sfen')} 指し手: {col('move_usi')} "
-        f"推奨手: {col('best_move')} 評価値: {col('score_cp')}cp",
+        concat(
+            lit("局面: "),
+            col("sfen"),
+            lit(" 指し手: "),
+            col("move_usi"),
+            lit(" 推奨手: "),
+            col("best_move"),
+            lit(" 評価値: "),
+            col("score_cp").cast("string"),
+            lit("cp"),
+        ),
     )
     
     return gold_df.select(
