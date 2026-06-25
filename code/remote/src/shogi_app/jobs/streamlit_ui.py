@@ -1,5 +1,4 @@
 import streamlit as st
-
 from shogi_app.rag import rag_query
 
 

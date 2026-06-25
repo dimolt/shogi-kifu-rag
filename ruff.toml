@@ -4,3 +4,4 @@ exclude = ["*.ipynb"]
 
 [lint.per-file-ignores]
 "code/remote/pipelines/*.py" = ["F821", "W293"]
+"code/remote/src/shogi_app/jobs/streamlit_ui.py" = ["I001"]
