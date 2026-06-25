@@ -1,12 +1,15 @@
 import os
+from typing import Optional
+
+from .secrets import get_gemini_api_key, get_groq_api_key
 
 
 class LLMClient:
     """LLMクライアント（Gemini 2.5 Flash with Groq Llama 3.3 70B fallback）"""
 
     def __init__(self):
-        self.gemini_api_key = os.getenv("GEMINI_API_KEY")
-        self.groq_api_key = os.getenv("GROQ_API_KEY")
+        self.gemini_api_key = get_gemini_api_key()
+        self.groq_api_key = get_groq_api_key()
         self.use_gemini = True
 
     def generate(self, prompt: str) -> str:
