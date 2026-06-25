@@ -1,6 +1,3 @@
-import os
-from typing import Optional
-
 from .secrets import get_gemini_api_key, get_groq_api_key
 
 
