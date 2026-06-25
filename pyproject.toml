@@ -46,5 +46,6 @@ package-dir = {"" = "code/remote/src"}
 where = ["code/remote/src"]
 
 [project.scripts]
-wikipedia = "shogi_app.jobs.wikipedia:main"
+chromadb = "shogi_app.jobs.chromadb:main"
 floodgate = "shogi_app.jobs.floodgate:main"
+wikipedia = "shogi_app.jobs.wikipedia:main"
