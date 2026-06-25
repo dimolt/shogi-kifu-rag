@@ -1,5 +1,4 @@
 import chromadb
-from chromadb.config import Settings
 from pyspark.sql import SparkSession
 from sentence_transformers import SentenceTransformer
 
@@ -8,10 +7,9 @@ def main():
     spark = SparkSession.getActiveSession()
 
     # ChromaDBの初期化
-    chroma_client = chromadb.Client(Settings(
-        chroma_db_impl="duckdb+parquet",
-        persist_directory="/tmp/shogi/chromadb",
-    ))
+    chroma_client = chromadb.PersistentClient(
+        path="/tmp/shogi/chromadb",
+    )
 
     # Embeddingモデルの初期化
     embedding_model = SentenceTransformer("sentence-transformers/all-MiniLM-L6-v2")
