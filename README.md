@@ -12,6 +12,15 @@
 
 依存関係は `pyproject.toml` と `uv.lock` を唯一の管理対象とし、各仮想環境はそこから再生成する。
 
+## プロジェクト概要
+
+将棋棋譜解析RAGシステム。以下の機能を提供する。
+
+- **データパイプライン**: Floodgate APIからの棋譜取得、Wikipediaからの戦法知識取得
+- **特徴量抽出**: PySpark Pipelineによる局面特徴量の計算
+- **RAGチェーン**: ChromaDBによる類似局面検索とLLMによる局面解説生成
+- **Web UI**: Streamlitによる対話型検索インターフェース
+
 ---
 
 # ディレクトリ構成
@@ -27,9 +36,31 @@ ShogiApp/
 ├─ code/
 │  ├─ local/
 │  ├─ remote/
+│  │  ├─ src/
+│  │  │  └─ shogi_app/
+│  │  │     ├─ jobs/         # Python Wheel Tasks
+│  │  │     │  ├─ floodgate.py
+│  │  │     │  ├─ wikipedia.py
+│  │  │     │  ├─ chromadb.py
+│  │  │     │  └─ streamlit_ui.py
+│  │  │     └─ rag/          # RAG共通モジュール
+│  │  │        ├─ llm_client.py
+│  │  │        ├─ retriever.py
+│  │  │        ├─ generator.py
+│  │  │        ├─ secrets.py
+│  │  │        └─ rag.py
+│  │  ├─ pipelines/          # PySpark Pipelines
+│  │  │  ├─ silver_table.py
+│  │  │  └─ gold_table.py
+│  │  └─ notebooks/
 │  └─ shared/
 ├─ tests/
 ├─ infrastructure/
+│  └─ resources/
+│     └─ workflows/
+│        ├─ jobs.yml
+│        ├─ sdp_pipeline.yml
+│        └─ data_pipeline.yml
 ├─ docs/
 └─ data/
 ```
@@ -359,3 +390,136 @@ uv pip sync requirements-dbx.txt --python .\.venv_dbx\Scripts\python.exe
 
 この運用なら、将来的に CI/CD や Databricks Asset Bundle を導入してもそのまま拡張できます。
 特に「local=PySpark」「remote=Databricks Connect」の分離は、データエンジニアの実務でも保守しやすい構成です。
+
+---
+
+# RAGシステム
+
+## 概要
+
+RAG（Retrieval-Augmented Generation）システムは、ChromaDBによる類似局面検索とLLMによる局面解説生成を組み合わせたシステムです。
+
+## アーキテクチャ
+
+```
+ユーザー質問
+    ↓
+Streamlit UI
+    ↓
+RAG共通モジュール
+    ├─ retriever.py: ChromaDBから類似局面検索
+    ├─ generator.py: LLMによる回答生成
+    ├─ llm_client.py: LLMクライアント（Gemini/Groq）
+    └─ secrets.py: Databricks SecretsからAPIキー取得
+    ↓
+回答 + 参照ドキュメント
+```
+
+## モジュール構成
+
+### code/remote/src/shogi_app/rag/
+
+- **llm_client.py**: LLMクライアント（Gemini 2.5 Flash with Groq Llama 3.3 70B fallback）
+- **retriever.py**: ChromaDBから類似局面検索
+- **generator.py**: LLMによる回答生成
+- **secrets.py**: Databricks SecretsからAPIキー取得
+- **rag.py**: RAGクエリ統合関数
+
+## Databricks Secretsの設定
+
+### スコープ作成
+
+```bash
+databricks secrets create-scope llm
+```
+
+### シークレット設定
+
+```bash
+databricks secrets put-secret llm gemini_api_key
+databricks secrets put-secret llm groq_api_key
+```
+
+### ローカル実行時
+
+ローカル実行時は環境変数からAPIキーを取得します。
+
+```bash
+export LLM_GEMINI_API_KEY=your_gemini_api_key
+export LLM_GROQ_API_KEY=your_groq_api_key
+```
+
+## Streamlit UI
+
+### 実行方法
+
+```bash
+streamlit run code/remote/src/shogi_app/jobs/streamlit_ui.py
+```
+
+### 機能
+
+- 検索対象コレクション選択（positions, floodgate_positions, joseki_knowledge）
+- 取得するドキュメント数設定
+- 質問入力と回答表示
+- 参照ドキュメントの表示
+
+---
+
+# データパイプライン
+
+## 概要
+
+データパイプラインはPySpark Pipelineを使用して、SilverテーブルとGoldテーブルを作成します。
+
+## Pipeline構成
+
+### Silver Pipeline (silver_table.py)
+
+- CSVファイルから棋譜データを読み込み
+- Silverテーブル（positions）を作成
+
+### Gold Pipeline (gold_table.py)
+
+- Silverテーブルからデータを読み込み
+- 特徴量計算（局面特徴量、ゲームサマリー）
+- Goldテーブル（position_features, game_summary）を作成
+
+## Python Wheel Tasks
+
+### floodgate.py
+
+- Floodgate APIから棋譜を取得
+- CSA形式の棋譜をパース
+- floodgate_positionsテーブルに書き込み
+
+### wikipedia.py
+
+- Wikipediaから戦法解説を取得
+- joseki_knowledgeテーブルに書き込み
+
+### chromadb.py
+
+- Deltaテーブルからデータを読み込み
+- ChromaDBベクトルストアを構築
+
+### streamlit_ui.py
+
+- Streamlit UIを起動
+- RAGチェーンを呼び出し
+
+---
+
+# Databricks Asset Bundle
+
+## デプロイ
+
+```bash
+databricks bundle deploy
+```
+
+## ジョブ実行
+
+```bash
+databricks bundle run shogi_kif_rag_main_job
+```
