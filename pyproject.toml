@@ -51,4 +51,4 @@ where = ["code/remote/src"]
 chromadb = "shogi_app.jobs.chromadb:main"
 floodgate = "shogi_app.jobs.floodgate:main"
 wikipedia = "shogi_app.jobs.wikipedia:main"
-streamlit_ui = "shogi_app.jobs.streamlit_ui:main"
+gradio_ui = "shogi_app.jobs.gradio_ui:main"
