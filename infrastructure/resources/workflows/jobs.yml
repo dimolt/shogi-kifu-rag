@@ -8,7 +8,9 @@ resources:
           spec:
             environment_version: "4"
             dependencies:
-              - "/Workspace${workspace.root_path}/artifacts/.internal/shogiapp-0.1.0-py3-none-any.whl"
+              - "${workspace.root_path}/artifacts/.internal/shogiapp-0.1.0-py3-none-any.whl"
+              - chromadb
+              - sentence_transformers
 
       tasks:
         - task_key: silver_pipeline
@@ -35,8 +37,10 @@ resources:
             entry_point: wikipedia
 
         - task_key: chromadb
-          notebook_task:
-            notebook_path: /Workspace/Users/${workspace.current_user.userName}/.bundle/${bundle.name}/${bundle.target}/files/code/remote/notebooks/step6_chromadb
+          environment_key: default
+          python_wheel_task:
+            package_name: ShogiApp
+            entry_point: chromadb
           depends_on:
             - task_key: gold_pipeline
             - task_key: floodgate
