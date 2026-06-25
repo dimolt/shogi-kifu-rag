@@ -1,6 +1,6 @@
-import streamlit as st
-
 from shogi_app.rag import rag_query
+
+import streamlit as st
 
 
 def main():
