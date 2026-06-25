@@ -1,4 +1,4 @@
-from typing import Dict, List
+from typing import Dict
 
 from .generator import generate_response
 from .llm_client import LLMClient
