@@ -47,3 +47,4 @@ where = ["code/remote/src"]
 
 [project.scripts]
 wikipedia = "shogi_app.jobs.wikipedia:main"
+floodgate = "shogi_app.jobs.floodgate:main"
