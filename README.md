@@ -19,7 +19,7 @@
 - **データパイプライン**: Floodgate APIからの棋譜取得、Wikipediaからの戦法知識取得
 - **特徴量抽出**: PySpark Pipelineによる局面特徴量の計算
 - **RAGチェーン**: ChromaDBによる類似局面検索とLLMによる局面解説生成
-- **Web UI**: Streamlitによる対話型検索インターフェース
+- **Notebook UI**: Gradioによる対話型検索インターフェース
 
 ---
 
@@ -41,8 +41,7 @@ ShogiApp/
 │  │  │     ├─ jobs/         # Python Wheel Tasks
 │  │  │     │  ├─ floodgate.py
 │  │  │     │  ├─ wikipedia.py
-│  │  │     │  ├─ chromadb.py
-│  │  │     │  └─ streamlit_ui.py
+│  │  │     │  └─ chromadb.py
 │  │  │     └─ rag/          # RAG共通モジュール
 │  │  │        ├─ llm_client.py
 │  │  │        ├─ retriever.py
@@ -52,7 +51,9 @@ ShogiApp/
 │  │  ├─ pipelines/          # PySpark Pipelines
 │  │  │  ├─ silver_table.py
 │  │  │  └─ gold_table.py
-│  │  └─ notebooks/
+│  │  └─ notebooks/          # Databricks Notebooks
+│  │     ├─ step7_rag_chain.ipynb
+│  │     └─ step8_gradio_ui.ipynb
 │  └─ shared/
 ├─ tests/
 ├─ infrastructure/
@@ -404,7 +405,7 @@ RAG（Retrieval-Augmented Generation）システムは、ChromaDBによる類似
 ```
 ユーザー質問
     ↓
-Streamlit UI
+Gradio UI (Notebook)
     ↓
 RAG共通モジュール
     ├─ retriever.py: ChromaDBから類似局面検索
@@ -449,13 +450,11 @@ export LLM_GEMINI_API_KEY=your_gemini_api_key
 export LLM_GROQ_API_KEY=your_groq_api_key
 ```
 
-## Streamlit UI
+## Gradio UI (Notebook)
 
 ### 実行方法
 
-```bash
-streamlit run code/remote/src/shogi_app/jobs/streamlit_ui.py
-```
+Databricks Notebookで `step8_gradio_ui.ipynb` を開いて実行します。
 
 ### 機能
 
@@ -502,11 +501,6 @@ streamlit run code/remote/src/shogi_app/jobs/streamlit_ui.py
 
 - Deltaテーブルからデータを読み込み
 - ChromaDBベクトルストアを構築
-
-### streamlit_ui.py
-
-- Streamlit UIを起動
-- RAGチェーンを呼び出し
 
 ---
 
