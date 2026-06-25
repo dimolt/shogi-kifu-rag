@@ -23,9 +23,10 @@ resources:
             - task_key: silver_pipeline
 
         - task_key: floodgate
-          notebook_task:
-            notebook_path: /Workspace/Users/${workspace.current_user.userName}/.bundle/${bundle.name}/${bundle.target}/files/code/remote/notebooks/step4_floodgate
-          depends_on: []
+          environment_key: default
+          python_wheel_task:
+            package_name: ShogiApp
+            entry_point: floodgate
 
         - task_key: wikipedia
           environment_key: default
