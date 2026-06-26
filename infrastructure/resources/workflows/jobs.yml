@@ -35,13 +35,3 @@ resources:
           python_wheel_task:
             package_name: ShogiApp
             entry_point: wikipedia
-
-        - task_key: chromadb
-          environment_key: default
-          python_wheel_task:
-            package_name: ShogiApp
-            entry_point: chromadb
-          depends_on:
-            - task_key: gold_pipeline
-            - task_key: floodgate
-            - task_key: wikipedia
