@@ -3,8 +3,6 @@ from typing import Dict, List, Optional
 import chromadb
 from sentence_transformers import SentenceTransformer
 
-WHEEL_VERSION_MARKER = "retriever_20260625_v2"
-
 
 def retrieve_relevant_documents(
     query: str,
