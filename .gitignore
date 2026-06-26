@@ -17,3 +17,6 @@ build/
 # uv / setuptools cache
 __pycache__/
 *.pyc
+
+# UI
+.gradio

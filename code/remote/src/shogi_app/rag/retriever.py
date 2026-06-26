@@ -1,54 +1,44 @@
-from typing import Dict, List, Optional
-
-import chromadb
-from sentence_transformers import SentenceTransformer
+from shogi_app.vector.chromadb_service import ChromadbService
 
 
 def retrieve_relevant_documents(
     query: str,
-    collection_name: str = "positions",
+    collection_name: str = 'positions',
     n_results: int = 5,
-    chroma_client: Optional[chromadb.Client] = None,
-    embedding_model: Optional[SentenceTransformer] = None,
-) -> List[Dict]:
-    """ChromaDBから関連ドキュメントを取得
+) -> list[dict]:
+    """ChromaDBから関連ドキュメントを取得する。
+
+    ChromadbService のシングルトンを通じてクライアントとモデルを取得する。
 
     Args:
-        query: クエリテキスト
-        collection_name: コレクション名
-        n_results: 取得するドキュメント数
-        chroma_client: ChromaDBクライアント（オプション）
-        embedding_model: Embeddingモデル（オプション）
+        query: クエリテキスト。
+        collection_name: 検索対象のコレクション名。
+        n_results: 取得するドキュメント数。
 
     Returns:
-        関連ドキュメントリスト
+        関連ドキュメントのリスト。各要素は text / metadata / distance キーを持つ辞書。
+        取得に失敗した場合は空リストを返す。
     """
-    if chroma_client is None:
-        chroma_client = chromadb.PersistentClient(
-            path="/tmp/shogi/chromadb",
-        )
+    service = ChromadbService.get_instance()
+    service.ensure()
 
-    if embedding_model is None:
-        embedding_model = SentenceTransformer(
-            "sentence-transformers/all-MiniLM-L6-v2"
-        )
-
-    query_embedding = embedding_model.encode(query).tolist()
+    query_embedding = service.encode_query(query)
 
     try:
-        collection = chroma_client.get_collection(collection_name)
+        collection = service.get_collection(collection_name)
         results = collection.query(
             query_embeddings=[query_embedding],
             n_results=n_results,
         )
         documents = []
-        for i in range(len(results["documents"][0])):
+        for i in range(len(results['documents'][0])):
             documents.append({
-                "text": results["documents"][0][i],
-                "metadata": results["metadatas"][0][i],
-                "distance": results["distances"][0][i],
+                'text': results['documents'][0][i],
+                'metadata': results['metadatas'][0][i],
+                'distance': results['distances'][0][i],
             })
         return documents
     except Exception as e:
-        print(f"Retrieval error: {e}")
+        # コレクションが存在しない・空などの場合は空リストで続行
+        print(f'Retrieval error: {e}')
         return []
