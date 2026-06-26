@@ -1,8 +1,9 @@
 from typing import Dict, List, Optional
 
 import chromadb
-from chromadb.config import Settings
 from sentence_transformers import SentenceTransformer
+
+WHEEL_VERSION_MARKER = "retriever_20260625_v2"
 
 
 def retrieve_relevant_documents(
@@ -25,11 +26,8 @@ def retrieve_relevant_documents(
         関連ドキュメントリスト
     """
     if chroma_client is None:
-        chroma_client = chromadb.Client(
-            Settings(
-                chroma_db_impl="duckdb+parquet",
-                persist_directory="/tmp/shogi/chromadb",
-            )
+        chroma_client = chromadb.PersistentClient(
+            path="/tmp/shogi/chromadb",
         )
 
     if embedding_model is None:
