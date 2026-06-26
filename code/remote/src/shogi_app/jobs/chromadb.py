@@ -3,6 +3,23 @@ from pyspark.sql import SparkSession
 from sentence_transformers import SentenceTransformer
 
 
+def collection_exists(chroma_client, name: str) -> bool:
+    """Collectionの存在確認
+
+    Args:
+        chroma_client: ChromaDBクライアント
+        name: コレクション名
+
+    Returns:
+        Collectionが存在する場合はTrue
+    """
+    try:
+        chroma_client.get_collection(name)
+        return True
+    except Exception:
+        return False
+
+
 def clean_position_features(df):
     df["search_text"] = df["search_text"].astype(str).str.strip()
 
@@ -13,18 +30,15 @@ def clean_position_features(df):
     ]
 
 
-def main():
-    spark = SparkSession.getActiveSession()
+def rebuild_positions(chroma_client, embedding_model, spark):
+    """positionsコレクションを再構築
 
-    # Embeddingモデルの初期化
-    embedding_model = SentenceTransformer("sentence-transformers/all-MiniLM-L6-v2")
-
-    # ChromaDBの初期化
-    chroma_client = chromadb.PersistentClient(
-        path="/tmp/shogi/chromadb",
-    )
-
-    # positionsコレクションの作成
+    Args:
+        chroma_client: ChromaDBクライアント
+        embedding_model: Embeddingモデル
+        spark: SparkSession
+    """
+    # positionsコレクションの削除と作成
     try:
         chroma_client.delete_collection("positions")
     except Exception:
@@ -71,13 +85,22 @@ def main():
         else:
             print("Skip Chroma insert because no valid data")
 
+
+def rebuild_floodgate(chroma_client, embedding_model, spark):
+    """floodgate_positionsコレクションを再構築
+
+    Args:
+        chroma_client: ChromaDBクライアント
+        embedding_model: Embeddingモデル
+        spark: SparkSession
+    """
     # Silver Tableからfloodgate_positionsを読み込み
     try:
         floodgate_df = spark.table("shogi.shogi_silver.floodgate_positions").toPandas()
     except Exception:
         floodgate_df = None
 
-    # floodgate_positionsコレクションの作成
+    # floodgate_positionsコレクションの削除と作成
     if floodgate_df is not None and len(floodgate_df) > 0:
         try:
             chroma_client.delete_collection("floodgate_positions")
@@ -108,13 +131,22 @@ def main():
             ids=[f"floodgate_{i}" for i in range(len(floodgate_df))],
         )
 
+
+def rebuild_joseki(chroma_client, embedding_model, spark):
+    """joseki_knowledgeコレクションを再構築
+
+    Args:
+        chroma_client: ChromaDBクライアント
+        embedding_model: Embeddingモデル
+        spark: SparkSession
+    """
     # Silver Tableからjoseki_knowledgeを読み込み
     try:
         joseki_df = spark.table("shogi.shogi_silver.joseki_knowledge").toPandas()
     except Exception:
         joseki_df = None
 
-    # joseki_knowledgeコレクションの作成
+    # joseki_knowledgeコレクションの削除と作成
     if joseki_df is not None and len(joseki_df) > 0:
         try:
             chroma_client.delete_collection("joseki_knowledge")
@@ -136,3 +168,19 @@ def main():
             } for _, row in joseki_df.iterrows()],
             ids=[f"joseki_{i}" for i in range(len(joseki_df))],
         )
+
+
+def main():
+    spark = SparkSession.getActiveSession()
+
+    # Embeddingモデルの初期化
+    embedding_model = SentenceTransformer("sentence-transformers/all-MiniLM-L6-v2")
+
+    # ChromaDBの初期化
+    chroma_client = chromadb.PersistentClient(
+        path="/tmp/shogi/chromadb",
+    )
+
+    rebuild_positions(chroma_client, embedding_model, spark)
+    rebuild_floodgate(chroma_client, embedding_model, spark)
+    rebuild_joseki(chroma_client, embedding_model, spark)
