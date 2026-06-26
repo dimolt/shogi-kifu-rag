@@ -1,16 +1,17 @@
 from typing import Dict
 
+from shogi_app.vector.chromadb_service import ChromadbService
+
 from .generator import generate_response
 from .llm_client import LLMClient
 from .retriever import retrieve_relevant_documents
 
 
 def rag_query(
+    chromadb: ChromadbService,
     query: str,
     collection_name: str = "positions",
     n_results: int = 5,
-    chroma_client=None,
-    embedding_model=None,
     llm_client=None,
 ) -> Dict:
     """RAGクエリを実行
@@ -30,7 +31,7 @@ def rag_query(
         llm_client = LLMClient()
 
     documents = retrieve_relevant_documents(
-        query, collection_name, n_results, chroma_client, embedding_model
+        chromadb, query, collection_name, n_results
     )
     if not documents:
         return {

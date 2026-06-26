@@ -1,18 +1,27 @@
 # Databricks notebook source
 # MAGIC %md
 # MAGIC # UI デモ用notebook
-# MAGIC
+# MAGIC 
 # MAGIC RAGチェーン検証用、デモ用UIを公開する
-# MAGIC  
-# MAGIC %pip install gradio chromadb sentence_transformers /Workspace/Users/realnowhereman@icloud.com/.bundle/shogi-kifu-rag/dev/artifacts/.internal/shogiapp-0.1.0-py3-none-any.whl
-# MAGIC  
 
 # COMMAND ----------
 
-# MAGIC %md ## 1. game_summary: 形勢グラフ用集約
+# MAGIC %md
+# MAGIC python 3.12の制約のため serverless standard v4,5で使用すること
 
 # COMMAND ----------
 
+# MAGIC 
+# MAGIC %pip install gradio chromadb sentence_transformers
+# MAGIC 
+
+# COMMAND ----------
+
+# MAGIC 
+# MAGIC %pip install /Workspace/Users/realnowhereman@icloud.com/.bundle/shogi-kifu-rag/dev/artifacts/.internal/shogiapp-0.1.0-py3-none-any.whl
+# MAGIC 
+
+# COMMAND ----------
 import gradio as gr
 from shogi_app.vector.chromadb_service import ChromadbService
 from shogi_app.rag import rag_query
@@ -29,12 +38,14 @@ def query_rag(query: str, collection: str, n_results: int):
     Returns:
         回答と参照ドキュメント
     """
+
+    chromadb = ChromadbService.get_instance(),
+
     result = rag_query(
+        chromadb=chromadb,
         query=query,
         collection_name=collection,
         n_results=n_results,
-        chroma_client=chroma_client,
-        embedding_model=embedding_model,
     )
     answer = result["answer"]
     docs = result["documents"]
