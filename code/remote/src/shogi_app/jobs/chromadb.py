@@ -2,6 +2,47 @@ import chromadb
 from pyspark.sql import SparkSession
 from sentence_transformers import SentenceTransformer
 
+# グローバルキャッシュ
+_chroma_client = None
+_embedding_model = None
+
+
+def rebuild_all_collections(chroma_client, embedding_model, spark):
+    """すべてのコレクションを再構築
+
+    Args:
+        chroma_client: ChromaDBクライアント
+        embedding_model: Embeddingモデル
+        spark: SparkSession
+    """
+    rebuild_positions(chroma_client, embedding_model, spark)
+    rebuild_floodgate(chroma_client, embedding_model, spark)
+    rebuild_joseki(chroma_client, embedding_model, spark)
+
+
+def ensure_chromadb():
+    """ChromaDBが存在することを確認し、必要なら再構築
+
+    Returns:
+        ChromaDBクライアントとEmbeddingモデルのタプル
+    """
+    global _chroma_client, _embedding_model
+
+    # 初期化済みの場合はキャッシュを返す
+    if _chroma_client is not None and _embedding_model is not None:
+        return _chroma_client, _embedding_model
+
+    # 初期化
+    spark = SparkSession.getActiveSession()
+    _embedding_model = SentenceTransformer("sentence-transformers/all-MiniLM-L6-v2")
+    _chroma_client = chromadb.PersistentClient(path="/tmp/shogi/chromadb")
+
+    # positionsコレクションが存在しない場合、すべて再構築
+    if not collection_exists(_chroma_client, "positions"):
+        rebuild_all_collections(_chroma_client, _embedding_model, spark)
+
+    return _chroma_client, _embedding_model
+
 
 def collection_exists(chroma_client, name: str) -> bool:
     """Collectionの存在確認
@@ -171,16 +212,5 @@ def rebuild_joseki(chroma_client, embedding_model, spark):
 
 
 def main():
-    spark = SparkSession.getActiveSession()
-
-    # Embeddingモデルの初期化
-    embedding_model = SentenceTransformer("sentence-transformers/all-MiniLM-L6-v2")
-
-    # ChromaDBの初期化
-    chroma_client = chromadb.PersistentClient(
-        path="/tmp/shogi/chromadb",
-    )
-
-    rebuild_positions(chroma_client, embedding_model, spark)
-    rebuild_floodgate(chroma_client, embedding_model, spark)
-    rebuild_joseki(chroma_client, embedding_model, spark)
+    """ChromaDBの初期化と構築"""
+    ensure_chromadb()
