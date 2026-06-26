@@ -2,6 +2,7 @@ from shogi_app.vector.chromadb_service import ChromadbService
 
 
 def retrieve_relevant_documents(
+    chromadb: ChromadbService,
     query: str,
     collection_name: str = 'positions',
     n_results: int = 5,
@@ -11,6 +12,7 @@ def retrieve_relevant_documents(
     ChromadbService のシングルトンを通じてクライアントとモデルを取得する。
 
     Args:
+        chromadb: ChromadbService インスタンス。
         query: クエリテキスト。
         collection_name: 検索対象のコレクション名。
         n_results: 取得するドキュメント数。
@@ -19,13 +21,12 @@ def retrieve_relevant_documents(
         関連ドキュメントのリスト。各要素は text / metadata / distance キーを持つ辞書。
         取得に失敗した場合は空リストを返す。
     """
-    service = ChromadbService.get_instance()
-    service.ensure()
 
-    query_embedding = service.encode_query(query)
+    chromadb.ensure()
+    query_embedding = chromadb.encode_query(query)
 
     try:
-        collection = service.get_collection(collection_name)
+        collection = chromadb.get_collection(collection_name)
         results = collection.query(
             query_embeddings=[query_embedding],
             n_results=n_results,
