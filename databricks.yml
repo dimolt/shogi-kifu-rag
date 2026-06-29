@@ -1,5 +1,5 @@
 bundle:
-  name: shogi-kifu-rag
+  name: shogi-kif-rag
 
 include:
   - databricks/resources/workflows/*.yml
