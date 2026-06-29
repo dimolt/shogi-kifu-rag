@@ -1,6 +1,6 @@
 from typing import Dict
 
-from shogi_app.vector.chromadb_service import ChromadbService
+from shogi_kif_rag.vector.chromadb_service import ChromadbService
 
 from .generator import generate_response
 from .llm_client import LLMClient

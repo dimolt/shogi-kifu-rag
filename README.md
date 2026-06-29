@@ -37,7 +37,7 @@ ShogiApp/
 │  ├─ local/
 │  ├─ remote/
 │  │  ├─ src/
-│  │  │  └─ shogi_app/
+│  │  │  └─ shogi_kif_rag/
 │  │  │     ├─ jobs/         # Python Wheel Tasks
 │  │  │     │  ├─ floodgate.py
 │  │  │     │  ├─ wikipedia.py
@@ -418,7 +418,7 @@ RAG共通モジュール
 
 ## モジュール構成
 
-### code/remote/src/shogi_app/rag/
+### code/remote/src/shogi_kif_rag/rag/
 
 - **llm_client.py**: LLMクライアント（Gemini 2.5 Flash with Groq Llama 3.3 70B fallback）
 - **retriever.py**: ChromaDBから類似局面検索

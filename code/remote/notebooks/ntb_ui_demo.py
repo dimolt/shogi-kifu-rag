@@ -23,8 +23,8 @@
 
 # COMMAND ----------
 import gradio as gr
-from shogi_app.vector.chromadb_service import ChromadbService
-from shogi_app.rag import rag_query
+from shogi_kif_rag.vector.chromadb_service import ChromadbService
+from shogi_kif_rag.rag import rag_query
 
 # COMMAND ----------
 def query_rag(query: str, collection: str, n_results: int):
