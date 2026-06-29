@@ -10,9 +10,22 @@ artifacts:
     build: uv build --wheel
 
 sync:
-  paths:
-    - src
-    - databricks
+  exclude:
+    - src/**
+    - tests/**
+    - scripts/**
+    - docs/**
+    - dist/**
+    - typings/**
+    - data/**
+    - .github/**
+    - .agents/**
+    - "*.md"
+    - ".*"
+    - "*.lock"
+    - "*.yml"
+    - "*.toml"
+    - "*.ini"
 
 variables:
   catalog:
