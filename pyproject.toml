@@ -1,5 +1,5 @@
 [project]
-name = "ShogiApp"
+name = "shogi-kif-rag"
 version = "0.1.0"
 description = "Add your description here"
 readme = "README.md"
@@ -41,12 +41,12 @@ devTools = [
 package = true
 
 [tool.setuptools]
-package-dir = {"" = "code/remote/src"}
+package-dir = {"" = "src"}
 
 [tool.setuptools.packages.find]
-where = ["code/remote/src"]
+where = ["src"]
 
 [project.scripts]
-chromadb = "shogi_app.jobs.chromadb:main"
-floodgate = "shogi_app.jobs.floodgate:main"
-wikipedia = "shogi_app.jobs.wikipedia:main"
+chromadb = "shogi_kif_rag.jobs.chromadb:main"
+floodgate = "shogi_kif_rag.jobs.floodgate:main"
+wikipedia = "shogi_kif_rag.jobs.wikipedia:main"

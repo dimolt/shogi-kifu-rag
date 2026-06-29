@@ -1,4 +1,4 @@
-from shogi_app.vector.chromadb_service import ChromadbService
+from shogi_kif_rag.vector.chromadb_service import ChromadbService
 
 
 def retrieve_relevant_documents(
