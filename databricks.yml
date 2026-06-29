@@ -2,7 +2,7 @@ bundle:
   name: shogi-kifu-rag
 
 include:
-  - infrastructure/resources/workflows/*.yml
+  - databricks/resources/workflows/*.yml
 
 artifacts:
   default:
@@ -11,7 +11,8 @@ artifacts:
 
 sync:
   paths:
-    - code
+    - src
+    - databricks
 
 variables:
   catalog:

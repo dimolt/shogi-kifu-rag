@@ -41,10 +41,10 @@ devTools = [
 package = true
 
 [tool.setuptools]
-package-dir = {"" = "code/remote/src"}
+package-dir = {"" = "src"}
 
 [tool.setuptools.packages.find]
-where = ["code/remote/src"]
+where = ["src"]
 
 [project.scripts]
 chromadb = "shogi_kif_rag.jobs.chromadb:main"
