@@ -23,7 +23,7 @@ def positions():
         StructField("score_cp", IntegerType(), True),
         StructField("pv", StringType(), True),
     ])
-    
+
     return spark.read.csv(
         "/Volumes/shogi/landing/kif/analysis.csv",
         header=True,
