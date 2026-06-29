@@ -4,7 +4,7 @@ resources:
       name: silver_pipeline
       libraries:
         - glob:
-            include: ../../../code/remote/pipelines/silver_table.py
+            include: ../../pipelines/silver_table.py
       photon: true
       catalog: "${var.catalog}"
       schema: "${var.silver_schema}"
@@ -17,7 +17,7 @@ resources:
         silver_schema: "${var.silver_schema}"
       libraries:
         - glob:
-            include: ../../../code/remote/pipelines/gold_table.py
+            include: ../../pipelines/gold_table.py
       photon: true
       catalog: "${var.catalog}"
       schema: "${var.gold_schema}"

@@ -27,33 +27,33 @@ silver_schema = spark.conf.get("silver_schema")
 def position_features():
     """Gold Table: 局面特徴量"""
     silver_df = spark.read.table(f"{catalog}.{silver_schema}.positions")
-    
+
     window = Window.partitionBy("game_id").orderBy("move_number")
-    
+
     # score_from_turn: 手番視点の評価値（後手番は符号反転）
     gold_df = silver_df.withColumn(
         "score_from_turn",
         when(col("player") == "white", -col("score_cp")).otherwise(col("score_cp")),
     )
-    
+
     # score_delta: 前手からの評価値変化
     gold_df = gold_df.withColumn(
         "score_delta",
         col("score_from_turn") - lag("score_from_turn", 0).over(window),
     )
-    
+
     # is_best_move: 実際の指し手 = 推奨手かどうか
     gold_df = gold_df.withColumn(
         "is_best_move",
         col("move_usi") == col("best_move"),
     )
-    
+
     # is_blunder: abs(score_delta) >= 200
     gold_df = gold_df.withColumn(
         "is_blunder",
         abs(col("score_delta")) >= 200,
     )
-    
+
     # move_quality: start / best / blunder / normal
     gold_df = gold_df.withColumn(
         "move_quality",
@@ -62,7 +62,7 @@ def position_features():
         .when(col("is_blunder"), lit("blunder"))
         .otherwise(lit("normal")),
     )
-    
+
     # search_text: ChromaDB登録用テキスト
     gold_df = gold_df.withColumn(
         "search_text",
@@ -78,7 +78,7 @@ def position_features():
             lit("cp"),
         ),
     )
-    
+
     return gold_df.select(
         "game_id",
         "move_number",
@@ -104,15 +104,15 @@ def position_features():
 def game_summary():
     """Gold Table: ゲームサマリー"""
     silver_df = spark.read.table(f"{catalog}.{silver_schema}.positions")
-    
+
     window = Window.partitionBy("game_id").orderBy("move_number")
-    
+
     # score_from_turn: 手番視点の評価値（後手番は符号反転）
     gold_df = silver_df.withColumn(
         "score_from_turn",
         when(col("player") == "white", -col("score_cp")).otherwise(col("score_cp")),
     )
-    
+
     # is_blunder: abs(score_delta) >= 200
     gold_df = gold_df.withColumn(
         "score_delta",
@@ -122,7 +122,7 @@ def game_summary():
         "is_blunder",
         abs(col("score_delta")) >= 200,
     )
-    
+
     game_summary = (
         gold_df.groupBy("game_id")
         .agg(
@@ -139,10 +139,10 @@ def game_summary():
             collect_list(struct("move_number", "score_cp")).alias("score_series"),
         )
     )
-    
+
     # score_seriesをJSONに変換
     game_summary = game_summary.withColumn(
         "score_series_json", to_json("score_series")
     ).drop("score_series")
-    
+
     return game_summary

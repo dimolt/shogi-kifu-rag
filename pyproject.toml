@@ -47,6 +47,5 @@ package-dir = {"" = "src"}
 where = ["src"]
 
 [project.scripts]
-chromadb = "shogi_kif_rag.jobs.chromadb:main"
 floodgate = "shogi_kif_rag.jobs.floodgate:main"
 wikipedia = "shogi_kif_rag.jobs.wikipedia:main"
