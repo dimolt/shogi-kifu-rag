@@ -5,21 +5,24 @@ param(
 
 Write-Host "Rebuilding .venv for $EnvType..."
 
-# Remove existing venv
-if (Test-Path ".venv") {
-    Remove-Item -Recurse -Force ".venv"
+if (Get-Command deactivate -ErrorAction SilentlyContinue) {
+    deactivate
 }
 
-# Create fresh venv
-uv venv --python 3.12
+if (Test-Path ".venv") {
+    try {
+        Remove-Item -Recurse -Force ".venv" -ErrorAction Stop
+    }
+    catch {
+        throw " .venv の削除に失敗しました。python.exe を使っているプロセスを終了してから再実行してください。"
+    }
+}
 
-# Sync with appropriate groups
+uv venv .venv --python 3.12
+
 if ($EnvType -eq "pyspark") {
     uv sync --group pyspark --group devTools
 }
 else {
     uv sync --group dbx --group devTools
 }
-
-# Activate
-& ".\.venv\Scripts\Activate.ps1"
