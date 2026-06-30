@@ -18,7 +18,7 @@ jobs:
       - name: Setup dependencies
         uses: ./.github/actions/setup-deps
         with:
-          groups: '--group dbx --group devTools'
+          groups: '--group dbx --group rag --group web --group ui --group llm --group devTools'
 
       - name: Deploy to dev
         env:
@@ -38,7 +38,7 @@ jobs:
       - name: Setup dependencies
         uses: ./.github/actions/setup-deps
         with:
-          groups: '--group dbx --group devTools'
+          groups: '--group dbx --group rag --group web --group ui --group llm --group devTools'
 
       - name: Deploy to prod
         env:
