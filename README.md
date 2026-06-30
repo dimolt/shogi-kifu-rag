@@ -29,10 +29,9 @@
 ShogiApp/
 ├─ pyproject.toml
 ├─ uv.lock
-├─ requirements-pyspark.txt
-├─ requirements-dbx.txt
-├─ .venv_pyspark/
-├─ .venv_dbx/
+├─ .venv/
+├─ scripts/
+│  └─ switch-env.ps1
 ├─ code/
 │  ├─ local/
 │  ├─ remote/
@@ -227,57 +226,27 @@ uv export --group dbx --group devTools -o requirements-dbx.txt
 
 ---
 
-# 仮想環境作成
+# 仮想環境切り替え
 
-## local
+単一の `.venv` を使用し、環境切り替え時は再構築します。
 
-```powershell
-uv venv .venv_pyspark --python 3.12
-```
-
-pip追加
+## local (PySpark)
 
 ```powershell
-.\.venv_pyspark\Scripts\python.exe -m ensurepip --upgrade
+.\scripts\switch-env.ps1 pyspark
 ```
 
-依存関係同期
+## remote (Databricks Connect)
 
 ```powershell
-uv pip sync requirements-pyspark.txt --python .\.venv_pyspark\Scripts\python.exe
+.\scripts\switch-env.ps1 dbx
 ```
 
-有効化
-
-```powershell
-.venv_pyspark\Scripts\activate
-```
-
----
-
-## remote
-
-```powershell
-uv venv .venv_dbx --python 3.12
-```
-
-pip追加
-
-```powershell
-.\.venv_dbx\Scripts\python.exe -m ensurepip --upgrade
-```
-
-依存関係同期
-
-```powershell
-uv pip sync requirements-dbx.txt --python .\.venv_dbx\Scripts\python.exe
-```
-
-有効化
-
-```powershell
-.venv_dbx\Scripts\activate
-```
+このスクリプトは以下を実行します:
+- 既存の `.venv` を削除
+- 新しい `.venv` を作成
+- 指定したグループで `uv sync` を実行
+- 仮想環境を有効化
 
 ---
 
@@ -288,7 +257,7 @@ uv pip sync requirements-dbx.txt --python .\.venv_dbx\Scripts\python.exe
 ```toml
 [dependency-groups]
 
-dev = [
+devTools = [
     "pytest",
 ]
 ```
@@ -299,16 +268,16 @@ dev = [
 uv lock
 ```
 
-```powershell
-uv export --group pyspark --group devTools -o requirements-pyspark.txt
+環境を再構築
 
-uv export --group dbx --group devTools -o requirements-dbx.txt
+```powershell
+.\scripts\switch-env.ps1 pyspark
 ```
 
-```powershell
-uv pip sync requirements-pyspark.txt --python .\.venv_pyspark\Scripts\python.exe
+または
 
-uv pip sync requirements-dbx.txt --python .\.venv_dbx\Scripts\python.exe
+```powershell
+.\scripts\switch-env.ps1 dbx
 ```
 
 ---
@@ -319,16 +288,6 @@ uv pip sync requirements-dbx.txt --python .\.venv_dbx\Scripts\python.exe
 
 ```powershell
 uv pip list
-```
-
-特定環境
-
-```powershell
-uv pip list --python .\.venv_pyspark\Scripts\python.exe
-```
-
-```powershell
-uv pip list --python .\.venv_dbx\Scripts\python.exe
 ```
 
 ---
@@ -345,35 +304,19 @@ pytest
 
 # 環境再作成
 
-仮想環境削除
+環境を完全に再構築する場合:
 
 ```powershell
-Remove-Item .venv_pyspark -Recurse -Force
+.\scripts\switch-env.ps1 pyspark
 ```
+
+または
 
 ```powershell
-Remove-Item .venv_dbx -Recurse -Force
+.\scripts\switch-env.ps1 dbx
 ```
 
-再作成
-
-```powershell
-uv venv .venv_pyspark --python 3.12
-uv venv .venv_dbx --python 3.12
-```
-
-```powershell
-.\.venv_pyspark\Scripts\python.exe -m ensurepip --upgrade
-.\.venv_dbx\Scripts\python.exe -m ensurepip --upgrade
-```
-
-```powershell
-uv pip sync requirements-pyspark.txt --python .\.venv_pyspark\Scripts\python.exe
-
-uv pip sync requirements-dbx.txt --python .\.venv_dbx\Scripts\python.exe
-```
-
-これにより開発環境を完全再現できる。
+これにより開発環境を完全再現できます。
 
 ---
 
@@ -381,13 +324,12 @@ uv pip sync requirements-dbx.txt --python .\.venv_dbx\Scripts\python.exe
 
 * pyproject.toml を依存関係の唯一の定義元とする
 * uv.lock を必ずコミットする
-* requirements-pyspark.txt は export 結果として管理する
-* requirements-dbx.txt は export 結果として管理する
 * 仮想環境はコミットしない
+* 環境切り替えは `switch-env.ps1` を使用する
 * local環境で Databricks Connect を利用しない
 * remote環境で PySpark単体実行を行わない
 * ライブラリ追加時は必ず uv lock を更新する
-* 開発者は requirements から環境を再生成できる状態を維持する
+* 開発者は pyproject.toml から環境を再生成できる状態を維持する
 
 この運用なら、将来的に CI/CD や Databricks Asset Bundle を導入してもそのまま拡張できます。
 特に「local=PySpark」「remote=Databricks Connect」の分離は、データエンジニアの実務でも保守しやすい構成です。
