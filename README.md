@@ -35,7 +35,7 @@ shogi-kif-rag/
 │  ├─ switch-env.ps1
 ├─ src/
 │  └─ shogi_kif_rag/
-│     ├─ jobs/         # Python Wheel Tasks
+│     ├─ tasks/        # Python Wheel Tasks
 │     │  ├─ floodgate.py
 │     │  └─ wikipedia.py
 │     ├─ rag/          # RAG共通モジュール
