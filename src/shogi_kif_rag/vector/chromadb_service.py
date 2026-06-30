@@ -78,6 +78,8 @@ class ChromadbService:
         self.ensure()
         if spark is None:
             spark = SparkSession.getActiveSession()
+        if spark is None:
+            raise RuntimeError("SparkSession is not available")
 
         self._rebuild_positions(spark)
         self._rebuild_floodgate(spark)
@@ -96,6 +98,8 @@ class ChromadbService:
         Returns:
             Embedding ベクトル（float のリスト）。
         """
+        if self._model is None:
+            raise RuntimeError("Model is not initialized")
         return self._model.encode(query).tolist()
 
     def get_collection(self, name: str) -> chromadb_lib.Collection:
@@ -110,6 +114,8 @@ class ChromadbService:
         Raises:
             Exception: コレクションが存在しない場合。
         """
+        if self._client is None:
+            raise RuntimeError("Client is not initialized")
         return self._client.get_collection(name)
 
     def _is_ready(self) -> bool:
@@ -129,6 +135,8 @@ class ChromadbService:
         Returns:
             コレクションが存在する場合は True。
         """
+        if self._client is None:
+            return False
         try:
             self._client.get_collection(name)
             return True
@@ -145,6 +153,8 @@ class ChromadbService:
         Returns:
             Embedding のリスト。
         """
+        if self._model is None:
+            raise RuntimeError("Model is not initialized")
         return self._model.encode(
             texts,
             batch_size=batch_size,
@@ -178,6 +188,8 @@ class ChromadbService:
         Returns:
             新規作成した Collection オブジェクト。
         """
+        if self._client is None:
+            raise RuntimeError("Client is not initialized")
         try:
             self._client.delete_collection(name)
         except Exception:
@@ -249,7 +261,7 @@ class ChromadbService:
 
         search_texts = [
             f"局面: {row['sfen']} 指し手: {row['move_usi']}"
-            for _, row in df.iterrows()
+            for _, row in df.iterrows()  # type: ignore[attr-defined]
         ]
         collection.add(
             embeddings=self._encode(search_texts),
@@ -260,7 +272,7 @@ class ChromadbService:
                 'sfen': str(row['sfen']),
                 'move_usi': str(row['move_usi']),
                 'player': str(row['player']),
-            } for _, row in df.iterrows()],
+            } for _, row in df.iterrows()],  # type: ignore[attr-defined]
             ids=[f'floodgate_{i}' for i in range(len(df))],
         )
 
@@ -286,13 +298,13 @@ class ChromadbService:
 
         collection = self._drop_and_create('joseki_knowledge')
 
-        contents = df['content'].tolist()
+        contents = df['content'].tolist()  # type: ignore[index]
         collection.add(
             embeddings=self._encode(contents),
             documents=contents,
             metadatas=[{
                 'strategy': str(row['strategy']),
                 'source': str(row['source']),
-            } for _, row in df.iterrows()],
+            } for _, row in df.iterrows()],  # type: ignore[attr-defined]
             ids=[f'joseki_{i}' for i in range(len(df))],
         )

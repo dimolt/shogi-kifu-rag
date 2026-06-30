@@ -2,7 +2,7 @@ name: CI
 
 on:
   pull_request:
-    branches: [master]
+    branches: [main]
 
 jobs:
   test:
@@ -22,12 +22,11 @@ jobs:
       
       - name: Install dependencies
         run: |
-          uv sync --group devTools
+          uv sync --group pyspark --group dbx --group devTools
       
       - name: Run unit tests
         run: |
-          uv run pytest code/local/ -v
-          uv run pytest code/shared/tests/ -v
+          uv run pytest tests/ -v
 
       - name: Run Ruff
         run: |
@@ -35,5 +34,4 @@ jobs:
 
       - name: Run mypy
         run: |
-          uv run mypy code/shared/ --exclude 'tests'
-          uv run mypy code/local/ --exclude 'tests'
+          uv run mypy src/ --exclude 'tests'
