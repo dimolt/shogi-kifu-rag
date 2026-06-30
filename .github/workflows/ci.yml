@@ -22,7 +22,7 @@ jobs:
       
       - name: Install dependencies
         run: |
-          uv sync --group devTools
+          uv sync --group pyspark --group dbx --group devTools
       
       - name: Run unit tests
         run: |
