@@ -43,7 +43,8 @@ class LLMClient:
                     temperature=0.7,
                     max_tokens=1024,
                 )
-                return groq_response.choices[0].message.content  # type: ignore[attr-defined]
+                content = groq_response.choices[0].message.content
+                return content if content is not None else "LLM generation failed"
             except Exception as e:
                 print(f"Groq error: {e}")
 
