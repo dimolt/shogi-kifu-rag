@@ -3,14 +3,15 @@
 
 ## 概要
 
-本プロジェクトでは以下の2種類の実行環境を利用する。
+本プロジェクトでは以下の2種類のpyproject.dependency-groupsを利用する。
 
 | 環境     | 用途                                  |
 | ------ | ----------------------------------- |
-| local  | ローカルPySparkによるユニットテスト・開発            |
-| remote | Databricks Connectを利用したDatabricks実行 |
+| pyspark  | ローカルPySparkによるユニットテスト・開発 |
+| dbx | Databricks Connectを利用したDatabricks実行 |
 
 依存関係は `pyproject.toml` と `uv.lock` を唯一の管理対象とし、各仮想環境はそこから再生成する。
+環境切り替え用スクリプト: `switch-env.ps1`
 
 ## プロジェクト概要
 
@@ -63,48 +64,6 @@ ShogiApp/
 │        └─ data_pipeline.yml
 ├─ docs/
 └─ data/
-```
-
----
-
-# 採用方針
-
-## なぜ uv を採用するのか
-
-uv を採用する理由は以下の通り。
-
-* Python環境構築が高速
-* lockファイルによる再現性が高い
-* pip互換コマンドを提供
-* Databricks公式でも利用例が増えている
-* pyproject.toml を中心に依存関係を管理できる
-
----
-
-## なぜ pyenv + requirements.txt ではないのか
-
-pyenv は
-
-* Pythonバージョン管理
-
-を目的とするツールであり、
-
-* パッケージ管理
-* 依存関係管理
-* lock管理
-
-は提供しない。
-
-一方 uv は
-
-* Pythonバージョン管理
-* 仮想環境管理
-* パッケージ管理
-* lock管理
-
-を統合している。
-
-そのため本プロジェクトでは uv を利用する。
 
 ---
 
@@ -194,35 +153,6 @@ ipykernel
 
 を利用する。
 
----
-
-# lockファイル更新
-
-依存関係を変更した場合
-
-```powershell
-uv lock
-```
-
-を実行する。
-
----
-
-# requirements生成
-
-## local
-
-```powershell
-uv export --group pyspark --group devTools -o requirements-pyspark.txt
-```
-
----
-
-## remote
-
-```powershell
-uv export --group dbx --group devTools -o requirements-dbx.txt
-```
 
 ---
 
@@ -230,13 +160,13 @@ uv export --group dbx --group devTools -o requirements-dbx.txt
 
 単一の `.venv` を使用し、環境切り替え時は再構築します。
 
-## local (PySpark)
+## (PySpark
 
 ```powershell
 .\scripts\switch-env.ps1 pyspark
 ```
 
-## remote (Databricks Connect)
+## Databricks Connect
 
 ```powershell
 .\scripts\switch-env.ps1 dbx
@@ -246,93 +176,12 @@ uv export --group dbx --group devTools -o requirements-dbx.txt
 - 既存の `.venv` を削除
 - 新しい `.venv` を作成
 - 指定したグループで `uv sync` を実行
-- 仮想環境を有効化
-
----
-
-# ライブラリ追加手順
-
-例: pytest追加
-
-```toml
-[dependency-groups]
-
-devTools = [
-    "pytest",
-]
-```
-
-追加後
-
-```powershell
-uv lock
-```
-
-環境を再構築
-
-```powershell
-.\scripts\switch-env.ps1 pyspark
-```
-
-または
-
-```powershell
-.\scripts\switch-env.ps1 dbx
-```
-
----
-
-# ライブラリ一覧確認
-
-現在の環境
-
-```powershell
-uv pip list
-```
-
----
-
-# テスト実行
-
-local環境を有効化後
-
-```powershell
-pytest
-```
-
----
-
-# 環境再作成
-
-環境を完全に再構築する場合:
-
-```powershell
-.\scripts\switch-env.ps1 pyspark
-```
-
-または
-
-```powershell
-.\scripts\switch-env.ps1 dbx
-```
-
-これにより開発環境を完全再現できます。
 
 ---
 
 # 運用ルール
-
-* pyproject.toml を依存関係の唯一の定義元とする
-* uv.lock を必ずコミットする
-* 仮想環境はコミットしない
 * 環境切り替えは `switch-env.ps1` を使用する
-* local環境で Databricks Connect を利用しない
-* remote環境で PySpark単体実行を行わない
-* ライブラリ追加時は必ず uv lock を更新する
 * 開発者は pyproject.toml から環境を再生成できる状態を維持する
-
-この運用なら、将来的に CI/CD や Databricks Asset Bundle を導入してもそのまま拡張できます。
-特に「local=PySpark」「remote=Databricks Connect」の分離は、データエンジニアの実務でも保守しやすい構成です。
 
 ---
 
@@ -360,7 +209,7 @@ RAG共通モジュール
 
 ## モジュール構成
 
-### code/remote/src/shogi_kif_rag/rag/
+### /src/shogi_kif_rag/rag/
 
 - **llm_client.py**: LLMクライアント（Gemini 2.5 Flash with Groq Llama 3.3 70B fallback）
 - **retriever.py**: ChromaDBから類似局面検索
@@ -438,24 +287,3 @@ Databricks Notebookで `step8_gradio_ui.ipynb` を開いて実行します。
 
 - Wikipediaから戦法解説を取得
 - joseki_knowledgeテーブルに書き込み
-
-### chromadb.py
-
-- Deltaテーブルからデータを読み込み
-- ChromaDBベクトルストアを構築
-
----
-
-# Databricks Asset Bundle
-
-## デプロイ
-
-```bash
-databricks bundle deploy
-```
-
-## ジョブ実行
-
-```bash
-databricks bundle run shogi_kif_rag_main_job
-```
