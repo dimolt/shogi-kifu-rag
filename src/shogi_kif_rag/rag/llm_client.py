@@ -37,13 +37,13 @@ class LLMClient:
                 from groq import Groq
 
                 client = Groq(api_key=self.groq_api_key)
-                response = client.chat.completions.create(
+                groq_response = client.chat.completions.create(
                     model="llama-3.3-70b-versatile",
                     messages=[{"role": "user", "content": prompt}],
                     temperature=0.7,
                     max_tokens=1024,
                 )
-                return response.choices[0].message.content
+                return groq_response.choices[0].message.content  # type: ignore[attr-defined]
             except Exception as e:
                 print(f"Groq error: {e}")
 

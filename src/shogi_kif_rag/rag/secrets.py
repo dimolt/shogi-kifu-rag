@@ -15,7 +15,7 @@ def get_secret(scope: str, key: str) -> Optional[str]:
         from databricks.sdk import WorkspaceClient
 
         client = WorkspaceClient()
-        return client.secrets.get(scope=scope, key=key).value
+        return client.secrets.get(scope=scope, key=key).value  # type: ignore[attr-defined]
     except Exception:
         # ローカル実行時は環境変数から取得
         import os
