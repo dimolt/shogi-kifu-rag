@@ -1,5 +1,5 @@
 param(
-    [ValidateSet("pyspark","dbx","rag","web","ui","llm")]
+    [ValidateSet("pyspark","dbx")]
     [string]$EnvType
 )
 
@@ -25,7 +25,4 @@ if ($EnvType -eq "pyspark") {
 }
 elseif ($EnvType -eq "dbx") {
     uv sync --group dbx --group devTools --group web --group ui --group llm
-}
-else {
-    uv sync --group $EnvType --group devTools
 }
