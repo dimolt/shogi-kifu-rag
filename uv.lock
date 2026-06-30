@@ -2354,15 +2354,8 @@ dependencies = [
 
 [package.dev-dependencies]
 dbx = [
-    { name = "beautifulsoup4" },
-    { name = "chromadb" },
     { name = "databricks-connect" },
     { name = "databricks-sdk" },
-    { name = "google-generativeai" },
-    { name = "gradio" },
-    { name = "groq" },
-    { name = "requests" },
-    { name = "sentence-transformers" },
 ]
 devtools = [
     { name = "ipykernel" },
@@ -2370,8 +2363,23 @@ devtools = [
     { name = "pytest" },
     { name = "ruff" },
 ]
+llm = [
+    { name = "google-generativeai" },
+    { name = "groq" },
+]
 pyspark = [
     { name = "pyspark" },
+]
+rag = [
+    { name = "chromadb" },
+    { name = "sentence-transformers" },
+]
+ui = [
+    { name = "gradio" },
+]
+web = [
+    { name = "beautifulsoup4" },
+    { name = "requests" },
 ]
 
 [package.metadata]
@@ -2385,15 +2393,8 @@ requires-dist = [
 
 [package.metadata.requires-dev]
 dbx = [
-    { name = "beautifulsoup4" },
-    { name = "chromadb" },
     { name = "databricks-connect", specifier = ">=15.4,<15.5" },
     { name = "databricks-sdk" },
-    { name = "google-generativeai" },
-    { name = "gradio" },
-    { name = "groq" },
-    { name = "requests" },
-    { name = "sentence-transformers" },
 ]
 devtools = [
     { name = "ipykernel" },
@@ -2401,7 +2402,20 @@ devtools = [
     { name = "pytest" },
     { name = "ruff" },
 ]
+llm = [
+    { name = "google-generativeai" },
+    { name = "groq" },
+]
 pyspark = [{ name = "pyspark" }]
+rag = [
+    { name = "chromadb" },
+    { name = "sentence-transformers" },
+]
+ui = [{ name = "gradio" }]
+web = [
+    { name = "beautifulsoup4" },
+    { name = "requests" },
+]
 
 [[package]]
 name = "six"
