@@ -20,14 +20,26 @@ pyspark = [
 
 dbx = [
     "databricks-connect>=15.4,<15.5",
+    "databricks-sdk",
+]
+
+rag = [
     "chromadb",
     "sentence-transformers",
+]
+
+web = [
     "requests",
     "beautifulsoup4",
+]
+
+ui = [
     "gradio",
+]
+
+llm = [
     "google-generativeai",
     "groq",
-    "databricks-sdk",
 ]
 
 devTools = [

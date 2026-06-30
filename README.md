@@ -8,7 +8,11 @@
 | 環境     | 用途                                  |
 | ------ | ----------------------------------- |
 | pyspark  | ローカルPySparkによるユニットテスト・開発 |
-| dbx | Databricks Connectを利用したDatabricks実行 |
+| dbx | Databricks Connectを利用したDatabricks実行（コア） |
+| rag | RAG/ベクトル検索（ChromaDB, sentence-transformers） |
+| web | Webスクレイピング/HTTP（requests, beautifulsoup4） |
+| ui | UI（Gradio） |
+| llm | AI/LLM（Gemini, Groq） |
 
 依存関係は `pyproject.toml` と `uv.lock` を唯一の管理対象とし、各仮想環境はそこから再生成する。
 環境切り替え用スクリプト: `switch-env.ps1`
@@ -92,14 +96,26 @@ pyspark = [
 
 dbx = [
     "databricks-connect>=15.4,<15.5",
+    "databricks-sdk",
+]
+
+rag = [
     "chromadb",
     "sentence-transformers",
+]
+
+web = [
     "requests",
     "beautifulsoup4",
+]
+
+ui = [
     "gradio",
+]
+
+llm = [
     "google-generativeai",
     "groq",
-    "databricks-sdk",
 ]
 
 devTools = [
@@ -114,9 +130,9 @@ devTools = [
 
 ## グループの役割
 
-### local
+### pyspark
 
-ローカル実行用。
+ローカルPySparkによるユニットテスト・開発用。
 
 ```text
 PySpark
@@ -128,20 +144,71 @@ Databricks接続は行わない。
 
 ---
 
-### remote
+### dbx
 
-Databricks実行用。
+Databricks Connectを利用したDatabricks実行用（コア機能）。
 
 ```text
 Databricks Connect
-Databricks DLT
+Databricks SDK
 ```
 
 を利用する。
 
 ---
 
-### dev
+### rag
+
+RAG/ベクトル検索用。
+
+```text
+ChromaDB
+sentence-transformers
+```
+
+を利用する。
+
+---
+
+### web
+
+Webスクレイピング/HTTP用。
+
+```text
+requests
+beautifulsoup4
+```
+
+を利用する。
+
+---
+
+### ui
+
+UI用。
+
+```text
+Gradio
+```
+
+を利用する。
+
+---
+
+### llm
+
+AI/LLM用。
+
+```text
+google-generativeai
+groq
+```
+
+を利用する。
+
+---
+
+### devTools
 
 共通開発ツール。
 

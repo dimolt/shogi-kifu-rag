@@ -1,5 +1,5 @@
 param(
-    [ValidateSet("pyspark","dbx")]
+    [ValidateSet("pyspark","dbx","rag","web","ui","llm")]
     [string]$EnvType
 )
 
@@ -20,9 +20,4 @@ if (Test-Path ".venv") {
 
 uv venv .venv --python 3.12
 
-if ($EnvType -eq "pyspark") {
-    uv sync --group pyspark --group devTools
-}
-else {
-    uv sync --group dbx --group devTools
-}
+uv sync --group $EnvType --group devTools
