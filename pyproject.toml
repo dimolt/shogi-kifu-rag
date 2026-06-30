@@ -59,8 +59,8 @@ package-dir = {"" = "src"}
 where = ["src"]
 
 [project.scripts]
-floodgate = "shogi_kif_rag.jobs.floodgate:main"
-wikipedia = "shogi_kif_rag.jobs.wikipedia:main"
+floodgate = "shogi_kif_rag.tasks.floodgate:main"
+wikipedia = "shogi_kif_rag.tasks.wikipedia:main"
 
 [tool.mypy]
 python_version = "3.12"
