@@ -33,9 +33,6 @@ shogi-kif-rag/
 ├─ .venv/
 ├─ scripts/
 │  ├─ switch-env.ps1
-│  ├─ create-env.ps1
-│  ├─ sync-env.ps1
-│  └─ activate-env.ps1
 ├─ src/
 │  └─ shogi_kif_rag/
 │     ├─ jobs/         # Python Wheel Tasks
@@ -61,7 +58,6 @@ shogi-kif-rag/
 │        └─ sdp_pipeline.yml
 ├─ tests/
 ├─ docs/
-└─ data/
 
 ---
 
