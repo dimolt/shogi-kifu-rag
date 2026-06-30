@@ -27,41 +27,39 @@
 # ディレクトリ構成
 
 ```text
-ShogiApp/
+shogi-kif-rag/
 ├─ pyproject.toml
 ├─ uv.lock
 ├─ .venv/
 ├─ scripts/
-│  └─ switch-env.ps1
-├─ code/
-│  ├─ local/
-│  ├─ remote/
-│  │  ├─ src/
-│  │  │  └─ shogi_kif_rag/
-│  │  │     ├─ jobs/         # Python Wheel Tasks
-│  │  │     │  ├─ floodgate.py
-│  │  │     │  ├─ wikipedia.py
-│  │  │     │  └─ chromadb.py
-│  │  │     └─ rag/          # RAG共通モジュール
-│  │  │        ├─ llm_client.py
-│  │  │        ├─ retriever.py
-│  │  │        ├─ generator.py
-│  │  │        ├─ secrets.py
-│  │  │        └─ rag.py
-│  │  ├─ pipelines/          # PySpark Pipelines
-│  │  │  ├─ silver_table.py
-│  │  │  └─ gold_table.py
-│  │  └─ notebooks/          # Databricks Notebooks
-│  │     ├─ step7_rag_chain.ipynb
-│  │     └─ step8_gradio_ui.ipynb
-│  └─ shared/
-├─ tests/
-├─ infrastructure/
+│  ├─ switch-env.ps1
+│  ├─ create-env.ps1
+│  ├─ sync-env.ps1
+│  └─ activate-env.ps1
+├─ src/
+│  └─ shogi_kif_rag/
+│     ├─ jobs/         # Python Wheel Tasks
+│     │  ├─ floodgate.py
+│     │  └─ wikipedia.py
+│     ├─ rag/          # RAG共通モジュール
+│     │  ├─ llm_client.py
+│     │  ├─ retriever.py
+│     │  ├─ generator.py
+│     │  ├─ secrets.py
+│     │  └─ rag.py
+│     └─ vector/       # ChromaDBサービス
+│        └─ chromadb_service.py
+├─ databricks/
+│  ├─ pipelines/          # PySpark Pipelines
+│  │  ├─ silver_table.py
+│  │  └─ gold_table.py
+│  ├─ notebooks/          # Databricks Notebooks
+│  │  └─ ntb_ui_demo.py
 │  └─ resources/
 │     └─ workflows/
 │        ├─ jobs.yml
-│        ├─ sdp_pipeline.yml
-│        └─ data_pipeline.yml
+│        └─ sdp_pipeline.yml
+├─ tests/
 ├─ docs/
 └─ data/
 
@@ -98,7 +96,14 @@ pyspark = [
 
 dbx = [
     "databricks-connect>=15.4,<15.5",
-    "databricks-dlt",
+    "chromadb",
+    "sentence-transformers",
+    "requests",
+    "beautifulsoup4",
+    "gradio",
+    "google-generativeai",
+    "groq",
+    "databricks-sdk",
 ]
 
 devTools = [
@@ -245,7 +250,7 @@ export LLM_GROQ_API_KEY=your_groq_api_key
 
 ### 実行方法
 
-Databricks Notebookで `step8_gradio_ui.ipynb` を開いて実行します。
+Databricks Notebookで `ntb_ui_demo.py` を開いて実行します。
 
 ### 機能
 
