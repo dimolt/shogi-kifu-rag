@@ -14,8 +14,7 @@ sys.path.insert(0, str(shared_path))
 
 from config.settings import LocalSettings  # noqa: E402
 from engine.usi_engine_client import UsiEngineClient  # noqa: E402
-from kif_parser.parser import kif_to_positions  # noqa: E402
-from shared.src.kif_parser.parser import detect_encoding  # noqa: E402, type: ignore
+from shogi_kif_rag.kif.parser import KifParser  # noqa: E402
 
 
 def main():
@@ -32,11 +31,8 @@ def main():
     print(f"game_id : {game_id}")
 
     # KIFファイルを読み込んでパース
-    encoding = detect_encoding(kif_path)
-    with open(kif_path, encoding=encoding, errors="replace") as f:
-        content = f.read()
-
-    positions = kif_to_positions(content)
+    parser = KifParser(kif_path)
+    positions = parser.load_file()
     print(f"局面数: {len(positions)}")
 
     rows = []
