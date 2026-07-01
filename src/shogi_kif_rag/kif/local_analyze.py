@@ -14,6 +14,7 @@ sys.path.insert(0, str(shared_path))
 
 from config.settings import LocalSettings  # noqa: E402
 from engine.usi_engine_client import UsiEngineClient  # noqa: E402
+
 from shogi_kif_rag.kif.parser import KifParser  # noqa: E402
 
 

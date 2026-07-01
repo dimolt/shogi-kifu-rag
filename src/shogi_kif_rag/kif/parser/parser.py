@@ -86,7 +86,14 @@ class KifParser:
 
             records.append(
                 self._build_move_record(
-                    board, move_int, move_usi, player, black_player, white_player, i + 1, prev_sfen
+                    board,
+                    move_int,
+                    move_usi,
+                    player,
+                    black_player,
+                    white_player,
+                    i + 1,
+                    prev_sfen,
                 )
             )
 
@@ -106,7 +113,9 @@ class KifParser:
         white_player = names[1] if len(names) > 1 else "後手"
         return black_player, white_player
 
-    def _build_initial_record(self, board: shogi.Board, black_player: str, white_player: str) -> dict:
+    def _build_initial_record(
+        self, board: shogi.Board, black_player: str, white_player: str
+    ) -> dict:
         """初期局面のレコードを構築する
 
         Args:
