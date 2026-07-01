@@ -106,13 +106,8 @@ def test_filter_active_orders_returns_only_active(spark):
 ```
 
 ## ディレクトリ構成
-
+srcとディレクトリ構造を合わせる
 ```
 tests/
 ├── conftest.py          # 共有フィクスチャ
-├── unit/
-│   ├── test_processor.py
-│   └── test_validator.py
-└── integration/
-    └── test_pipeline.py
 ```
