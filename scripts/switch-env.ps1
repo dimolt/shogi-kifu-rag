@@ -21,8 +21,8 @@ if (Test-Path ".venv") {
 uv venv .venv --python 3.12
 
 if ($EnvType -eq "pyspark") {
-    uv sync --group pyspark --group devTools --group web
+    uv sync --group pyspark --group devTools --group web --group rag
 }
 elseif ($EnvType -eq "dbx") {
-    uv sync --group dbx --group devTools --group web --group ui --group llm
+    uv sync --group dbx --group devTools --group web --group rag --group ui --group llm
 }

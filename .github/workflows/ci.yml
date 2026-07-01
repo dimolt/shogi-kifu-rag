@@ -15,7 +15,7 @@ jobs:
       - name: Setup dependencies
         uses: ./.github/actions/setup-deps
         with:
-          groups: '--group pyspark --group devTools --group web'
+          groups: '--group pyspark --group devTools --group web --group rag'
       
       - name: Run unit tests
         run: |
