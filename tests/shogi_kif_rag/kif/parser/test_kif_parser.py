@@ -1,12 +1,11 @@
 """kif_parser.py の単体テスト"""
 
 import shogi
-import pytest
 
 from shogi_kif_rag.kif.parser import (
-  KifParser,
-  detect_encoding,
-  kif_to_positions,
+    KifParser,
+    detect_encoding,
+    kif_to_positions,
 )
 
 # ---------------------------------------------------------------------------
