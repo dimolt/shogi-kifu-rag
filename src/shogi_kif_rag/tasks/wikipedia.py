@@ -39,15 +39,18 @@ STRATEGIES = [
 
 
 def fetch_wikipedia_content(title: str) -> str:
-    """Wikipediaから記事を取得する
+    """Wikipediaから記事を取得する。
+
     Args:
-        title: 記事タイトル
+        title: 記事タイトル。
+
     Returns:
-        記事内容
+        記事内容。記事が見つからない場合は空文字を返す。
     """
 
     url = f"https://ja.wikipedia.org/wiki/{title}"
     response = requests.get(url)
+
     if response.status_code == 200:
         soup = BeautifulSoup(response.content, "html.parser")
         content_div = soup.find("div", {"class": "mw-parser-output"})
