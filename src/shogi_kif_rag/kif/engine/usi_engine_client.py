@@ -1,4 +1,4 @@
-"""やねうら王エンジン連携モジュール"""
+"""USIエンジン連携モジュール"""
 
 import re
 import subprocess
@@ -6,8 +6,8 @@ import time
 from typing import Optional
 
 
-class YaneuraOuAnalyzer:
-    """やねうら王エンジンとの連携を管理するクラス"""
+class UsiEngineClient:
+    """USIエンジンとの連携を管理するクラス"""
 
     def __init__(self, engine_path: str, options: str = ""):
         """初期化
