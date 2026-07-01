@@ -3,6 +3,7 @@ import types
 from datetime import datetime
 from types import SimpleNamespace
 
+from shogi_kif_rag.tasks import floodgate
 
 pyspark_module = types.ModuleType("pyspark")
 pyspark_sql_module = types.ModuleType("pyspark.sql")
@@ -24,8 +25,6 @@ pyspark_sql_types_module.StringType = lambda: None
 sys.modules.setdefault("pyspark", pyspark_module)
 sys.modules.setdefault("pyspark.sql", pyspark_sql_module)
 sys.modules.setdefault("pyspark.sql.types", pyspark_sql_types_module)
-
-from shogi_kif_rag.tasks import floodgate
 
 
 def test_parse_csa_コメントと手番を正しく抽出する():
