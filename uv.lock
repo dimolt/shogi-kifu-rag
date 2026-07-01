@@ -2358,6 +2358,7 @@ version = "0.1.0"
 source = { editable = "." }
 dependencies = [
     { name = "chardet" },
+    { name = "pandas" },
     { name = "pydantic" },
     { name = "pydantic-settings" },
     { name = "python-dotenv" },
@@ -2398,6 +2399,7 @@ web = [
 [package.metadata]
 requires-dist = [
     { name = "chardet", specifier = ">=7.4.3" },
+    { name = "pandas", specifier = ">=2.3.3" },
     { name = "pydantic" },
     { name = "pydantic-settings" },
     { name = "python-dotenv" },

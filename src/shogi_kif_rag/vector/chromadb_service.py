@@ -171,13 +171,17 @@ class ChromadbService:
         Returns:
             search_text が有効な行のみを含む DataFrame。
         """
-        df['search_text'] = df['search_text'].astype(str).str.strip()
-        is_valid = (
-            df['search_text'].notna()
-            & (df['search_text'] != '')
-            & (df['search_text'].str.lower() != 'nan')
+        cleaned_df = df.copy()
+        cleaned_df['search_text'] = cleaned_df['search_text'].apply(
+            lambda value: '' if pd.isna(value) else str(value).strip()
         )
-        return df[is_valid]
+        is_valid = (
+            cleaned_df['search_text'].notna()
+            & (cleaned_df['search_text'] != '')
+            & (cleaned_df['search_text'].str.lower() != 'nan')
+            & (cleaned_df['search_text'].str.lower() != 'none')
+        )
+        return cleaned_df[is_valid]
 
     def _drop_and_create(self, name: str) -> chromadb_lib.Collection:
         """コレクションを削除して新規作成する。
