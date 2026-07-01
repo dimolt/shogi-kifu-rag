@@ -1,8 +1,29 @@
 """KIFパーサモジュール"""
 
+from typing import Literal, TypedDict
+
 import chardet
 import shogi
 import shogi.KIF
+
+PlayerSide = Literal["black", "white"]
+
+
+class PositionRecord(TypedDict):
+    """KIFパース結果の1局面分のレコード。
+
+    load_file() をはじめとするパーサの出力契約。
+    フィールドを変更する場合は、これを利用する
+    local_analyze.py / schemas.py 側の整合も確認すること。
+    """
+
+    move_number: int
+    sfen: str
+    prev_sfen: str
+    move_usi: str
+    player: PlayerSide
+    black_player: str
+    white_player: str
 
 
 class KifParser:
@@ -16,11 +37,11 @@ class KifParser:
         """
         self.file_path = file_path
 
-    def load_file(self) -> list[dict]:
+    def load_file(self) -> list[PositionRecord]:
         """KIFファイルを読み込んで局面リストを生成する
 
         Returns:
-            局面情報の辞書リスト
+            局面情報のレコードリスト
         """
         encoding = self._detect_encoding()
         kif_content = self._load_file_content(encoding)
@@ -52,21 +73,21 @@ class KifParser:
         with open(self.file_path, encoding=encoding, errors="replace") as f:
             return f.read()
 
-    def _parse_kif_content(self, kif_content: str) -> list[dict]:
+    def _parse_kif_content(self, kif_content: str) -> list[PositionRecord]:
         """KIF文字列をパースして局面リストを生成する
 
         Args:
             kif_content: KIF形式の棋譜文字列
 
         Returns:
-            局面情報の辞書リスト
+            局面情報のレコードリスト
         """
         kif = shogi.KIF.Parser.parse_str(kif_content)[0]
         black_player, white_player = self._extract_player_info(kif)
         moves = kif.get("moves", [])
 
         board = shogi.Board()
-        records = []
+        records: list[PositionRecord] = []
         records.append(
             self._build_initial_record(board, black_player, white_player)
         )
@@ -76,7 +97,7 @@ class KifParser:
             if move_int is None:
                 break
 
-            player = "black" if board.turn == shogi.BLACK else "white"
+            player: PlayerSide = "black" if board.turn == shogi.BLACK else "white"
             prev_sfen = board.sfen()
 
             try:
@@ -115,7 +136,7 @@ class KifParser:
 
     def _build_initial_record(
         self, board: shogi.Board, black_player: str, white_player: str
-    ) -> dict:
+    ) -> PositionRecord:
         """初期局面のレコードを構築する
 
         Args:
@@ -124,7 +145,7 @@ class KifParser:
             white_player: 後手の名前
 
         Returns:
-            初期局面の辞書
+            初期局面のレコード
         """
         return {
             "move_number": 0,
@@ -164,12 +185,12 @@ class KifParser:
         board: shogi.Board,
         move_int: shogi.Move,
         move_usi: str,
-        player: str,
+        player: PlayerSide,
         black_player: str,
         white_player: str,
         move_number: int,
         prev_sfen: str,
-    ) -> dict:
+    ) -> PositionRecord:
         """指し手のレコードを構築する
 
         Args:
@@ -183,7 +204,7 @@ class KifParser:
             prev_sfen: 指し手前のSFEN
 
         Returns:
-            指し手の辞書
+            指し手のレコード
         """
         return {
             "move_number": move_number,
@@ -213,14 +234,14 @@ def detect_encoding(file_path: str) -> str:
     return enc
 
 
-def kif_to_positions(kif_content: str) -> list[dict]:
+def kif_to_positions(kif_content: str) -> list[PositionRecord]:
     """KIF形式の棋譜をパースして局面リストを生成する
 
     Args:
         kif_content: KIF形式の棋譜文字列
 
     Returns:
-        局面情報の辞書リスト
+        局面情報のレコードリスト
     """
     kif = shogi.KIF.Parser.parse_str(kif_content)[0]
     names = kif.get("names", [])
@@ -229,7 +250,7 @@ def kif_to_positions(kif_content: str) -> list[dict]:
     moves = kif.get("moves", [])
 
     board = shogi.Board()
-    records = []
+    records: list[PositionRecord] = []
     records.append({
         "move_number": 0,
         "sfen": board.sfen(),
@@ -254,7 +275,7 @@ def kif_to_positions(kif_content: str) -> list[dict]:
             except Exception:
                 move_usi = str(move)
 
-        player = "black" if board.turn == shogi.BLACK else "white"
+        player: PlayerSide = "black" if board.turn == shogi.BLACK else "white"
         prev_sfen = board.sfen()
 
         try:
