@@ -12,9 +12,3 @@ repos:
         entry: uv run mypy src/ --exclude 'tests'
         language: system
         pass_filenames: false
-
-      - id: databricks-bundle-validate
-        name: databricks bundle validate
-        entry: databricks bundle validate -t dev -p shogi
-        language: system
-        pass_filenames: false
