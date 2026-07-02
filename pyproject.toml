@@ -1,7 +1,20 @@
+# =========================================
+# Build system
+# -----------------------------------------
+# パッケージをビルドするための設定。
+# setuptools を使って wheel / sdist を作成する。
+# =========================================
 [build-system]
 requires = ["setuptools>=61.0"]
 build-backend = "setuptools.build_meta"
 
+
+# =========================================
+# Project metadata
+# -----------------------------------------
+# パッケージ自体の基本情報。
+# uv / pip / build ツールが参照する。
+# =========================================
 [project]
 name = "shogi-kif-rag"
 version = "0.1.0"
@@ -9,77 +22,193 @@ description = "Add your description here"
 readme = "README.md"
 requires-python = ">=3.12,<3.13"
 
+# -----------------------------------------
+# 本番/共通で使う基本依存関係
+# -----------------------------------------
 dependencies = [
+    # 将棋ライブラリ
     "python-shogi",
+
+    # 設定管理・データモデル定義
     "pydantic",
     "pydantic-settings",
+
+    # .env から環境変数を読み込む
     "python-dotenv",
+
+    # 文字コード判定
     "chardet>=7.4.3",
+
+    # データ加工
     "pandas>=2.3.3",
 ]
 
+
+# =========================================
+# Dependency groups
+# -----------------------------------------
+# 用途ごとに依存関係を分割する。
+# uv sync --group <group名> などで必要なものだけ入れられる。
+# =========================================
 [dependency-groups]
+
+# ローカル開発用
 pyspark = [
     "pyspark",
 ]
 
+# Databricks 接続・デプロイ関連
 dbx = [
     "databricks-connect>=15.4,<15.5",
     "databricks-sdk",
 ]
 
+# RAG / ベクトル検索関連
 rag = [
     "chromadb",
     "sentence-transformers",
 ]
 
+# Web スクレイピング・HTTP アクセス関連
 web = [
     "requests",
     "beautifulsoup4",
 ]
 
+# UI 関連
 ui = [
     "gradio",
 ]
 
+# LLM クライアント関連
 llm = [
     "google-generativeai",
     "groq",
 ]
 
+# 開発時のみ使うツール群
 devTools = [
+    # テスト
     "pytest",
+    "pytest-mock>=3.15.1",
+
+    # 静的解析・フォーマット補助
     "ruff",
     "mypy",
+
+    # ノートブック実行用
     "ipykernel",
-    "pytest-mock>=3.15.1",
+
+    # Git hook 管理
     "pre-commit>=4.6.0",
 ]
 
+
+# =========================================
+# uv settings
+# -----------------------------------------
+# uv 用の設定。
+# package = true にすると、このプロジェクトを
+# パッケージとして扱う前提でインストール/ビルドする。
+# =========================================
 [tool.uv]
 package = true
 
+
+# =========================================
+# setuptools package discovery
+# -----------------------------------------
+# src 配下を Python パッケージのルートとして扱う設定。
+# いわゆる src レイアウト。
+# =========================================
 [tool.setuptools]
 package-dir = {"" = "src"}
 
 [tool.setuptools.packages.find]
 where = ["src"]
 
+
+# =========================================
+# CLI entry points
+# -----------------------------------------
+# コマンドラインから実行できるスクリプト定義。
+# 例:
+#   uv run floodgate
+#   uv run wikipedia
+# =========================================
 [project.scripts]
 floodgate = "shogi_kif_rag.tasks.floodgate:main"
 wikipedia = "shogi_kif_rag.tasks.wikipedia:main"
 
+
+# =========================================
+# pytest settings
+# -----------------------------------------
+[tool.pytest.ini_options]
+# markerの誤字を検知するため、未登録markerはエラーにする
+addopts = "--strict-markers"
+markers = [
+    "integration: Databricks Connect経由でServerless computeに接続する統合テスト",
+    "e2e: Databricks Asset Bundles経由でジョブ/パイプラインを実行するE2Eテスト",
+]
+
+
+# =========================================
+# mypy settings
+# -----------------------------------------
+# 型チェック設定。
+# 現状は「厳しすぎず、運用しやすい」寄りの設定。
+# =========================================
 [tool.mypy]
+# 解析対象の Python バージョン
 python_version = "3.12"
+
+# Any を返す関数の警告は出さない
 warn_return_any = false
+
+# 未使用の設定がある場合は警告する
 warn_unused_configs = true
+
+# 型注釈のない関数定義を禁止しない
 disallow_untyped_defs = false
+
+# 型情報がない外部ライブラリの import エラーは無視する
 ignore_missing_imports = true
 
+
+# =========================================
+# Ruff settings
+# -----------------------------------------
+# Lint（静的解析）設定。
+# どのルールを有効にするか、どのファイルを除外するかを定義。
+# =========================================
 [tool.ruff.lint]
+
+# 有効化するルール
+# E: pycodestyle errors
+# F: pyflakes
+# I: import 並び順
+# N: pep8-naming
+# W: pycodestyle warnings
 select = ["E", "F", "I", "N", "W"]
+
+# Notebook や notebook 由来ファイルは lint 対象外
 exclude = ["*.ipynb", "ntb_*.py"]
 
+
+# =========================================
+# Ruff per-file ignores
+# -----------------------------------------
+# 特定ファイル/ディレクトリだけ、個別にルールを無効化する。
+# =========================================
 [tool.ruff.lint.per-file-ignores]
+
+# Databricks DLT / Pipeline 系では、
+# 実行環境側で spark が注入されることがあり、
+# ローカル静的解析では未定義(F821)になりやすいため無視する。
 "databricks/pipelines/*.py" = ["F821"]
+
+# テストコードでは pytest 流儀の命名や長めの行を許容する
+# N802: 関数名が lowercase ではない
+# E501: 行長超過
 "tests/**/*.py" = ["N802", "E501"]
