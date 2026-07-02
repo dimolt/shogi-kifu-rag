@@ -25,10 +25,8 @@ jobs:
         with:
           groups: '--group dbx --group rag --group web --group ui --group llm --group devTools'
 
-      - name: Install Databricks CLI
-        run: |
-          curl -fsSL https://raw.githubusercontent.com/databricks/setup-cli/main/install.sh | sh
-          echo "$HOME/.databricks/bin" >> $GITHUB_PATH
+      - name: Setup Databricks CLI
+        uses: ./.github/actions/setup-databricks-cli
 
       - name: Validate bundle (dev)
         env:
@@ -62,10 +60,8 @@ jobs:
         with:
           groups: '--group dbx --group rag --group web --group ui --group llm --group devTools'
 
-      - name: Install Databricks CLI
-        run: |
-          curl -fsSL https://raw.githubusercontent.com/databricks/setup-cli/main/install.sh | sh
-          echo "$HOME/.databricks/bin" >> $GITHUB_PATH
+      - name: Setup Databricks CLI
+        uses: ./.github/actions/setup-databricks-cli
 
       - name: Validate bundle (prod)
         env:

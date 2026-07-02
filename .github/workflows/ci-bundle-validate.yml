@@ -19,10 +19,8 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Install Databricks CLI
-        run: |
-          curl -fsSL https://raw.githubusercontent.com/databricks/setup-cli/main/install.sh | sh
-          echo "$HOME/.databricks/bin" >> $GITHUB_PATH
+      - name: Setup Databricks CLI
+        uses: ./.github/actions/setup-databricks-cli
 
       - name: Run Databricks bundle validate
         run: |
