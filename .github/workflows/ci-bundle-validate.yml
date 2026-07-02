@@ -1,0 +1,29 @@
+name: Bundle Validate
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - 'databricks.yml'
+      - 'resources/**'
+      - 'databricks/**'
+
+jobs:
+  bundle-validate:
+    runs-on: ubuntu-latest
+    env:
+      DATABRICKS_HOST: ${{ secrets.DATABRICKS_HOST }}
+      DATABRICKS_TOKEN: ${{ secrets.DATABRICKS_TOKEN }}
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Install Databricks CLI
+        run: |
+          curl -fsSL https://raw.githubusercontent.com/databricks/setup-cli/main/install.sh | sh
+          echo "$HOME/.databricks/bin" >> $GITHUB_PATH
+
+      - name: Run Databricks bundle validate
+        run: |
+          databricks bundle validate -t dev -p shogi
