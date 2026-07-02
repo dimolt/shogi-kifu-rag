@@ -1,0 +1,12 @@
+name: Setup Databricks CLI
+
+description: Install Databricks CLI for bundle validation and deployment
+
+runs:
+  using: composite
+  steps:
+    - name: Install Databricks CLI
+      shell: bash
+      run: |
+        curl -fsSL https://raw.githubusercontent.com/databricks/setup-cli/main/install.sh | sh
+        echo "$HOME/.databricks/bin" >> "$GITHUB_PATH"
