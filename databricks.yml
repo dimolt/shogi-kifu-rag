@@ -1,5 +1,6 @@
 bundle:
   name: shogi-kif-rag
+  engine: direct
 
 include:
   - databricks/resources/workflows/*.yml
