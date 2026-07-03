@@ -5,6 +5,9 @@ resources:
       libraries:
         - glob:
             include: ../../pipelines/silver_table.py
+      environment:
+        dependencies:
+          - "${workspace.root_path}/artifacts/.internal/shogi_kif_rag-*.whl"
       photon: true
       catalog: "${var.catalog}"
       schema: "${var.silver_schema}"
@@ -18,6 +21,9 @@ resources:
       libraries:
         - glob:
             include: ../../pipelines/gold_table.py
+      environment:
+        dependencies:
+          - "${workspace.root_path}/artifacts/.internal/shogi_kif_rag-*.whl"
       photon: true
       catalog: "${var.catalog}"
       schema: "${var.gold_schema}"
