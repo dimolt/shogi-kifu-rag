@@ -10,6 +10,7 @@ from pyspark.sql.functions import (
     lag,
     last,
     lit,
+    sort_array,
     struct,
     to_json,
     when,
@@ -118,18 +119,28 @@ def build_game_summary(silver_df: DataFrame) -> DataFrame:
     """
     scored_df = _add_turn_score_columns(silver_df)
 
+    order_window = Window.partitionBy("game_id").orderBy("move_number").rowsBetween(
+        Window.unboundedPreceding, Window.unboundedFollowing
+    )
+    scored_df = scored_df.withColumn(
+        "final_score_cp",
+        last("score_cp", ignorenulls=True).over(order_window),
+    )
+
     summary_df = scored_df.groupBy("game_id").agg(
         first("black_player").alias("black_player"),
         first("white_player").alias("white_player"),
         max_("move_number").alias("total_moves"),
-        last("score_cp").alias("final_score_cp"),
+        first("final_score_cp").alias("final_score_cp"),
         sum_(
             when((col("player") == "black") & col("is_blunder"), 1).otherwise(0)
         ).alias("black_blunders"),
         sum_(
             when((col("player") == "white") & col("is_blunder"), 1).otherwise(0)
         ).alias("white_blunders"),
-        collect_list(struct("move_number", "score_cp")).alias("score_series"),
+        sort_array(
+            collect_list(struct("move_number", "score_cp"))
+        ).alias("score_series"),
     )
 
     summary_df = summary_df.withColumn(
