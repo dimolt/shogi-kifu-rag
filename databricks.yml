@@ -17,7 +17,6 @@ sync:
     - scripts/**
     - docs/**
     - dist/**
-    - typings/**
     - data/**
     - .github/**
     - .agents/**
