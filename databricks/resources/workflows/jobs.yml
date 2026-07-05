@@ -8,7 +8,7 @@ resources:
           spec:
             environment_version: "4"
             dependencies:
-              - "${workspace.root_path}/artifacts/.internal/shogi_kif_rag-*.whl"
+              - "${workspace.root_path}/artifacts/.internal/shogi_kif_rag-0.1.0-py3-none-any.whl"
               - chromadb
               - sentence_transformers
 
