@@ -8,6 +8,7 @@ silver_schema = spark.conf.get("silver_schema")
 
 
 @dp.table
+@dp.expect("valid_move_quality", "move_quality IN ('start', 'best', 'blunder', 'normal')")  #noqa: E501
 def position_features():
     """Gold Table: 局面特徴量"""
     silver_df = spark.read.table(f"{catalog}.{silver_schema}.positions")
@@ -15,6 +16,8 @@ def position_features():
 
 
 @dp.table
+@dp.expect("final_score_not_null", "final_score_cp IS NOT NULL")
+@dp.expect("valid_players", "black_player IS NOT NULL AND white_player IS NOT NULL")
 def game_summary():
     """Gold Table: ゲームサマリー"""
     silver_df = spark.read.table(f"{catalog}.{silver_schema}.positions")
