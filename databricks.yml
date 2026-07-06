@@ -40,6 +40,12 @@ variables:
   gold_schema:
     description: The schema to use
     default: "shogi_gold"
+  wheel_version:
+    description: "shogi_kif_rag wheel version. pyproject.tomlのversionと一致させること"
+    default: "0.1.0"
+  wheel_artifact_dir:
+    description: "wheelが配置されるVolumeディレクトリ"
+    default: "/Volumes/shogi/artifacts/wheels"
 
 targets:
   dev:
@@ -47,8 +53,13 @@ targets:
     default: true
     workspace:
       root_path: /Workspace/Users/${workspace.current_user.userName}/.bundle/${bundle.name}/${bundle.target}
+      artifact_path: /Volumes/shogi/artifacts/wheels/${workspace.current_user.short_name}
+    variables:
+      wheel_artifact_dir: /Volumes/shogi/artifacts/wheels/${workspace.current_user.short_name}/.internal
+
 
   prod:
     mode: production
     workspace:
       root_path: /Workspace/Users/${workspace.current_user.userName}/.bundle/${bundle.name}/${bundle.target}
+      artifact_path: /Volumes/shogi/artifacts/wheels
