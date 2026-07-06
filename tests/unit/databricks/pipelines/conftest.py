@@ -2,6 +2,7 @@
 
 import os
 import sys
+from pathlib import Path
 
 import pytest
 from pyspark.sql import DataFrame, SparkSession
@@ -10,6 +11,10 @@ from pyspark.sql import DataFrame, SparkSession
 # (uv環境でPATH上に複数バージョンのPythonが存在する場合のバージョン不一致を防ぐ)
 os.environ["PYSPARK_PYTHON"] = sys.executable
 os.environ["PYSPARK_DRIVER_PYTHON"] = sys.executable
+
+# databricksモジュールをインポート可能にするためPythonパスに追加
+project_root = Path(__file__).parent.parent.parent.parent.parent
+sys.path.insert(0, str(project_root))
 
 
 @pytest.fixture(scope="session")
