@@ -6,7 +6,7 @@ import sys
 import pytest
 from pyspark.sql import DataFrame, SparkSession
 
-from shogi_kif_rag.kif.schemas.shemas import get_spark_schema
+from shogi_kif_rag.kif.schemas.shemas import get_analysis_schema
 
 # Driverが使っているPython実行ファイルをWorkerにも強制させる
 # (uv環境でPATH上に複数バージョンのPythonが存在する場合のバージョン不一致を防ぐ)
@@ -26,9 +26,9 @@ def spark() -> SparkSession:
 
 @pytest.fixture
 def make_positions_df(spark: SparkSession):
-    """get_spark_schema()に準拠したDataFrameを行データから生成するファクトリを提供する。
+    """get_analysis_schema()に準拠したDataFrameを行データから生成するファクトリを提供する。
 
-    行タプルの列順は get_spark_schema() と同一:
+    行タプルの列順は get_analysis_schema() と同一:
     (game_id, move_number, sfen, prev_sfen, move_usi, player,
      black_player, white_player, best_move, score_cp, pv)
 
@@ -40,6 +40,6 @@ def make_positions_df(spark: SparkSession):
     """
 
     def _make(rows: list[tuple]) -> DataFrame:
-        return spark.createDataFrame(rows, schema=get_spark_schema())
+        return spark.createDataFrame(rows, schema=get_analysis_schema())
 
     return _make

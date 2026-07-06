@@ -41,7 +41,7 @@ class AnalysisRow(PositionRecord):
     pv: str
 
 
-def get_spark_schema() -> StructType:
+def get_analysis_schema() -> StructType:
     """AnalysisRowに対応するSpark StructTypeを返す。
 
     Returns:

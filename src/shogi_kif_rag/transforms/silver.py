@@ -2,7 +2,7 @@
 
 from pyspark.sql import DataFrame, SparkSession
 
-from shogi_kif_rag.kif.schemas.shemas import get_spark_schema
+from shogi_kif_rag.kif.schemas.shemas import get_analysis_schema
 
 
 def build_positions(spark: SparkSession, csv_path: str) -> DataFrame:
@@ -13,6 +13,6 @@ def build_positions(spark: SparkSession, csv_path: str) -> DataFrame:
         csv_path: 読み込み対象のCSVファイルパス。
 
     Returns:
-        get_spark_schema()に基づいて型付けされたDataFrame。
+        get_analysis_schema()に基づいて型付けされたDataFrame。
     """
-    return spark.read.csv(csv_path, header=True, schema=get_spark_schema())
+    return spark.read.csv(csv_path, header=True, schema=get_analysis_schema())
