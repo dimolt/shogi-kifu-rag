@@ -1,8 +1,7 @@
 """Gold Table: 局面特徴量・ゲームサマリーを生成するLakeflowパイプライン定義。"""
 
+from gold_transforms import build_game_summary, build_position_features
 from pyspark import pipelines as dp
-
-from .gold_transforms import build_game_summary, build_position_features
 
 catalog = spark.conf.get("catalog")
 silver_schema = spark.conf.get("silver_schema")
