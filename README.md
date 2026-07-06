@@ -53,7 +53,9 @@ shogi-kif-rag/
 ├─ databricks/
 │  ├─ pipelines/          # PySpark Pipelines
 │  │  ├─ silver_table.py
-│  │  └─ gold_table.py
+│  │  ├─ silver_transforms.py
+│  │  ├─ gold_table.py
+│  │  └─ gold_transforms.py
 │  ├─ notebooks/          # Databricks Notebooks
 │  │  └─ ntb_ui_demo.py
 │  └─ resources/
@@ -332,16 +334,46 @@ Databricks Notebookで `ntb_ui_demo.py` を開いて実行します。
 
 ## Pipeline構成
 
-### Silver Pipeline (silver_table.py)
+### アーキテクチャ
 
-- CSVファイルから棋譜データを読み込み
-- Silverテーブル（positions）を作成
+パイプライン定義とtransformロジックを分離し、whlパッケージ依存を回避しています。
 
-### Gold Pipeline (gold_table.py)
+- **パイプライン定義** (`*_table.py`): Lakeflowパイプラインのテーブル定義
+- **Transformロジック** (`*_transforms.py`): 純粋関数によるデータ変換処理
 
-- Silverテーブルからデータを読み込み
-- 特徴量計算（局面特徴量、ゲームサマリー）
-- Goldテーブル（position_features, game_summary）を作成
+### Silver Pipeline
+
+- **silver_table.py**: パイプライン定義
+- **silver_transforms.py**: Transformロジック
+  - CSVファイルから棋譜データを読み込み
+  - Silverテーブル（positions）を作成
+
+### Gold Pipeline
+
+- **gold_table.py**: パイプライン定義
+- **gold_transforms.py**: Transformロジック
+  - Silverテーブルからデータを読み込み
+  - 特徴量計算（局面特徴量、ゲームサマリー）
+  - Goldテーブル（position_features, game_summary）を作成
+
+## デプロイ
+
+```bash
+databricks bundle deploy
+```
+
+Pipeline設定（`sdp_pipeline.yml`）にtransformファイルを含めることで、whl依存なしでデプロイ可能です。
+
+## 残課題
+
+### whl依存の問題
+
+現在の実装ではtransformロジックがPySpark標準機能のみを使用しているためwhl依存は発生していませんが、将来的に以下のケースでwhl依存が再発する可能性があります：
+
+- transformロジックから `src` モジュールを参照する場合
+- カスタムライブラリを利用する場合
+
+その場合は、参照するモジュールを `databricks/pipelines/` 内に移動するか、別の依存解決方法を検討する必要があります。
 
 ## Python Wheel Tasks
 
