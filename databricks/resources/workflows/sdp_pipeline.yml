@@ -7,7 +7,7 @@ resources:
             include: ../../pipelines/silver_table.py
       environment:
         dependencies:
-          - "${workspace.root_path}/artifacts/.internal/shogi_kif_rag-0.1.0-py3-none-any.whl"
+          - "${var.wheel_artifact_dir}/shogi_kif_rag-${var.wheel_version}-py3-none-any.whl"
       photon: true
       catalog: "${var.catalog}"
       schema: "${var.silver_schema}"
@@ -23,7 +23,7 @@ resources:
             include: ../../pipelines/gold_table.py
       environment:
         dependencies:
-          - "${workspace.root_path}/artifacts/.internal/shogi_kif_rag-0.1.0-py3-none-any.whl"
+          - "${var.wheel_artifact_dir}/shogi_kif_rag-${var.wheel_version}-py3-none-any.whl"
       photon: true
       catalog: "${var.catalog}"
       schema: "${var.gold_schema}"
