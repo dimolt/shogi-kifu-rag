@@ -4,7 +4,8 @@ from pathlib import Path
 
 from pyspark.sql import SparkSession
 
-from shogi_kif_rag.transforms.silver import POSITIONS_SCHEMA, build_positions
+from shogi_kif_rag.kif.schemas.shemas import get_spark_schema
+from shogi_kif_rag.transforms.silver import build_positions
 
 CSV_HEADER = (
     "game_id,move_number,sfen,prev_sfen,move_usi,player,black_player,"
@@ -39,7 +40,7 @@ def test_build_positions_正常なCSVを渡すと_スキーマ通りのDataFrame
     result_df = build_positions(spark, csv_path)
 
     # Assert
-    assert result_df.schema == POSITIONS_SCHEMA
+    assert result_df.schema == get_spark_schema()
 
 
 def test_build_positions_score_cpが空文字のとき_nullとして読み込まれる(
