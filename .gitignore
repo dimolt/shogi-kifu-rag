@@ -6,6 +6,9 @@ ref/
 .pytest_cache/
 requirements*.txt
 
+# Data output files
+data/output/
+
 # Python build artifacts
 *.egg-info/
 dist/
