@@ -14,10 +14,13 @@
       black_player/white_playerは「対局全体の対局者名」を表す（両者は別軸の情報）。
 """
 
+import pytest
 from pyspark.sql import DataFrame, Window
 from pyspark.sql import functions as F  #noqa: N812
 
 from dbx_bundle.pipelines.silver_transforms import get_analysis_schema
+
+pytestmark = pytest.mark.integration
 
 
 def test_positionsテーブルのスキーマがget_analysis_schemaと一致する(

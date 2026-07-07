@@ -16,6 +16,8 @@ import pytest
 
 from tests.helpers.expectations import GOLD_EXPECTATIONS, SILVER_EXPECTATIONS
 
+pytestmark = pytest.mark.integration
+
 FRESHNESS_THRESHOLD_HOURS = 24
 
 
