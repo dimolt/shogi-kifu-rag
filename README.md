@@ -1,4 +1,3 @@
-
 # Python開発環境構築・運用ルール
 
 ## 概要
@@ -387,3 +386,77 @@ Pipeline設定（`sdp_pipeline.yml`）にtransformファイルを含めること
 
 - Wikipediaから戦法解説を取得
 - joseki_knowledgeテーブルに書き込み
+
+---
+
+# テスト戦略
+
+## 概要
+
+本プロジェクトのテストは3層構成とし、それぞれ検証対象・実行環境・実行タイミングを分離する。
+
+```text
+tests/
+├─ conftest.py           # Layer 1（unit）共有フィクスチャ
+├─ unit/                 # Layer 1: 単体テスト
+│  └─ ...                # src/ の構成をミラーリング
+├─ integration/          # Layer 2: 統合テスト
+│  ├─ conftest.py        # Databricks Connect経由の共有フィクスチャ
+│  ├─ test_silver_pipeline.py
+│  ├─ test_gold_pipeline.py
+│  └─ test_pipeline_expectations.py
+└─ e2e/                  # Layer 3: E2Eテスト
+   └─ ...
+```
+
+## Layer 1: 単体テスト（unit）
+
+- ローカルPySpark（`local[1]`）で完結し、Databricksへの接続は行わない
+- CSVパースロジックや`silver_transforms.py` / `gold_transforms.py`の純粋関数を検証
+- `tests/` は `src/` / `databricks/pipelines/` の構成をミラーリングする
+- **CIで毎回実行**する
+
+## Layer 2: 統合テスト（integration）
+
+- Databricks Connect経由（`.databrickscfg`の`shogi`プロファイル、`serverless_compute_id = auto`）でUnity Catalog上に実体化されたテーブルへ接続する
+- パイプライン自体は**起動しない**。検証対象のテーブル・event_logは、事前に以下いずれかの方法で生成されている必要がある：
+  1. CIの定期実行（post-merge scheduled run）
+  2. 手動での `databricks bundle run <pipeline_name> -t dev -p shogi`
+- 主な検証内容：
+  - `test_silver_pipeline.py`: Silverテーブル（`positions`）のスキーマ整合性・連番・sfenチェーン等、単体テストでは検証できないビジネス不変条件
+  - `test_gold_pipeline.py`: Goldテーブル（`position_features` / `game_summary`）のスキーマ整合性・行数整合性・null検証
+  - `test_pipeline_expectations.py`: `event_log()` TVF経由で`@dp.expect`が実際に発火し`failed_records=0`であることを確認する品質ゲート検証。`silver_pipeline` / `gold_pipeline`はresource keyが分かれているため、`silver_pipeline_id` / `gold_pipeline_id`の2fixtureで個別に検証する
+- event_logの鮮度は24時間以内の実行を前提とし、古い場合は該当テストを`skip`する
+- **post-merge / 定期実行**（CIでは毎回実行しない）
+
+### 実行前の前提条件
+
+```bash
+# 1. devターゲットへのデプロイが完了していること
+databricks bundle deploy -t dev -p shogi
+
+# 2. 対象パイプラインが直近24時間以内に実行されていること
+databricks bundle run silver_pipeline -t dev -p shogi
+databricks bundle run gold_pipeline -t dev -p shogi
+```
+
+```bash
+# 実行方法
+uv run pytest tests/integration/ -v
+```
+
+## Layer 3: E2Eテスト（e2e）
+
+- DABsの`dev`ターゲットへの実際のデプロイ・パイプライン起動〜完了までを含めた、真のEnd-to-Endテスト
+- Layer 2が「事前に実行された結果」を検証するのに対し、Layer 3は「起動から完了まで」を検証する
+- 現在設計・実装は未着手
+
+## Layer 2 vs Layer 3 の使い分け
+
+| 観点 | Layer 2（integration） | Layer 3（e2e） |
+| --- | --- | --- |
+| パイプライン起動 | しない（事前実行済みが前提） | する（`databricks bundle run`を含む） |
+| 検証対象 | 実体化済みテーブルのスキーマ・データ品質・event_logメトリクス | パイプラインの起動〜完了までの一連の流れ |
+| 実行速度 | 比較的速い（クエリのみ） | 遅い（パイプラインの実行完了を待つ） |
+| 主な接続手段 | Databricks Connect（`spark.table()`, `event_log()` TVF） | Databricks CLI（`databricks bundle run` / `deploy`） |
+| 実行タイミング | post-merge / 定期実行 | 定期実行（頻度は要検討） |
