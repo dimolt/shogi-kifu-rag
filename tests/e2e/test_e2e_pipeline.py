@@ -12,6 +12,7 @@
     5. 最終テーブルの存在・データ件数の最小限のスモークチェック
 """
 
+import pytest
 from pyspark.sql import SparkSession
 
 from tests.e2e.conftest import UpdateResult
@@ -20,6 +21,8 @@ from tests.helpers.expectations import (
     SILVER_EXPECTATIONS,
     assert_expectations_pass,
 )
+
+pytestmark = pytest.mark.e2e
 
 
 class TestE2EPipeline:
