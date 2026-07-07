@@ -3,7 +3,7 @@ bundle:
   engine: direct
 
 include:
-  - databricks/resources/workflows/*.yml
+  - dbx_bundle/resources/workflows/*.yml
 
 artifacts:
   default:

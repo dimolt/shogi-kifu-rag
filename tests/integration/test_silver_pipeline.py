@@ -17,7 +17,7 @@
 from pyspark.sql import DataFrame, Window
 from pyspark.sql import functions as F  #noqa: N812
 
-from databricks_bundle.pipelines.silver_transforms import get_analysis_schema
+from dbx_bundle.pipelines.silver_transforms import get_analysis_schema
 
 
 def test_positionsテーブルのスキーマがget_analysis_schemaと一致する(
