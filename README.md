@@ -445,18 +445,53 @@ databricks bundle run gold_pipeline -t dev -p shogi
 uv run pytest tests/integration/ -v
 ```
 
-## Layer 3: E2Eテスト（e2e）
+### Layer 3: E2Eテスト（`tests/e2e/`）
 
-- DABsの`dev`ターゲットへの実際のデプロイ・パイプライン起動〜完了までを含めた、真のEnd-to-Endテスト
-- Layer 2が「事前に実行された結果」を検証するのに対し、Layer 3は「起動から完了まで」を検証する
-- 現在設計・実装は未着手
+DABs devターゲットへの実デプロイ後、Silver/Goldパイプラインを実際に起動し、
+完了まで待機したうえでデータ品質・データ存在を検証する。
 
-## Layer 2 vs Layer 3 の使い分け
+**前提条件:**
+
+- CDワークフロー（`deploy-dev` ジョブ）内で `databricks bundle deploy -t dev` が
+  実行済みであること（E2Eテスト自体はデプロイを行わない）
+- `DATABRICKS_HOST` / `DATABRICKS_CLIENT_ID` / `DATABRICKS_CLIENT_SECRET` が
+  環境変数として設定済みであること
+
+**実行方法:**
+
+```bash
+uv run pytest tests/e2e/ -v
+```
+
+**フロー:**
+
+1. Silver/Goldスキーマをdrop & recreate（`clean_schemas` フィクスチャ、autouse）
+   - テーブル・MVはLakeflowパイプライン実行時に自動作成されるため、
+     ここではスキーマの器のみをクリーンにする
+   - Bronze層の取り込みはフルスキャン方式（チェックポイントなし）のため、
+     チェックポイントの個別クリーンアップは不要
+2. Silverパイプラインを起動し、`COMPLETED` になるまでポーリング待機
+   （interval 15秒、timeout 900秒）
+3. Silver完了後、Goldパイプラインを起動し、同様に完了待機
+4. `event_log()` TVFベースの `assert_expectations_pass()` で
+   Silver/Gold双方のexpectations（failed_records=0）を確認
+5. Silver/Goldの主要テーブルにデータが存在することを最小限確認
+
+**失敗時の挙動:**
+
+パイプライン更新が `FAILED` / `CANCELED` で終了した場合、`event_log()` から
+ERRORレベルのイベントメッセージを抽出し、テスト失敗メッセージに含める。
+これによりCIログのみでパイプライン内部の失敗原因まで追跡できる。
+
+### Layer 2 vs Layer 3 の使い分け
 
 | 観点 | Layer 2（integration） | Layer 3（e2e） |
-| --- | --- | --- |
-| パイプライン起動 | しない（事前実行済みが前提） | する（`databricks bundle run`を含む） |
-| 検証対象 | 実体化済みテーブルのスキーマ・データ品質・event_logメトリクス | パイプラインの起動〜完了までの一連の流れ |
-| 実行速度 | 比較的速い（クエリのみ） | 遅い（パイプラインの実行完了を待つ） |
-| 主な接続手段 | Databricks Connect（`spark.table()`, `event_log()` TVF） | Databricks CLI（`databricks bundle run` / `deploy`） |
-| 実行タイミング | post-merge / 定期実行 | 定期実行（頻度は要検討） |
+|---|---|---|
+| 実行トリガー | 手動 / post-mergeまたはscheduled | CD `deploy-dev` ジョブ内（実デプロイ直後） |
+| 対象 | 既存データに対するSQL/DataFrameロジックの検証 | 実際のパイプライン起動〜完了までの一気通貫の検証 |
+| データ | 既存のdev環境データを使用 | Volumes配置済みデータ + スキーマは毎回クリーン |
+| 実行時間 | 秒〜分単位 | パイプライン完了待ちのため数分〜（timeout 900秒） |
+| 環境 | devカタログ（テーブルは既存のまま） | devカタログのSilver/Goldスキーマを毎回再作成 |
+
+> **既知の制約:** 現状はdevターゲットを都度クリーンする運用としている。
+> 将来的には専用のstg環境を用意し、devとE2E検証用環境を分離することが望ましい。

@@ -206,7 +206,7 @@ exclude = ["*.ipynb", "ntb_*.py"]
 # Databricks DLT / Pipeline 系では、
 # 実行環境側で spark が注入されることがあり、
 # ローカル静的解析では未定義(F821)になりやすいため無視する。
-"databricks/pipelines/*.py" = ["F821"]
+"databricks_bundle/pipelines/*.py" = ["F821"]
 
 # テストコードでは pytest 流儀の命名や長めの行を許容する
 # N802: 関数名が lowercase ではない
