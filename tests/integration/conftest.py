@@ -26,7 +26,6 @@ os.environ["PYSPARK_DRIVER_PYTHON"] = sys.executable
 project_root = Path(__file__).parent.parent.parent
 sys.path.insert(0, str(project_root))
 
-
 @pytest.fixture(scope="session")
 def spark() -> SparkSession:
     """Databricks Connect経由のSparkSessionを提供する。
@@ -41,25 +40,50 @@ def spark() -> SparkSession:
 
 
 @pytest.fixture(scope="session")
-def pipeline_id() -> str:
-    """デプロイ済みパイプラインのpipeline_idを取得する。
-
-    前提:
-        本fixtureはパイプラインを起動しない。event_log()の検証対象となる
-        実行結果は、CIの定期実行や手動での`databricks bundle run`によって
-        事前に生成されていることを前提とする
+def _bundle_resources() -> dict:
+    """`databricks bundle summary`の実行結果をパースして返す。
 
     Returns:
-        str: databricks.yml で定義されたパイプラインのID。
+        dict: `resources`セクションを含むbundle summaryのJSON全体。
     """
     result = subprocess.run(
         ["databricks", "bundle", "summary", "--output", "json", "-t", "dev", "-p", "shogi"],
         capture_output=True,
         text=True,
+        encoding="utf-8",
         check=True,
     )
-    resources = json.loads(result.stdout)
-    return resources["resources"]["pipelines"]["shogi_kif_rag_pipeline"]["id"]
+    return json.loads(result.stdout)
+
+
+@pytest.fixture(scope="session")
+def silver_pipeline_id(_bundle_resources: dict) -> str:
+    """デプロイ済みsilver_pipelineのpipeline_idを取得する。
+
+    前提:
+        本fixtureはパイプラインを起動しない。event_log()の検証対象となる
+        実行結果は、CIの定期実行や手動での`databricks bundle run`によって
+        事前に生成されていることを前提とする。
+
+    Returns:
+        str: databricks.yml で定義されたsilver_pipelineのID。
+    """
+    return _bundle_resources["resources"]["pipelines"]["silver_pipeline"]["id"]
+
+
+@pytest.fixture(scope="session")
+def gold_pipeline_id(_bundle_resources: dict) -> str:
+    """デプロイ済みgold_pipelineのpipeline_idを取得する。
+
+    前提:
+        本fixtureはパイプラインを起動しない。event_log()の検証対象となる
+        実行結果は、CIの定期実行や手動での`databricks bundle run`によって
+        事前に生成されていることを前提とする。
+
+    Returns:
+        str: databricks.yml で定義されたgold_pipelineのID。
+    """
+    return _bundle_resources["resources"]["pipelines"]["gold_pipeline"]["id"]
 
 
 def _fqn(schema: str, table: str) -> str:
