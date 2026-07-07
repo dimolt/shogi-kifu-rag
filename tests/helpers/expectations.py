@@ -23,8 +23,18 @@ GOLD_EXPECTATIONS: dict[str, set[str]] = {
 def _get_latest_expectations_df(spark: SparkSession, pipeline_id: str) -> DataFrame:
     """指定パイプラインの最新updateにおけるexpectations結果を取得する。
 
-    `event_log()` の dataset 列は FQN（`catalog.schema.table`）で返るため、
-    テーブル名部分（末尾）のみを抽出して返す。
+    `event_log()` の `details` 列はSTRING型でJSON文字列を保持しているため、
+    `details:path` のコロン記法だけではARRAY型にならず `explode()` に直接渡せない
+    （`DATATYPE_MISMATCH.UNEXPECTED_INPUT_TYPE` になる）。そのため
+    `from_json()` で明示的にスキーマを指定して配列型へキャストしてから展開する。
+
+    実機検証済み（2026-07-07、pipeline_id=f3a193ea-...）:
+        `expectations` 配列の各要素は `name` / `dataset` / `passed_records` /
+        `failed_records` の4フィールドを持ち、`dataset` は展開後の各要素自身が
+        個別に保持している（配列の0番目要素で代表させる必要はない）。
+        `dataset` は `catalog.schema.table` 形式のFQNで返る
+        （例: `shogi.shogi_silver.positions`）ため、末尾のテーブル名部分のみを
+        抽出するsplit処理は引き続き必要。
 
     Args:
         spark: SparkSession。
@@ -34,16 +44,21 @@ def _get_latest_expectations_df(spark: SparkSession, pipeline_id: str) -> DataFr
         `dataset`（テーブル名のみ）, `name`, `passed_records`, `failed_records`
         列を持つDataFrame。
     """
+    expectation_schema = (
+        "array<struct<name:string,dataset:string,passed_records:long,failed_records:long>>"
+    )
     return spark.sql(f"""
         SELECT
-            split(details:flow_progress.data_quality.expectations[0].dataset, '\\\\.')[
-                size(split(details:flow_progress.data_quality.expectations[0].dataset, '\\\\.')) - 1
+            split(expectation.dataset, '\\\\.')[
+                size(split(expectation.dataset, '\\\\.')) - 1
             ] AS dataset,
             expectation.name AS name,
             expectation.passed_records AS passed_records,
             expectation.failed_records AS failed_records
         FROM event_log('{pipeline_id}')
-        LATERAL VIEW explode(details:flow_progress.data_quality.expectations) AS expectation
+        LATERAL VIEW explode(
+            from_json(details:flow_progress.data_quality.expectations, '{expectation_schema}')
+        ) t AS expectation
         WHERE event_type = 'flow_progress'
           AND details:flow_progress.data_quality IS NOT NULL
         QUALIFY ROW_NUMBER() OVER (
