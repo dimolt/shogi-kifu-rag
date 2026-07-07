@@ -14,17 +14,7 @@ import datetime as dt
 
 import pytest
 
-SILVER_EXPECTATIONS = [
-    ("positions", "valid_game_id"),
-    ("positions", "valid_move_number"),
-    ("positions", "valid_player"),
-]
-
-GOLD_EXPECTATIONS = [
-    ("position_features", "valid_move_quality"),
-    ("game_summary", "final_score_not_null"),
-    ("game_summary", "valid_players"),
-]
+from tests.helpers.expectations import GOLD_EXPECTATIONS, SILVER_EXPECTATIONS
 
 FRESHNESS_THRESHOLD_HOURS = 24
 
@@ -88,13 +78,17 @@ def _assert_latest_run_is_recent(df) -> None:
         )
 
 
-def _assert_expectations_pass(spark, pipeline_id: str, expected_expectations: list) -> None:
+def _assert_expectations_pass(
+    spark, pipeline_id: str, expected_expectations: dict[str, set[str]]
+) -> None:
     """指定パイプラインのexpectationsが全て発火し、failed_records=0であることを確認する。
 
     Args:
         spark: SparkSession（Databricks Connect経由）。
         pipeline_id: 検証対象パイプラインのID。
-        expected_expectations: (dataset, expectation名)のタプルのリスト。
+        expected_expectations: テーブル名をキー、expectation名のセットを値とする辞書。
+            `tests.helpers.expectations` の `SILVER_EXPECTATIONS` または
+            `GOLD_EXPECTATIONS` を渡す想定。
     """
     df = _get_latest_expectations_df(spark, pipeline_id)
     _assert_latest_run_is_recent(df)
@@ -103,15 +97,16 @@ def _assert_expectations_pass(spark, pipeline_id: str, expected_expectations: li
     # catalog/schemaに依存せずテーブル名部分だけで照合する。
     results = {(r.dataset.split(".")[-1], r.name): r for r in df.collect()}
 
-    for table, expectation in expected_expectations:
-        key = (table, expectation)
-        assert key in results, f"expectation未発火: {table}.{expectation}"
-        assert results[key].failed_records == 0, (
-            f"{table}.{expectation} でfailed_records>0: {results[key].failed_records}件"
-        )
-        assert results[key].passed_records > 0, (
-            f"{table}.{expectation} でpassed_records=0（データ未投入の疑い）"
-        )
+    for table, expectation_names in expected_expectations.items():
+        for expectation in expectation_names:
+            key = (table, expectation)
+            assert key in results, f"expectation未発火: {table}.{expectation}"
+            assert results[key].failed_records == 0, (
+                f"{table}.{expectation} でfailed_records>0: {results[key].failed_records}件"
+            )
+            assert results[key].passed_records > 0, (
+                f"{table}.{expectation} でpassed_records=0（データ未投入の疑い）"
+            )
 
 
 def test_silver_pipelineの全expectationがfailed_records_0_品質ゲートが機能している(
