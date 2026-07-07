@@ -4,7 +4,7 @@ from pathlib import Path
 
 from pyspark.sql import SparkSession
 
-from databricks_bundle.pipelines.silver_transforms import (
+from dbx_bundle.pipelines.silver_transforms import (
     build_positions,
     get_analysis_schema,
 )
