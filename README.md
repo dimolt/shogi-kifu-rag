@@ -445,7 +445,7 @@ databricks bundle run gold_pipeline -t dev -p shogi
 uv run pytest tests/integration/ -v
 ```
 
-### Layer 3: E2Eテスト（`tests/e2e/`）
+## Layer 3: E2Eテスト（`tests/e2e/`）
 
 DABs devターゲットへの実デプロイ後、Silver/Goldパイプラインを実際に起動し、
 完了まで待機したうえでデータ品質・データ存在を検証する。
@@ -483,7 +483,7 @@ uv run pytest tests/e2e/ -v
 ERRORレベルのイベントメッセージを抽出し、テスト失敗メッセージに含める。
 これによりCIログのみでパイプライン内部の失敗原因まで追跡できる。
 
-### Layer 2 vs Layer 3 の使い分け
+## Layer 2 vs Layer 3 の使い分け
 
 | 観点 | Layer 2（integration） | Layer 3（e2e） |
 |---|---|---|
