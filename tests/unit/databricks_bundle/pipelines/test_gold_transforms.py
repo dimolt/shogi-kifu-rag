@@ -2,7 +2,7 @@
 
 import json
 
-from databricks.pipelines.gold_transforms import (
+from databricks_bundle.pipelines.gold_transforms import (
     _add_turn_score_columns,
     build_game_summary,
     build_position_features,

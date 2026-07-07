@@ -41,7 +41,7 @@ def make_positions_df(spark: SparkSession):
     Returns:
         行データのリストを受け取りDataFrameを返す関数。
     """
-    from databricks.pipelines.silver_transforms import get_analysis_schema
+    from databricks_bundle.pipelines.silver_transforms import get_analysis_schema
 
     def _make(rows: list[tuple]) -> DataFrame:
         return spark.createDataFrame(rows, schema=get_analysis_schema())

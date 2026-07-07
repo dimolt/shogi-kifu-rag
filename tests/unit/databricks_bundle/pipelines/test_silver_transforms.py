@@ -4,7 +4,10 @@ from pathlib import Path
 
 from pyspark.sql import SparkSession
 
-from databricks.pipelines.silver_transforms import build_positions, get_analysis_schema
+from databricks_bundle.pipelines.silver_transforms import (
+    build_positions,
+    get_analysis_schema,
+)
 
 CSV_HEADER = (
     "game_id,move_number,sfen,prev_sfen,move_usi,player,black_player,"
