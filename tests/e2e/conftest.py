@@ -66,7 +66,7 @@ def _run_cli(args: list[str]) -> dict:
         CLI出力をJSONパースした辞書。
     """
     result = subprocess.run(
-        ["databricks", *args, "--output", "json"],
+        ["databricks", *args, "--output", "json", "-p", "shogi"],
         capture_output=True,
         text=True,
         encoding="utf-8",
@@ -85,15 +85,24 @@ def _drop_recreate_schema(catalog: str, schema: str) -> None:
         catalog: 対象カタログ名。
         schema: 対象スキーマ名。
     """
-    subprocess.run(
-        ["databricks", "schemas", "delete", f"{catalog}.{schema}", "--force"],
+    delete_result = subprocess.run(
+        ["databricks", "schemas", "delete", f"{catalog}.{schema}", "-p", "shogi", "--force"],
         capture_output=True,
         text=True,
         encoding="utf-8",
-        check=False,  # 初回実行時などスキーマが存在しない場合は無視する
+        check=False,
     )
+    if delete_result.returncode != 0:
+        # 「スキーマが存在しない」場合のみ許容し、それ以外は原因不明の失敗として扱う
+        stderr = delete_result.stderr or ""
+        if "does not exist" not in stderr and "NOT_FOUND" not in stderr:
+            raise RuntimeError(
+                f"schema delete failed unexpectedly for {catalog}.{schema}: "
+                f"stdout={delete_result.stdout!r} stderr={stderr!r}"
+            )
+
     subprocess.run(
-        ["databricks", "schemas", "create", schema, catalog],
+        ["databricks", "schemas", "create", schema, catalog, "-p", "shogi"],
         capture_output=True,
         text=True,
         encoding="utf-8",
