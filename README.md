@@ -440,6 +440,35 @@ databricks bundle run silver_pipeline -t dev -p shogi
 databricks bundle run gold_pipeline -t dev -p shogi
 ```
 
+### 環境変数設定
+
+ローカル実行時は`.env`ファイルに以下を設定してください：
+
+```bash
+# Databricks認証設定
+DATABRICKS_CONFIG_PROFILE=shogi
+
+# やねうら王エンジン設定
+YANEURAOU_PATH="C:\Program Files (x86)\ShogiGUI\Yaneura\YaneuraOu_NNUE-tournament-clang++-avx2.exe"
+YANEURAOU_OPTIONS=EvalDir "C:\Program Files (x86)\ShogiGUI\Yaneura\eval"
+ANALYSIS_DEPTH=20
+ANALYSIS_NODES=1000000
+```
+
+環境変数を有効化するには、以下のいずれかの方法を使用してください：
+
+**PowerShell:**
+```powershell
+Get-Content .env | ForEach-Object { if ($_ -match '^([^=]+)=(.*)$') { [Environment]::SetEnvironmentVariable($matches[1], $matches[2]) } }
+```
+
+**または手動で設定:**
+```powershell
+$env:DATABRICKS_CONFIG_PROFILE="shogi"
+```
+
+CI/CD環境ではこの環境変数を設定しないことで、サービスプリンシパル認証（環境変数ベースのデフォルト認証チェーン）に自動的にフォールバックします。
+
 ```bash
 # 実行方法
 uv run pytest tests/integration/ -v

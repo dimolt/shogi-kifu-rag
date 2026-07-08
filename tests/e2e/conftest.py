@@ -16,6 +16,7 @@ import pytest
 from databricks.connect import DatabricksSession
 from pyspark.sql import SparkSession
 
+from tests.conftest import _DATABRICKS_PROFILE, _databricks_cli_base_args
 from tests.helpers.constants import TEST_CATALOG, TEST_GOLD_SCHEMA, TEST_SILVER_SCHEMA
 from tests.helpers.expectations import _get_event_log_errors
 
@@ -34,7 +35,8 @@ def spark() -> SparkSession:
     Returns:
         接続済みのSparkSession。
     """
-    return DatabricksSession.builder.profile("shogi").getOrCreate()
+    profile = _DATABRICKS_PROFILE or "DEFAULT"
+    return DatabricksSession.builder.profile(profile).getOrCreate()
 
 
 class PipelineUpdateFailedError(Exception):
@@ -66,7 +68,7 @@ def _run_cli(args: list[str]) -> dict:
         CLI出力をJSONパースした辞書。
     """
     result = subprocess.run(
-        ["databricks", *args, "--output", "json", "-p", "shogi"],
+        ["databricks", *args, "--output", "json", *_databricks_cli_base_args()],
         capture_output=True,
         text=True,
         encoding="utf-8",
@@ -86,7 +88,7 @@ def _drop_recreate_schema(catalog: str, schema: str) -> None:
         schema: 対象スキーマ名。
     """
     delete_result = subprocess.run(
-        ["databricks", "schemas", "delete", f"{catalog}.{schema}", "-p", "shogi", "--force"],
+        ["databricks", "schemas", "delete", f"{catalog}.{schema}", *_databricks_cli_base_args(), "--force"],
         capture_output=True,
         text=True,
         encoding="utf-8",
@@ -102,7 +104,7 @@ def _drop_recreate_schema(catalog: str, schema: str) -> None:
             )
 
     subprocess.run(
-        ["databricks", "schemas", "create", schema, catalog, "-p", "shogi"],
+        ["databricks", "schemas", "create", schema, catalog, *_databricks_cli_base_args()],
         capture_output=True,
         text=True,
         encoding="utf-8",

@@ -3,6 +3,7 @@
 spark, pipeline_id, FQN系のフィクスチャは `tests/conftest.py`（ルート）に
 集約されているため、ここではintegration層固有のDataFrame系フィクスチャのみ定義する。
 """
+import os
 import sys
 from pathlib import Path
 
@@ -25,7 +26,9 @@ def spark() -> SparkSession:
     Returns:
         接続済みのSparkSession。
     """
-    return DatabricksSession.builder.profile("shogi").getOrCreate()
+    databricks_profile = os.environ.get("DATABRICKS_CONFIG_PROFILE")
+    profile = databricks_profile or "DEFAULT"
+    return DatabricksSession.builder.profile(profile).getOrCreate()
 
 
 @pytest.fixture(scope="session")

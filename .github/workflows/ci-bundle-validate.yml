@@ -25,4 +25,4 @@ jobs:
 
       - name: Run Databricks bundle validate
         run: |
-          databricks bundle validate -t dev -p shogi
+          databricks bundle validate -t dev
