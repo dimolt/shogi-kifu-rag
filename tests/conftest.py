@@ -21,6 +21,20 @@ os.environ["PYSPARK_DRIVER_PYTHON"] = sys.executable
 # databricksモジュールをインポート可能にするためPythonパスに追加
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
+_DATABRICKS_PROFILE = os.environ.get("DATABRICKS_CONFIG_PROFILE")
+
+
+def _databricks_cli_base_args() -> list[str]:
+    """環境に応じてdatabricks CLIの認証引数を決定する。
+
+    ローカル実行時はDATABRICKS_CONFIG_PROFILE環境変数で指定したプロファイルを使用し、
+    CI/CD（サービスプリンシパル認証）ではプロファイル指定なしで環境変数ベースの
+    デフォルト認証チェーンに委ねる。
+    """
+    if _DATABRICKS_PROFILE:
+        return ["--profile", _DATABRICKS_PROFILE]
+    return []
+
 
 @pytest.fixture(scope="session")
 def _bundle_resources() -> dict:
@@ -30,7 +44,7 @@ def _bundle_resources() -> dict:
         dict: `resources`セクションを含むbundle summaryのJSON全体。
     """
     result = subprocess.run(
-        ["databricks", "bundle", "summary", "--output", "json", "-t", "dev", "-p", "shogi"],
+        ["databricks", "bundle", "summary", "--output", "json", "-t", "dev", *_databricks_cli_base_args()],
         capture_output=True,
         text=True,
         encoding="utf-8",
