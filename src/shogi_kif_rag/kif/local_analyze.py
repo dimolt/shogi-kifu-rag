@@ -2,10 +2,10 @@
 
 import csv
 import logging
+import os
 import sys
 from pathlib import Path
 
-from shogi_kif_rag.kif.config.local_analyze_settings import LocalAnalyzeSettings
 from shogi_kif_rag.kif.engine.usi_engine_client import UsiEngineClient
 from shogi_kif_rag.kif.parser import KifParser, PositionRecord
 from shogi_kif_rag.kif.schemas.shemas import CSV_FIELDNAMES, AnalysisRow
@@ -140,8 +140,9 @@ def main() -> None:
     positions = _load_positions(kif_path)
     logger.info("局面数: %d", len(positions))
 
-    settings = LocalAnalyzeSettings()
-    analyzer = UsiEngineClient(settings.yaneuraou_path, settings.yaneuraou_options)
+    yaneuraou_path = os.environ.get("YANEURAOU_PATH", "YaneuraOu_nnue.exe")
+    yaneuraou_options = os.environ.get("YANEURAOU_OPTIONS", "")
+    analyzer = UsiEngineClient(yaneuraou_path, yaneuraou_options)
     analyzer.start()
     analyzer.initialize_usi(usi_hash=USI_HASH_SIZE_MB)
 
