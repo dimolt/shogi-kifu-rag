@@ -67,7 +67,7 @@ def _get_latest_expectations_df(spark: SparkSession, pipeline_id: str) -> DataFr
     """)
 
 
-def _get_event_log_errors(spark: SparkSession, pipeline_id: str, update_id: str) -> str:
+def get_event_log_errors(spark: SparkSession, pipeline_id: str, update_id: str) -> str:
     """event_log()からERRORレベルのイベントメッセージを抽出して整形する。
 
     パイプライン更新がFAILEDになった際、テスト失敗メッセージに含めるための
