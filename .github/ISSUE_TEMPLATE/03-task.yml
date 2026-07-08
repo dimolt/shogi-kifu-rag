@@ -1,0 +1,80 @@
+name: "Task"
+description: "改善、設定変更、リファクタリング、保守作業"
+title: "[Task] "
+labels:
+  - task
+body:
+  - type: textarea
+    id: purpose
+    attributes:
+      label: 目的
+      description: この作業を行う理由を記載してください。
+      placeholder: |
+        例:
+        - CIの保守性を上げたい
+        - pyproject.tomlに設定を統合したい
+        - Databricks Bundle設定を整理したい
+    validations:
+      required: true
+
+  - type: textarea
+    id: task_details
+    attributes:
+      label: 作業内容
+      description: 実施する作業を箇条書きで書いてください。
+      placeholder: |
+        - ruff / mypy 設定を pyproject.toml に統合
+        - 不要ファイルが deploy されないよう bundle sync を見直す
+        - README のセットアップ手順を更新する
+    validations:
+      required: true
+
+  - type: textarea
+    id: scope
+    attributes:
+      label: 対象範囲
+      description: 対象ファイル、ワークフロー、ジョブ、ディレクトリなどを記載してください。
+      placeholder: |
+        例:
+        - .github/workflows/
+        - pyproject.toml
+        - databricks.yml
+        - tests/
+        - docs/
+    validations:
+      required: true
+
+  - type: checkboxes
+    id: target_layer
+    attributes:
+      label: 対象レイヤー
+      options:
+        - label: infra / CI/CD
+        - label: test
+        - label: databricks bundle
+        - label: docs
+        - label: repo maintenance
+
+  - type: textarea
+    id: done
+    attributes:
+      label: 完了条件
+      description: 作業完了の条件を記載してください。
+      placeholder: |
+        - [ ] 設定変更が反映されている
+        - [ ] CIが通る
+        - [ ] 影響範囲を確認済み
+        - [ ] 必要ならドキュメント更新済み
+    validations:
+      required: true
+
+  - type: dropdown
+    id: priority
+    attributes:
+      label: 優先度
+      options:
+        - high
+        - medium
+        - low
+    validations:
+      required: true
