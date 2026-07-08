@@ -13,14 +13,13 @@
 """
 
 import pytest
-from pyspark.sql import SparkSession
-
-from tests.e2e.conftest import UpdateResult
-from tests.helpers.expectations import (
+from helpers.expectations import (
     GOLD_EXPECTATIONS,
     SILVER_EXPECTATIONS,
     assert_expectations_pass,
 )
+from helpers.models import UpdateResult
+from pyspark.sql import SparkSession
 
 pytestmark = pytest.mark.e2e
 

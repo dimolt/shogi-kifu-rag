@@ -13,6 +13,7 @@ from pathlib import Path
 import pytest
 from dotenv import load_dotenv
 from helpers.constants import TEST_CATALOG, TEST_GOLD_SCHEMA, TEST_SILVER_SCHEMA
+from helpers.databricks_cli import databricks_cli_base_args
 
 # Driverが使っているPython実行ファイルをWorkerにも強制させる
 # (uv環境でPATH上に複数バージョンのPythonが存在する場合のバージョン不一致を防ぐ)
@@ -23,6 +24,7 @@ os.environ["PYSPARK_DRIVER_PYTHON"] = sys.executable
 _PROJECT_ROOT = Path(__file__).parent.parent
 sys.path.insert(0, _PROJECT_ROOT)
 
+# dotenvで環境変数をロードする
 load_dotenv(_PROJECT_ROOT / ".env")
 _DATABRICKS_PROFILE = os.environ.get("DATABRICKS_CONFIG_PROFILE")
 
@@ -38,18 +40,6 @@ def _fqn(schema: str, table: str) -> str:
         str: `catalog.schema.table` 形式の完全修飾名。
     """
     return f"{TEST_CATALOG}.{schema}.{table}"
-
-
-def _databricks_cli_base_args() -> list[str]:
-    """環境に応じてdatabricks CLIの認証引数を決定する。
-
-    ローカル実行時はDATABRICKS_CONFIG_PROFILE環境変数で指定したプロファイルを使用し、
-    CI/CD（サービスプリンシパル認証）ではプロファイル指定なしで環境変数ベースの
-    デフォルト認証チェーンに委ねる。
-    """
-    if _DATABRICKS_PROFILE:
-        return ["--profile", _DATABRICKS_PROFILE]
-    return []
 
 
 @pytest.fixture(scope="session")
@@ -70,7 +60,7 @@ def _bundle_resources() -> dict:
         dict: `resources`セクションを含むbundle summaryのJSON全体。
     """
     result = subprocess.run(
-        ["databricks", "bundle", "summary", "--output", "json", "-t", "dev", *_databricks_cli_base_args()],
+        ["databricks", "bundle", "summary", "--output", "json", "-t", "dev", *databricks_cli_base_args()],
         capture_output=True,
         text=True,
         encoding="utf-8",
@@ -107,19 +97,6 @@ def gold_pipeline_id(_bundle_resources: dict) -> str:
         str: databricks.yml で定義されたgold_pipelineのID。
     """
     return _bundle_resources["resources"]["pipelines"]["gold_pipeline"]["id"]
-
-
-def _fqn(schema: str, table: str) -> str:
-    """カタログ・スキーマ・テーブル名から完全修飾名を組み立てる。
-
-    Args:
-        schema: スキーマ名（Silver/Gold）。
-        table: テーブル名。
-
-    Returns:
-        str: `catalog.schema.table` 形式の完全修飾名。
-    """
-    return f"{TEST_CATALOG}.{schema}.{table}"
 
 
 @pytest.fixture(scope="session")
