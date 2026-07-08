@@ -1,0 +1,95 @@
+name: "Bug"
+description: "不具合報告・障害対応"
+title: "[Bug] "
+labels:
+  - bug
+body:
+  - type: textarea
+    id: summary
+    attributes:
+      label: 事象
+      description: 何が起きているかを簡潔に記載してください。
+      placeholder: |
+        例:
+        Databricks Job実行時に silver_table.py でエラーになり、ジョブが失敗する
+    validations:
+      required: true
+
+  - type: textarea
+    id: expected
+    attributes:
+      label: 本来期待する動作
+      description: どう動くべきだったかを記載してください。
+      placeholder: |
+        例:
+        Silverテーブルが正常に作成され、ジョブが成功する
+    validations:
+      required: true
+
+  - type: textarea
+    id: steps
+    attributes:
+      label: 再現手順
+      description: 再現方法をできるだけ具体的に書いてください。
+      placeholder: |
+        1. databricks bundle deploy -t dev を実行
+        2. Jobを起動
+        3. 特定の入力データで失敗する
+    validations:
+      required: true
+
+  - type: textarea
+    id: error_log
+    attributes:
+      label: エラーログ / スクリーンショット
+      description: エラーメッセージやログを貼ってください。
+      render: shell
+
+  - type: textarea
+    id: impact
+    attributes:
+      label: 影響範囲
+      description: どの機能・ジョブ・環境に影響があるかを記載してください。
+      placeholder: |
+        例:
+        - dev環境のデプロイ不可
+        - Goldテーブル更新不可
+        - Streamlitアプリ起動不可
+    validations:
+      required: true
+
+  - type: textarea
+    id: suspected_cause
+    attributes:
+      label: 原因の仮説
+      description: 原因の見立てがあれば記載してください。
+      placeholder: |
+        例:
+        - databricks.yml の wheel パスが誤っている
+        - fixture の依存関係が壊れている
+        - テーブルスキーマ変更に追従できていない
+
+  - type: textarea
+    id: acceptance
+    attributes:
+      label: 修正完了条件
+      description: 修正完了とする条件を記載してください。
+      placeholder: |
+        - [ ] 原因が特定されている
+        - [ ] 修正後に再現しない
+        - [ ] 関連テストを追加 / 更新している
+        - [ ] CI または Databricks Job が正常終了する
+    validations:
+      required: true
+
+  - type: dropdown
+    id: severity
+    attributes:
+      label: 重大度
+      options:
+        - critical
+        - high
+        - medium
+        - low
+    validations:
+      required: true

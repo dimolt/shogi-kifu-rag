@@ -1,0 +1,104 @@
+name: "Feature"
+description: "新機能追加・既存機能の改善"
+title: "[Feature] "
+labels:
+  - enhancement
+body:
+  - type: textarea
+    id: background
+    attributes:
+      label: 背景 / 目的
+      description: なぜこの機能が必要か、どんな課題を解決するかを記載してください。
+      placeholder: |
+        例:
+        - 棋譜検索精度を改善したい
+        - Databricksジョブの手動作業を減らしたい
+        - RAGの回答品質を上げたい
+    validations:
+      required: true
+
+  - type: textarea
+    id: goal
+    attributes:
+      label: やること
+      description: 実装する内容を箇条書きで具体的に書いてください。
+      placeholder: |
+        例:
+        - 棋譜のメタデータ抽出処理を追加する
+        - ベクトル化対象カラムを見直す
+        - Databricks Bundleの設定を追加する
+    validations:
+      required: true
+
+  - type: textarea
+    id: scope
+    attributes:
+      label: 変更対象 / 影響範囲
+      description: 変更が入るディレクトリ・ジョブ・テーブル・CI/CDなどを記載してください。
+      placeholder: |
+        例:
+        - src/shogi_kif_rag/...
+        - databricks/pipelines/...
+        - databricks.yml
+        - GitHub Actions
+        - Bronze / Silver / Gold テーブル
+    validations:
+      required: true
+
+  - type: checkboxes
+    id: target_layer
+    attributes:
+      label: 対象レイヤー
+      options:
+        - label: ingestion
+        - label: preprocessing
+        - label: embedding
+        - label: retrieval
+        - label: app / UI
+        - label: infra / CI/CD
+        - label: docs
+
+  - type: checkboxes
+    id: target_env
+    attributes:
+      label: 影響環境
+      options:
+        - label: local
+        - label: dev
+        - label: prd
+
+  - type: textarea
+    id: acceptance
+    attributes:
+      label: 完了条件（Acceptance Criteria）
+      description: このIssueが完了したと判断できる条件を書いてください。
+      placeholder: |
+        - [ ] 実装が完了している
+        - [ ] pytest / ruff / mypy が通る
+        - [ ] Databricks上で必要な確認が完了している
+        - [ ] README / docs の更新が必要なら反映している
+    validations:
+      required: true
+
+  - type: textarea
+    id: test_items
+    attributes:
+      label: テスト観点
+      description: 確認すべき観点を列挙してください。
+      placeholder: |
+        例:
+        - 正常系: 棋譜を取り込める
+        - 異常系: 空ファイルでも落ちない
+        - 回帰: 既存検索APIが壊れていない
+        - CI: pytest / ruff / mypy が通る
+
+  - type: dropdown
+    id: priority
+    attributes:
+      label: 優先度
+      options:
+        - high
+        - medium
+        - low
+    validations:
+      required: true

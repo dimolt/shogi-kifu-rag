@@ -1,0 +1,57 @@
+name: "Docs"
+description: "README・設計書・運用手順・記事などのドキュメント整備"
+title: "[Docs] "
+labels:
+  - documentation
+body:
+  - type: textarea
+    id: background
+    attributes:
+      label: 背景
+      description: なぜドキュメント更新が必要かを記載してください。
+      placeholder: |
+        例:
+        - セットアップ手順が古くなっている
+        - Bundle deploy手順を明文化したい
+        - テーブル構成や処理フローを整理したい
+    validations:
+      required: true
+
+  - type: textarea
+    id: update_target
+    attributes:
+      label: 更新対象
+      description: どの文書を更新するか記載してください。
+      placeholder: |
+        例:
+        - README.md
+        - docs/architecture.md
+        - docs/deploy.md
+        - docs/testing.md
+    validations:
+      required: true
+
+  - type: textarea
+    id: expected_output
+    attributes:
+      label: 完了イメージ
+      description: どの状態になれば完了かを記載してください。
+      placeholder: |
+        例:
+        - 新規参加者がREADMEだけで環境構築できる
+        - Databricks deploy手順が迷わず実行できる
+        - データフロー図とテーブル責務が説明されている
+    validations:
+      required: true
+
+  - type: textarea
+    id: done
+    attributes:
+      label: 完了条件
+      description: 完了条件をチェックリストで記載してください。
+      placeholder: |
+        - [ ] ドキュメント更新済み
+        - [ ] 手順が現行実装と一致している
+        - [ ] 古い情報を削除している
+    validations:
+      required: true
