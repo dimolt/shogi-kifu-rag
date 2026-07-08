@@ -16,7 +16,7 @@ import pytest
 from databricks.connect import DatabricksSession
 from pyspark.sql import SparkSession
 
-from tests.conftest import _DATABRICKS_PROFILE, _databricks_cli_base_args
+from tests.conftest import _databricks_cli_base_args
 from tests.helpers.constants import TEST_CATALOG, TEST_GOLD_SCHEMA, TEST_SILVER_SCHEMA
 from tests.helpers.expectations import _get_event_log_errors
 
@@ -26,17 +26,17 @@ _POLL_TIMEOUT_SEC = 900
 
 
 @pytest.fixture(scope="session")
-def spark() -> SparkSession:
-    """Databricks Connect経由のSparkSessionを提供する。
+def spark(databricks_profile: str) -> SparkSession:
+    """環境に応じてDatabricks Connectセッションを構築する。
 
-    `.databrickscfg` の DEFAULT プロファイルに設定されたServerless computeへ接続する。
-    integration/e2eマーカー付きテストからのみ利用すること。
-
-    Returns:
-        接続済みのSparkSession。
+    ローカル実行時はDATABRICKS_CONFIG_PROFILE環境変数で指定したプロファイルを使用し、
+    CI/CD（サービスプリンシパル認証）ではprofile()を呼ばず、環境変数ベースの
+    デフォルト認証チェーン（oauth-m2m）に委ねる。
     """
-    profile = _DATABRICKS_PROFILE or "DEFAULT"
-    return DatabricksSession.builder.profile(profile).getOrCreate()
+    builder = DatabricksSession.builder
+    if databricks_profile:
+        builder = builder.profile(databricks_profile)
+    return builder.getOrCreate()
 
 
 class PipelineUpdateFailedError(Exception):

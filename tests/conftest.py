@@ -11,6 +11,7 @@ import sys
 from pathlib import Path
 
 import pytest
+from dotenv import load_dotenv
 from helpers.constants import TEST_CATALOG, TEST_GOLD_SCHEMA, TEST_SILVER_SCHEMA
 
 # Driverが使っているPython実行ファイルをWorkerにも強制させる
@@ -19,9 +20,24 @@ os.environ["PYSPARK_PYTHON"] = sys.executable
 os.environ["PYSPARK_DRIVER_PYTHON"] = sys.executable
 
 # databricksモジュールをインポート可能にするためPythonパスに追加
-sys.path.insert(0, str(Path(__file__).parent.parent))
+_PROJECT_ROOT = Path(__file__).parent.parent
+sys.path.insert(0, _PROJECT_ROOT)
 
+load_dotenv(_PROJECT_ROOT / ".env")
 _DATABRICKS_PROFILE = os.environ.get("DATABRICKS_CONFIG_PROFILE")
+
+
+def _fqn(schema: str, table: str) -> str:
+    """カタログ・スキーマ・テーブル名から完全修飾名を組み立てる。
+
+    Args:
+        schema: スキーマ名（Silver/Gold）。
+        table: テーブル名。
+
+    Returns:
+        str: `catalog.schema.table` 形式の完全修飾名。
+    """
+    return f"{TEST_CATALOG}.{schema}.{table}"
 
 
 def _databricks_cli_base_args() -> list[str]:
@@ -34,6 +50,16 @@ def _databricks_cli_base_args() -> list[str]:
     if _DATABRICKS_PROFILE:
         return ["--profile", _DATABRICKS_PROFILE]
     return []
+
+
+@pytest.fixture(scope="session")
+def databricks_profile() -> str | None:
+    """Databricks CLIのプロファイル名を返す。
+
+    Returns:
+        str | None: プロファイル名。未設定時はNone。
+    """
+    return _DATABRICKS_PROFILE
 
 
 @pytest.fixture(scope="session")
