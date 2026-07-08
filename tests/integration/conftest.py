@@ -3,7 +3,6 @@
 spark, pipeline_id, FQN系のフィクスチャは `tests/conftest.py`（ルート）に
 集約されているため、ここではintegration層固有のDataFrame系フィクスチャのみ定義する。
 """
-import os
 import sys
 from pathlib import Path
 
@@ -17,18 +16,18 @@ sys.path.insert(0, str(project_root))
 
 
 @pytest.fixture(scope="session")
-def spark() -> SparkSession:
-    """Databricks Connect経由のSparkSessionを提供する。
+def spark(databricks_profile: str) -> SparkSession:
+    """環境に応じてDatabricks Connectセッションを構築する。
 
-    `.databrickscfg` の DEFAULT プロファイルに設定されたServerless computeへ接続する。
-    integration/e2eマーカー付きテストからのみ利用すること。
-
-    Returns:
-        接続済みのSparkSession。
+    ローカル実行時はDATABRICKS_CONFIG_PROFILE環境変数で指定したプロファイルを使用し、
+    CI/CD（サービスプリンシパル認証）ではprofile()を呼ばず、環境変数ベースの
+    デフォルト認証チェーン（oauth-m2m）に委ねる。
     """
-    databricks_profile = os.environ.get("DATABRICKS_CONFIG_PROFILE")
-    profile = databricks_profile or "DEFAULT"
-    return DatabricksSession.builder.profile(profile).getOrCreate()
+
+    builder = DatabricksSession.builder
+    if databricks_profile:
+        builder = builder.profile(databricks_profile)
+    return builder.getOrCreate()
 
 
 @pytest.fixture(scope="session")
