@@ -193,7 +193,8 @@ ignore_missing_imports = true
 select = ["E", "F", "I", "N", "W"]
 
 # Notebook や notebook 由来ファイルは lint 対象外
-exclude = ["*.ipynb", "ntb_*.py"]
+# skillsフォルダ 対象外に追加
+exclude = ["*.ipynb", "ntb_*.py", ".agents/skills/*"]
 
 
 # =========================================
