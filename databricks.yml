@@ -57,6 +57,14 @@ targets:
     variables:
       wheel_artifact_dir: /Volumes/shogi/artifacts/wheels/${workspace.current_user.short_name}/.internal
 
+  test:
+    mode: development
+    workspace:
+      root_path: /Workspace/Users/${workspace.current_user.userName}/.bundle/${bundle.name}/${bundle.target}
+      artifact_path: /Volumes/shogi/artifacts/wheels/${workspace.current_user.short_name}
+    variables:
+      wheel_artifact_dir: /Volumes/shogi/artifacts/wheels/${workspace.current_user.short_name}/.internal
+      catalog: "shogi_test"
 
   prod:
     mode: production
