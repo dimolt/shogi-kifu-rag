@@ -5,8 +5,8 @@ on:
     branches: [main]
     paths:
       - 'databricks.yml'
-      - 'resources/**'
-      - 'databricks/**'
+      - 'dbx_bundle/resources/**'
+      - 'dbx_bundle/pipelines/**'
 
 concurrency:
   group: bundle-validate-${{ github.ref }}
