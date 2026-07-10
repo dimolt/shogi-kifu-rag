@@ -127,11 +127,15 @@ def _write_csv(rows: list[AnalysisRow], out_csv: Path) -> None:
         writer.writerows(rows)
 
 
-def main() -> None:
-    """KIFファイルをやねうら王で解析しCSVを出力するエントリポイント。"""
+def analyze_kif_to_csv(kif_path: Path, out_csv: Path) -> None:
+    """KIFファイルをやねうら王で解析しCSVを出力する。
+
+    Args:
+        kif_path: 解析対象のKIFファイルパス。
+        out_csv: 出力先CSVファイルパス。
+    """
     logging.basicConfig(level=logging.INFO, format="%(message)s")
 
-    kif_path, out_csv = _parse_args(sys.argv)
     game_id = kif_path.stem
 
     logger.info("解析開始: %s", kif_path)
@@ -153,7 +157,13 @@ def main() -> None:
 
     _write_csv(rows, out_csv)
 
-    print(f"CSV出力完了: {out_csv}")
+    logger.info("CSV出力完了: %s", out_csv)
+
+
+def main() -> None:
+    """KIFファイルをやねうら王で解析しCSVを出力するエントリポイント。"""
+    kif_path, out_csv = _parse_args(sys.argv)
+    analyze_kif_to_csv(kif_path, out_csv)
 
 
 if __name__ == "__main__":

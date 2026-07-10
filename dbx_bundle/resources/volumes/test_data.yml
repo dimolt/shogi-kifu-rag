@@ -1,0 +1,19 @@
+resources:
+  schemas:
+    test_schema:
+      catalog_name: ${var.catalog}
+      name: ${var.test_schema}
+      comment: "Job-based integration test用のスキーマ"
+
+  volumes:
+    test_data_volume:
+      catalog_name: ${var.catalog}
+      schema_name: ${var.test_schema}
+      name: "data"
+      volume_type: MANAGED
+      comment: "integration test用のテストデータ格納Volume"
+      grants:
+        - principal: ${workspace.current_user.userName}
+          privileges:
+            - READ_VOLUME
+            - WRITE_VOLUME
