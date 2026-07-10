@@ -8,9 +8,14 @@ on:
       - 'resources/**'
       - 'databricks/**'
 
+concurrency:
+  group: bundle-validate-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
   bundle-validate:
     runs-on: ubuntu-latest
+    timeout-minutes: 10
     env:
       DATABRICKS_HOST: ${{ secrets.DATABRICKS_HOST }}
       DATABRICKS_CLIENT_ID: ${{ secrets.DATABRICKS_CLIENT_ID }}
