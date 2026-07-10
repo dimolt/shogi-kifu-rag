@@ -7,11 +7,7 @@ resources:
         - environment_key: default
           spec:
             environment_version: "4"
-            dependencies:
-              - "${var.wheel_artifact_dir}/shogi_kif_rag-${var.wheel_version}-py3-none-any.whl"
-              - chromadb
-              - sentence_transformers
-
+            dependencies: ${var.wheel_dependencies}
       tasks:
         - task_key: silver_pipeline
           pipeline_task:
