@@ -5,12 +5,17 @@ on:
     branches: [main]
     paths:
       - 'databricks.yml'
-      - 'resources/**'
-      - 'databricks/**'
+      - 'dbx_bundle/resources/**'
+      - 'dbx_bundle/pipelines/**'
+
+concurrency:
+  group: bundle-validate-${{ github.ref }}
+  cancel-in-progress: true
 
 jobs:
   bundle-validate:
     runs-on: ubuntu-latest
+    timeout-minutes: 10
     env:
       DATABRICKS_HOST: ${{ secrets.DATABRICKS_HOST }}
       DATABRICKS_CLIENT_ID: ${{ secrets.DATABRICKS_CLIENT_ID }}
