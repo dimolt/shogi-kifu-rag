@@ -8,6 +8,8 @@ on:
       - 'tests/**'
       - 'pyproject.toml'
       - 'uv.lock'
+      - '.github/workflows/ci-python-checks.yml'
+      - '.github/actions/setup-deps/action.yml'
 
 concurrency:
   group: python-checks-${{ github.ref }}
