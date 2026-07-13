@@ -1,3 +1,5 @@
+import argparse
+
 import requests
 from bs4 import BeautifulSoup
 from pyspark.sql import SparkSession
@@ -94,6 +96,11 @@ def main():
                 extract_strategy_info(content, strategy)
             )
 
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--catalog", required=True)
+    parser.add_argument("--silver_schema", required=True)
+    args = parser.parse_args()
+
     # DataFrameの作成
     schema = StructType([
         StructField("strategy", StringType(), True),
@@ -110,6 +117,6 @@ def main():
         .format("delta")
         .mode("overwrite")
         .saveAsTable(
-            "shogi.shogi_silver.joseki_knowledge"
+            f"{args.catalog}.{args.silver_schema}.joseki_knowledge"
         )
     )

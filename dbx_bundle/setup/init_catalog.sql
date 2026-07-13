@@ -44,6 +44,10 @@ SET VAR catalog_name = :catalog;
 --    オブジェクト名として解釈させるための構文。catalog名だけを外から差し替えられる。
 -- -----------------------------------------------------------------------------
 
+-- landing層 - ファイル格納
+CREATE SCHEMA IF NOT EXISTS IDENTIFIER(catalog_name || '.landing')
+  COMMENT 'landing層 - ファイル格納';
+
 -- Bronze層 - 生データ格納
 CREATE SCHEMA IF NOT EXISTS IDENTIFIER(catalog_name || '.shogi_bronze')
   COMMENT 'Bronze層 - 生データ格納';
@@ -69,8 +73,8 @@ CREATE SCHEMA IF NOT EXISTS IDENTIFIER(catalog_name || '.test')
 -- -----------------------------------------------------------------------------
 
 -- KIFファイル（棋譜データ）のアップロード用。Bronze層への取り込み元。
-CREATE VOLUME IF NOT EXISTS IDENTIFIER(catalog_name || '.shogi_bronze.landing')
-  COMMENT 'KIFファイルアップロード用';
+CREATE VOLUME IF NOT EXISTS IDENTIFIER(catalog_name || '.landing.analyzed')
+  COMMENT '解析済棋譜アップロード用';
 
 -- shogi-kif-rag wheel の配置用。databricks.yml の workspace.artifact_path が
 -- このVolumeを指す（serverless computeでのキャッシュ問題を避けるためVolume経由にしている）。

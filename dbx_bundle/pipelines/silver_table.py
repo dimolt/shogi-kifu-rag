@@ -3,8 +3,9 @@
 from pyspark import pipelines as dp
 from silver_transforms import build_positions
 
-CSV_PATH = "/Volumes/shogi/landing/kif/analysis.csv"
-
+CATALOG = spark.conf.get("bundle.catalog")
+LANDING_SCHEMA = spark.conf.get("bundle.landing_schema")
+CSV_PATH = f"/Volumes/{CATALOG}/{LANDING_SCHEMA}/analyzed/analysis.csv"
 
 @dp.table
 @dp.expect("valid_game_id", "game_id IS NOT NULL")
