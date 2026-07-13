@@ -3,8 +3,8 @@
 from gold_transforms import build_game_summary, build_position_features
 from pyspark import pipelines as dp
 
-catalog = spark.conf.get("catalog")
-silver_schema = spark.conf.get("silver_schema")
+catalog = spark.conf.get("bundle.catalog")
+silver_schema = spark.conf.get("bundle.silver_schema")
 
 
 @dp.table

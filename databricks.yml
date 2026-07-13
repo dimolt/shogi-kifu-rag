@@ -31,6 +31,9 @@ variables:
   catalog:
     description: The catalog to use
     default: "shogi"
+  landing_schema:
+    description: The schema to use
+    default: "landing"
   bronze_schema:
     description: The schema to use
     default: "shogi_bronze"
@@ -67,9 +70,7 @@ targets:
       catalog: "shogi_dev"
 
   test:
-    # mode: development を削除 スキーマ名へのプレフィックスが付与を回避
-    presets:
-      pipelines_development: true   # pipelinesに、開発環境用の設定を適用
+    mode: development
     workspace:
       root_path: /Workspace/Users/${workspace.current_user.userName}/.bundle/${bundle.name}/${bundle.target}
       artifact_path: ${var.wheel_artifact_dir}/${workspace.current_user.short_name}

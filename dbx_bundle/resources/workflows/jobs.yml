@@ -25,9 +25,15 @@ resources:
           python_wheel_task:
             package_name: shogi-kif-rag
             entry_point: floodgate
+            named_parameters:
+              catalog: ${var.catalog}
+              silver_schema: ${var.silver_schema}
 
         - task_key: wikipedia
           environment_key: default
           python_wheel_task:
             package_name: shogi-kif-rag
             entry_point: wikipedia
+            named_parameters:
+              catalog: ${var.catalog}
+              silver_schema: ${var.silver_schema}
