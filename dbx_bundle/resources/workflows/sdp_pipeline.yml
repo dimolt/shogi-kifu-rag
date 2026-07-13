@@ -2,6 +2,9 @@ resources:
   pipelines:
     silver_pipeline:
       name: silver_pipeline
+      configuration:
+        bundle.catalog: "${var.catalog}"  # 予約語 catalogとの衝突を回避
+        bundle.landing_schema: "${var.landing_schema}"
       libraries:
         - glob:
             include: ../../pipelines/silver_table.py
@@ -15,8 +18,8 @@ resources:
     gold_pipeline:
       name: gold_pipeline
       configuration:
-        catalog: "${var.catalog}"
-        silver_schema: "${var.silver_schema}"
+        bundle.catalog: "${var.catalog}"  # 予約語 catalogとの衝突を回避
+        bundle.silver_schema: "${var.silver_schema}"
       libraries:
         - glob:
             include: ../../pipelines/gold_table.py
