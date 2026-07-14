@@ -1,3 +1,4 @@
+import argparse
 from datetime import datetime, timedelta
 
 import requests
@@ -95,6 +96,11 @@ def main():
     # Floodgate棋譜の取得
     games = fetch_floodgate_games(days_back=7)
 
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--catalog", required=True)
+    parser.add_argument("--silver_schema", required=True)
+    args = parser.parse_args()
+
     # 棋譜の解析
     all_positions = []
     for game in games:
@@ -118,4 +124,4 @@ def main():
     df.write \
       .format("delta") \
       .mode("append") \
-      .saveAsTable("shogi.shogi_silver.floodgate_positions")
+      .saveAsTable(f"{args.catalog}.{args.silver_schema}.floodgate_positions")
