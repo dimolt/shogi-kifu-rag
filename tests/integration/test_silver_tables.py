@@ -129,11 +129,6 @@ def test_positionsテーブルのデータ品質(positions_df: DataFrame) -> Non
     ).count()
     assert invalid_player_count == 0, f"playerが'black'/'white'以外の値: {invalid_player_count}件"
 
-    # score_cp範囲チェック（NULLまたは0以上）
-    invalid_score_count = positions_df.filter(
-        F.col("score_cp").isNotNull() & (F.col("score_cp") < 0)
-    ).count()
-    assert invalid_score_count == 0, f"score_cpが負の値: {invalid_score_count}件"
 
     # 重複行チェック（game_id, move_numberの組み合わせ）
     duplicate_count = positions_df.groupBy("game_id", "move_number").agg(

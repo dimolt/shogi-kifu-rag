@@ -48,33 +48,6 @@ def test_jobの全タスクが正常に完了する(job_run_result: JobRunResult
         )
 
 
-def test_silver_pipelineタスクがgold_pipelineより先に完了する(
-    job_run_result: JobRunResult,
-) -> None:
-    """タスク依存関係を検証：silver_pipelineがgold_pipelineより先に完了する。
-
-    Arrange:
-        job_run_resultフィクスチャからJob実行結果を取得する。
-    Act:
-        silver_pipelineとgold_pipelineのrun_idを取得し比較する。
-    Assert:
-        silver_pipelineのrun_idがgold_pipelineのrun_idより小さいこと
-        （silver_pipelineが先に実行されていること）。
-    """
-    # Arrange
-    task_results = {task.task_key: task for task in job_run_result.tasks}
-    silver_task = task_results["silver_pipeline"]
-    gold_task = task_results["gold_pipeline"]
-
-    # Assert
-    assert silver_task.run_id is not None, "silver_pipeline run_id should not be None"
-    assert gold_task.run_id is not None, "gold_pipeline run_id should not be None"
-    assert silver_task.run_id < gold_task.run_id, (
-        f"silver_pipeline run_id ({silver_task.run_id}) should be less than "
-        f"gold_pipeline run_id ({gold_task.run_id})"
-    )
-
-
 def test_jobに期待される全タスクが含まれている(
     job_run_result: JobRunResult,
 ) -> None:

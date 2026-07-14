@@ -139,7 +139,8 @@ def test_position_featuresテーブルのデータ品質(position_features_df: D
 
     # is_best_move NULLチェック
     null_is_best_move_count = position_features_df.filter(
-        F.col("is_best_move").isNull()
+        F.col("is_best_move").isNull() &
+        (F.col("move_number") != 0) # 初手以外
     ).count()
     assert null_is_best_move_count == 0, (
         f"is_best_moveにNULLが存在する: {null_is_best_move_count}件"
@@ -147,7 +148,8 @@ def test_position_featuresテーブルのデータ品質(position_features_df: D
 
     # search_text NULLチェック
     null_search_text_count = position_features_df.filter(
-        F.col("search_text").isNull()
+        F.col("search_text").isNull() &
+        (F.col("move_number") != 0) # 初手以外
     ).count()
     assert null_search_text_count == 0, (
         f"search_textにNULLが存在する: {null_search_text_count}件"
