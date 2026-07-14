@@ -167,90 +167,89 @@ def job_run_result(workspace_client: WorkspaceClient, job_id: int) -> JobRunResu
     return JobMonitor(workspace_client).wait_for_completion(waiter.run_id)
 
 
-@pytest.fixture(scope="session", autouse=True)
-def prepare_test_data(spark: SparkSession, test_data_config: dict) -> None:
-    """テストデータを準備する
+# @pytest.fixture(scope="session", autouse=True)
+# def prepare_test_data(spark: SparkSession, test_data_config: dict[str, List[TestDataScenarioConfig]]) -> None:
+#     """テストデータを準備する
 
-    テストデータが存在しない場合のみ、KIFファイルからCSVを生成する。
-    エンジンはDatabricks上に存在しないため、
-    エンジン解析なしでKIFをCSVに変換する関数を使用する。
+#     テストデータが存在しない場合のみ、KIFファイルからCSVを生成する。
+#     エンジンはDatabricks上に存在しないため、
+#     エンジン解析なしでKIFをCSVに変換する関数を使用する。
 
-    Args:
-        spark: SparkSessionフィクスチャ
-        test_data_config: test_data_configフィクスチャ
+#     Args:
+#         spark: SparkSessionフィクスチャ
+#         test_data_config: test_data_configフィクスチャ
 
-    Note:
-        - 既にテストデータが存在する場合はスキップする（冪等性）
-        - エンジン解析を行わないため、best_move, score_cp, pvはダミー値
-        - テストデータの構造検証には十分
-    """
-    import csv
-    from pathlib import Path
+#     Note:
+#         - 既にテストデータが存在する場合はスキップする（冪等性）
+#         - エンジン解析を行わないため、best_move, score_cp, pvはダミー値
+#         - テストデータの構造検証には十分
+#     """
+#     import csv
 
-    from shogi_kif_rag.kif.parser import KifParser
-    from shogi_kif_rag.kif.schemas.shemas import CSV_FIELDNAMES, AnalysisRow
+#     from shogi_kif_rag.kif.parser import KifParser
+#     from shogi_kif_rag.kif.schemas.shemas import CSV_FIELDNAMES, AnalysisRow
 
-    # smallシナリオのデータを準備
-    small_configs = test_data_config["small"]
+#     # smallシナリオのデータを準備
+#     small_configs = test_data_config["small"]
 
-    # 各CSVファイル設定について処理
-    for i, config in enumerate(small_configs):
-        target_path = config["path"]
+#     # 各CSVファイル設定について処理
+#     for i, config in enumerate(small_configs):
+#         target_path = str(config.csv_path)
 
-        # データが既に存在する場合はスキップ
-        if _data_exists(spark, target_path):
-            continue
+#         # データが既に存在する場合はスキップ
+#         if _data_exists(spark, target_path):
+#             continue
 
-        # KIFファイルからCSVを生成（エンジン解析なし）
-        kif_path = Path("data/kif_files/sample.kif")
+#         # KIFファイルからCSVを生成（エンジン解析なし）
+#         kif_path = config.kif_path
 
-        # KIFファイルをパース
-        parser = KifParser(str(kif_path))
-        positions = parser.load_file()
-        game_id = kif_path.stem
+#         # KIFファイルをパース
+#         parser = KifParser(str(kif_path))
+#         positions = parser.load_file()
+#         game_id = kif_path.stem
 
-        # エンジン解析なしでCSV行を作成
-        rows: list[AnalysisRow] = []
-        for pos in positions:
-            row: AnalysisRow = {
-                "game_id": game_id,
-                **pos,
-                "best_move": "",  # ダミー値
-                "score_cp": 0,     # ダミー値
-                "pv": "",         # ダミー値
-            }
-            rows.append(row)
+#         # エンジン解析なしでCSV行を作成
+#         rows: list[AnalysisRow] = []
+#         for pos in positions:
+#             row: AnalysisRow = {
+#                 "game_id": game_id,
+#                 **pos,
+#                 "best_move": "",  # ダミー値
+#                 "score_cp": 0,     # ダミー値
+#                 "pv": "",         # ダミー値
+#             }
+#             rows.append(row)
 
-        # Spark DataFrameを作成してVolumeに保存
-        from io import StringIO
+#         # Spark DataFrameを作成してVolumeに保存
+#         from io import StringIO
 
-        import pandas as pd
+#         import pandas as pd
 
-        output = StringIO()
-        writer = csv.DictWriter(output, fieldnames=CSV_FIELDNAMES)
-        writer.writeheader()
-        writer.writerows(rows)
+#         output = StringIO()
+#         writer = csv.DictWriter(output, fieldnames=CSV_FIELDNAMES)
+#         writer.writeheader()
+#         writer.writerows(rows)
 
-        pdf = pd.read_csv(StringIO(output.getvalue()))
-        df = spark.createDataFrame(pdf)
-        df.write.mode("overwrite").csv(target_path, header=True)
+#         pdf = pd.read_csv(StringIO(output.getvalue()))
+#         df = spark.createDataFrame(pdf)
+#         df.write.mode("overwrite").csv(target_path, header=True)
 
 
-def _data_exists(spark: SparkSession, path: str) -> bool:
-    """指定パスにデータが存在するか確認する
+# def _data_exists(spark: SparkSession, path: str) -> bool:
+#     """指定パスにデータが存在するか確認する
 
-    Args:
-        spark: SparkSession
-        path: チェックするパス
+#     Args:
+#         spark: SparkSession
+#         path: チェックするパス
 
-    Returns:
-        bool: データが存在する場合はTrue
-    """
-    try:
-        df = spark.read.csv(path, header=True)
-        return df.count() > 0
-    except Exception:
-        return False
+#     Returns:
+#         bool: データが存在する場合はTrue
+#     """
+#     try:
+#         df = spark.read.csv(path, header=True)
+#         return df.count() > 0
+#     except Exception:
+#         return False
 
 
 @pytest.fixture(scope="session")

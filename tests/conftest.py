@@ -111,13 +111,13 @@ def positions_fqn() -> str:
 @pytest.fixture(scope="session")
 def floodgate_positions_fqn() -> str:
     """Silverテーブルfloodgate_positionsのFQNを返す。"""
-    return _fqn(TEST_GOLD_SCHEMA, "floodgate_positions")
+    return _fqn(TEST_SILVER_SCHEMA, "floodgate_positions")
 
 
 @pytest.fixture(scope="session")
 def joseki_knowledge_fqn() -> str:
     """Silverテーブルjoseki_knowledgeのFQNを返す。"""
-    return _fqn(TEST_GOLD_SCHEMA, "joseki_knowledge")
+    return _fqn(TEST_SILVER_SCHEMA, "joseki_knowledge")
 
 
 @pytest.fixture(scope="session")
