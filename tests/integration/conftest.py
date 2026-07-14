@@ -1,6 +1,6 @@
 """pytest統合テスト用フィクスチャ定義（Layer 2）。
 
-spark, pipeline_id, FQN系のフィクスチャは `tests/conftest.py`（ルート）に
+spark, pipeline_id, FQN系のフィクスチャは [tests/conftest.py](cci:7://file:///c:/shogi-kif-rag/tests/conftest.py:0:0-0:0)（ルート）に
 集約されているため、ここではintegration層固有のDataFrame系フィクスチャのみ定義する。
 """
 import sys
@@ -10,20 +10,29 @@ from typing import List
 import pytest
 from databricks.connect import DatabricksSession
 from databricks.sdk import WorkspaceClient
-from helpers.job_monitoring import JobMonitor
-from helpers.models import JobRunResult, TestDataScenarioConfig
 from pyspark.sql import DataFrame, SparkSession
 
 # databricksモジュールをインポート可能にするためPythonパスに追加
+# uv run pytestの場合でも、helpersモジュールとshogi_kif_ragモジュールを
+# インポート可能にするためにプロジェクトルートを追加
 project_root = Path(__file__).parent.parent.parent
 sys.path.insert(0, str(project_root))
+
+# uv実行時はプロジェクトがインストールされているため、
+# helpersモジュールもtestsディレクトリからインポート可能にする
+tests_dir = project_root / "tests"
+if str(tests_dir) not in sys.path:
+    sys.path.insert(0, str(tests_dir))
+
+from helpers.job_monitoring import JobMonitor  #noqa: E402
+from helpers.models import JobRunResult, TestDataScenarioConfig  #noqa: E402
 
 
 @pytest.fixture(scope="session")
 def test_data_config() -> dict[str, List[TestDataScenarioConfig]]:
     """Job-based integration testで使用するシナリオ別テストデータ設定を提供する。
 
-    `tests/scripts/setup_test_data_volume.py` の定数（VOLUME_PATH, SAMPLE_KIF_PATH,
+    [tests/scripts/setup_test_data_volume.py](cci:7://file:///c:/shogi-kif-rag/tests/scripts/setup_test_data_volume.py:0:0-0:0) の定数（VOLUME_PATH, SAMPLE_KIF_PATH,
     LOCAL_CSV_PATH）を"small"シナリオとして集約しつつ、将来のシナリオ追加
     （medium/large/edge_cases）に備えた辞書構造とする。
 
@@ -130,7 +139,7 @@ def workspace_client(databricks_profile: str) -> WorkspaceClient:
 def job_id(_bundle_resources: dict) -> int:
     """デプロイ済みshogi_kif_rag_main_jobのjob_idをCLI経由で取得する。
 
-    `_bundle_resources`（`databricks bundle summary` CLI実行結果）から取得する。
+    databricks bundle summary CLI実行結果から取得する。
     本fixtureはJobを起動しない。
 
     Returns:
@@ -143,9 +152,9 @@ def job_id(_bundle_resources: dict) -> int:
 def job_run_result(workspace_client: WorkspaceClient, job_id: int) -> JobRunResult:
     """shogi_kif_rag_main_jobをSDK経由で起動し、完了するまで待機した結果を提供する。
 
-    job_idの取得はCLI経由（`_bundle_resources`）、Job自体の起動・監視は
-    Databricks SDK（`workspace_client.jobs.run_now` + `JobMonitor`）経由という
-    Hybrid CLI + SDKアプローチを採る。
+    job_idの取得はCLI経由
+    Job自体の起動・監視はDatabricks SDK経由
+    という、Hybrid CLI + SDKアプローチを採る。
 
     Returns:
         JobRunResult: Job全体・タスク単位の実行結果。

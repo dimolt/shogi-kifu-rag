@@ -4,6 +4,6 @@
 （スキーマのdrop & recreate）の両方から参照される。
 """
 
-TEST_CATALOG = "shogi"
+TEST_CATALOG = "shogi_dev"
 TEST_SILVER_SCHEMA = "shogi_silver"
 TEST_GOLD_SCHEMA = "shogi_gold"

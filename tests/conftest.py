@@ -29,19 +29,6 @@ load_dotenv(_PROJECT_ROOT / ".env")
 _DATABRICKS_PROFILE = os.environ.get("DATABRICKS_CONFIG_PROFILE")
 
 
-def _fqn(schema: str, table: str) -> str:
-    """カタログ・スキーマ・テーブル名から完全修飾名を組み立てる。
-
-    Args:
-        schema: スキーマ名（Silver/Gold）。
-        table: テーブル名。
-
-    Returns:
-        str: `catalog.schema.table` 形式の完全修飾名。
-    """
-    return f"{TEST_CATALOG}.{schema}.{table}"
-
-
 @pytest.fixture(scope="session")
 def databricks_profile() -> str | None:
     """Databricks CLIのプロファイル名を返す。
@@ -99,10 +86,38 @@ def gold_pipeline_id(_bundle_resources: dict) -> str:
     return _bundle_resources["resources"]["pipelines"]["gold_pipeline"]["id"]
 
 
+# =============================================================================
+# テーブル完全修飾名
+# =============================================================================
+def _fqn(schema: str, table: str) -> str:
+    """カタログ・スキーマ・テーブル名から完全修飾名を組み立てる。
+
+    Args:
+        schema: スキーマ名（Silver/Gold）。
+        table: テーブル名。
+
+    Returns:
+        str: `catalog.schema.table` 形式の完全修飾名。
+    """
+    return f"{TEST_CATALOG}.{schema}.{table}"
+
+
 @pytest.fixture(scope="session")
 def positions_fqn() -> str:
     """SilverテーブルpositionsのFQNを返す。"""
     return _fqn(TEST_SILVER_SCHEMA, "positions")
+
+
+@pytest.fixture(scope="session")
+def floodgate_positions_fqn() -> str:
+    """Silverテーブルfloodgate_positionsのFQNを返す。"""
+    return _fqn(TEST_GOLD_SCHEMA, "floodgate_positions")
+
+
+@pytest.fixture(scope="session")
+def joseki_knowledge_fqn() -> str:
+    """Silverテーブルjoseki_knowledgeのFQNを返す。"""
+    return _fqn(TEST_GOLD_SCHEMA, "joseki_knowledge")
 
 
 @pytest.fixture(scope="session")
