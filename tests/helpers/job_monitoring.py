@@ -12,7 +12,8 @@ import time
 
 from databricks.sdk import WorkspaceClient
 from databricks.sdk.service.jobs import Run, RunLifeCycleState, RunResultState
-from helpers.models import JobRunFailedError, JobRunResult, TaskResult
+
+from tests.helpers.models import JobRunFailedError, JobRunResult, TaskResult
 
 # ポーリング設定のデフォルト値。
 _DEFAULT_POLL_INTERVAL_SEC = 15

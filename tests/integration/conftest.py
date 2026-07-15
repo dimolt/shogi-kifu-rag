@@ -8,10 +8,11 @@ from typing import List
 
 import pytest
 from databricks.sdk import WorkspaceClient
-from helpers.job_monitoring import JobMonitor  #noqa: E402
-from helpers.models import JobRunResult, TestDataScenarioConfig  #noqa: E402
-from helpers.spark_fixture import spark  #noqa: F401
 from pyspark.sql import DataFrame, SparkSession
+
+from tests.helpers.job_monitoring import JobMonitor  #noqa: E402
+from tests.helpers.models import JobRunResult, TestDataScenarioConfig  #noqa: E402
+from tests.helpers.spark_fixture import spark  #noqa: F401
 
 
 @pytest.fixture(scope="session")

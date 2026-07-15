@@ -12,8 +12,9 @@ from pathlib import Path
 
 import pytest
 from dotenv import load_dotenv
-from helpers.constants import TEST_CATALOG, TEST_GOLD_SCHEMA, TEST_SILVER_SCHEMA
-from helpers.databricks_cli import databricks_cli_base_args
+
+from tests.helpers.constants import TEST_CATALOG, TEST_GOLD_SCHEMA, TEST_SILVER_SCHEMA
+from tests.helpers.databricks_cli import databricks_cli_base_args
 
 # Driverが使っているPython実行ファイルをWorkerにも強制させる
 # (uv環境でPATH上に複数バージョンのPythonが存在する場合のバージョン不一致を防ぐ)
@@ -23,10 +24,6 @@ os.environ["PYSPARK_DRIVER_PYTHON"] = sys.executable
 # databricksモジュールをインポート可能にするためPythonパスに追加
 _PROJECT_ROOT = Path(__file__).parent.parent
 sys.path.insert(0, str(_PROJECT_ROOT))
-
-# testsディレクトリも追加（helpersモジュールのインポート用）
-_TESTS_DIR = _PROJECT_ROOT / "tests"
-sys.path.insert(0, str(_TESTS_DIR))
 
 # dotenvで環境変数をロードする
 load_dotenv(_PROJECT_ROOT / ".env")
