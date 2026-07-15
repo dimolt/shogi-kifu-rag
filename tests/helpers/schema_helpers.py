@@ -4,7 +4,7 @@ E2Eテストでのスキーマクリーンアップ処理を集約する。
 """
 import subprocess
 
-from helpers.databricks_cli import databricks_cli_base_args
+from tests.helpers.databricks_cli import databricks_cli_base_args
 
 
 def drop_recreate_schema(catalog: str, schema: str) -> None:
