@@ -1,4 +1,5 @@
 import argparse
+import re
 from datetime import datetime, timedelta
 
 import requests
@@ -8,6 +9,9 @@ from pyspark.sql.types import (
     StringType,
 )
 
+FLOODGATE_BASE = "https://wdoor.c.u-tokyo.ac.jp/shogi/x"
+MAX_GAMES_PER_DAY = 10
+
 
 # Floodgate APIから棋譜を取得
 def fetch_floodgate_games(days_back: int = 7) -> list:
@@ -15,17 +19,34 @@ def fetch_floodgate_games(days_back: int = 7) -> list:
     Args:
         days_back: 取得する日数
     Returns:
-        棋譜リスト
+        棋譜リスト（各要素は {"id": 対局ID, "csa": CSAテキスト} の辞書）
     """
-    base_url = "https://shogi-forest.appspot.com/api/floodgate"
     games = []
 
     for i in range(days_back):
-        date = (datetime.now() - timedelta(days=i)).strftime("%Y%m%d")
-        url = f"{base_url}/{date}"
-        response = requests.get(url)
-        if response.status_code == 200:
-            games.extend(response.json())
+        date = datetime.now() - timedelta(days=i)
+        day_url = f"{FLOODGATE_BASE}/{date.year}/{date.month:02d}/{date.day:02d}/"
+
+        try:
+            day_response = requests.get(day_url, timeout=10)
+        except requests.RequestException:
+            continue
+        if day_response.status_code != 200:
+            continue
+
+        filenames = re.findall(r'(wdoor\+floodgate[^\s"]+\.csa)', day_response.text)
+        urls = [f"{day_url}{fname}" for fname in filenames][:MAX_GAMES_PER_DAY]
+
+        for url in urls:
+            try:
+                game_response = requests.get(url, timeout=15)
+            except requests.RequestException:
+                continue
+            if game_response.status_code != 200:
+                continue
+            game_id = url.split("/")[-1].rsplit(".", 1)[0]
+            games.append({"id": game_id, "csa": game_response.text})
+
     return games
 
 
@@ -42,11 +63,17 @@ def parse_csa(csa_text: str) -> dict:
     lines = csa_text.split("\n")
     moves = []
     current_player = "black"
+    black_player = ""
+    white_player = ""
 
     for line in lines:
         if line.startswith("'"):
             # コメント行は無視
             continue
+        elif line.startswith("N+"):
+            black_player = line[2:]
+        elif line.startswith("N-"):
+            white_player = line[2:]
         elif line.startswith("+") or line.startswith("-"):
             if len(line) > 1:
                 move = line[1:]
@@ -55,7 +82,11 @@ def parse_csa(csa_text: str) -> dict:
                     "player": current_player,
                 })
                 current_player = "white" if current_player == "black" else "black"
-    return {"moves": moves}
+    return {
+        "moves": moves,
+        "black_player": black_player,
+        "white_player": white_player,
+    }
 
 
 # 棋譜の解析と特徴量計算
@@ -70,6 +101,8 @@ def analyze_game(game: dict) -> list:
     csa_text = game.get("csa", "")
     parsed = parse_csa(csa_text)
     moves = parsed["moves"]
+    black_player = parsed.get("black_player", "")
+    white_player = parsed.get("white_player", "")
 
     positions = []
     sfen = "lnsgkgsnl/1r5b1/ppppppppp/9/9/9/PPPPPPPPP/1B5R1/LNSGKGSNL b - 1"  # 初期局面
@@ -81,8 +114,8 @@ def analyze_game(game: dict) -> list:
             "sfen": sfen,
             "move_usi": move["move_usi"],
             "player": move["player"],
-            "black_player": game.get("black_player", ""),
-            "white_player": game.get("white_player", ""),
+            "black_player": black_player,
+            "white_player": white_player,
         })
     # SFENの更新（簡易実装）
     # 実際にはUSIからSFENへの変換ライブラリを使用

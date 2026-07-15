@@ -27,8 +27,8 @@ sys.modules.setdefault("pyspark.sql", pyspark_sql_module)
 sys.modules.setdefault("pyspark.sql.types", pyspark_sql_types_module)
 
 
-def test_parse_csa_コメントと手番を正しく抽出する():
-    csa_text = "' comment\n+7776FU\n-3334FU\n"
+def test_parse_csa_コメントと対局者名と手番を正しく抽出する():
+    csa_text = "' comment\nN+先手\nN-後手\n+7776FU\n-3334FU\n"
 
     result = floodgate.parse_csa(csa_text)
 
@@ -36,16 +36,16 @@ def test_parse_csa_コメントと手番を正しく抽出する():
         "moves": [
             {"move_usi": "7776FU", "player": "black"},
             {"move_usi": "3334FU", "player": "white"},
-        ]
+        ],
+        "black_player": "先手",
+        "white_player": "後手",
     }
 
 
 def test_analyze_game_棋譜から局面レコードを生成する():
     game = {
         "id": "game-1",
-        "black_player": "先手",
-        "white_player": "後手",
-        "csa": "+7776FU\n-3334FU\n",
+        "csa": "N+先手\nN-後手\n+7776FU\n-3334FU\n",
     }
 
     result = floodgate.analyze_game(game)
@@ -61,23 +61,116 @@ def test_analyze_game_棋譜から局面レコードを生成する():
     assert result[1]["player"] == "white"
 
 
-def test_fetch_floodgate_games_成功した結果のみを返す(monkeypatch):
+def test_fetch_floodgate_games_日ページとCSAの取得に成功すると棋譜を返す(monkeypatch):
     class FakeDateTime:
         @classmethod
         def now(cls):
             return datetime(2024, 1, 2)
 
-    responses = [
-        SimpleNamespace(status_code=200, json=lambda: [{"id": "a"}]),
-        SimpleNamespace(status_code=404, json=lambda: [{"id": "b"}]),
-    ]
+    day_url = "https://wdoor.c.u-tokyo.ac.jp/shogi/x/2024/01/02/"
+    filename = "wdoor+floodgate-300-10F+a-vs-b+20240102.csa"
+    csa_text = "+7776FU\n"
 
-    def fake_get(url):
-        return responses.pop(0)
+    responses = {
+        day_url: SimpleNamespace(
+            status_code=200, text=f'<a href="{filename}">CSA</a>'
+        ),
+        f"{day_url}{filename}": SimpleNamespace(status_code=200, text=csa_text),
+    }
+
+    def fake_get(url, timeout=None):
+        return responses[url]
+
+    monkeypatch.setattr(floodgate, "datetime", FakeDateTime)
+    monkeypatch.setattr(floodgate.requests, "get", fake_get)
+
+    result = floodgate.fetch_floodgate_games(days_back=1)
+
+    assert result == [{"id": "wdoor+floodgate-300-10F+a-vs-b+20240102", "csa": csa_text}]
+
+
+def test_fetch_floodgate_games_日ページの取得に失敗した日はスキップする(monkeypatch):
+    class FakeDateTime:
+        @classmethod
+        def now(cls):
+            return datetime(2024, 1, 2)
+
+    ok_day_url = "https://wdoor.c.u-tokyo.ac.jp/shogi/x/2024/01/01/"
+    ng_day_url = "https://wdoor.c.u-tokyo.ac.jp/shogi/x/2024/01/02/"
+    filename = "wdoor+floodgate-300-10F+a-vs-b+20240101.csa"
+    csa_text = "+7776FU\n"
+
+    responses = {
+        ng_day_url: SimpleNamespace(status_code=404, text=""),
+        ok_day_url: SimpleNamespace(
+            status_code=200, text=f'<a href="{filename}">CSA</a>'
+        ),
+        f"{ok_day_url}{filename}": SimpleNamespace(status_code=200, text=csa_text),
+    }
+
+    def fake_get(url, timeout=None):
+        return responses[url]
 
     monkeypatch.setattr(floodgate, "datetime", FakeDateTime)
     monkeypatch.setattr(floodgate.requests, "get", fake_get)
 
     result = floodgate.fetch_floodgate_games(days_back=2)
 
-    assert result == [{"id": "a"}]
+    assert result == [{"id": "wdoor+floodgate-300-10F+a-vs-b+20240101", "csa": csa_text}]
+
+
+def test_fetch_floodgate_games_CSAの取得に失敗した対局はスキップする(monkeypatch):
+    class FakeDateTime:
+        @classmethod
+        def now(cls):
+            return datetime(2024, 1, 2)
+
+    day_url = "https://wdoor.c.u-tokyo.ac.jp/shogi/x/2024/01/02/"
+    ok_filename = "wdoor+floodgate-300-10F+a-vs-b+20240102.csa"
+    ng_filename = "wdoor+floodgate-300-10F+c-vs-d+20240102.csa"
+    csa_text = "+7776FU\n"
+
+    responses = {
+        day_url: SimpleNamespace(
+            status_code=200,
+            text=f'<a href="{ok_filename}">CSA</a>'
+            f'<a href="{ng_filename}">CSA</a>',
+        ),
+        f"{day_url}{ok_filename}": SimpleNamespace(status_code=200, text=csa_text),
+        f"{day_url}{ng_filename}": SimpleNamespace(status_code=404, text=""),
+    }
+
+    def fake_get(url, timeout=None):
+        return responses[url]
+
+    monkeypatch.setattr(floodgate, "datetime", FakeDateTime)
+    monkeypatch.setattr(floodgate.requests, "get", fake_get)
+
+    result = floodgate.fetch_floodgate_games(days_back=1)
+
+    assert result == [{"id": "wdoor+floodgate-300-10F+a-vs-b+20240102", "csa": csa_text}]
+
+
+def test_fetch_floodgate_games_1日あたりの取得数はMAX_GAMES_PER_DAYで制限される(monkeypatch):
+    class FakeDateTime:
+        @classmethod
+        def now(cls):
+            return datetime(2024, 1, 2)
+
+    day_url = "https://wdoor.c.u-tokyo.ac.jp/shogi/x/2024/01/02/"
+    filenames = [f"wdoor+floodgate-300-10F+g{i}-vs-h{i}+20240102.csa" for i in range(12)]
+    day_html = "".join(f'<a href="{name}">CSA</a>' for name in filenames)
+
+    responses = {day_url: SimpleNamespace(status_code=200, text=day_html)}
+    for name in filenames:
+        responses[f"{day_url}{name}"] = SimpleNamespace(status_code=200, text="+7776FU\n")
+
+    def fake_get(url, timeout=None):
+        return responses[url]
+
+    monkeypatch.setattr(floodgate, "datetime", FakeDateTime)
+    monkeypatch.setattr(floodgate.requests, "get", fake_get)
+
+    result = floodgate.fetch_floodgate_games(days_back=1)
+
+    assert len(result) == floodgate.MAX_GAMES_PER_DAY
