@@ -1,0 +1,14 @@
+context_awareness:
+  directory_roles:
+    src/shogi_kif_rag/:
+      role: source_code
+      skills: [python-coding]
+    dbx_bundle/pipelines/:
+      role: databricks_pipelines
+      skills: [databricks-core, databricks-dabs]
+    tests/:
+      role: test_code
+      skills: [python-coding]
+    docs/:
+      role: documentation
+      update_trigger: code_change
