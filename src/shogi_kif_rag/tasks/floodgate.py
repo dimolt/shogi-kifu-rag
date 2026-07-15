@@ -156,5 +156,5 @@ def main():
     # floodgate_positionsテーブルへの書き込み
     df.write \
       .format("delta") \
-      .mode("append") \
+      .mode("overwrite") \
       .saveAsTable(f"{args.catalog}.{args.silver_schema}.floodgate_positions")

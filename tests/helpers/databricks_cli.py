@@ -4,7 +4,9 @@ tests/conftest.py と tests/e2e/conftest.py の双方から参照される。
 conftest.py同士の直接import（モジュール名"conftest"の衝突による循環import）を
 避けるため、本モジュールに切り出している。
 """
+import json
 import os
+import subprocess
 
 
 def databricks_cli_base_args() -> list[str]:
@@ -22,3 +24,22 @@ def databricks_cli_base_args() -> list[str]:
     if profile:
         return ["--profile", profile]
     return []
+
+
+def run_cli(args: list[str]) -> dict:
+    """Databricks CLIをJSON出力モードで実行し、結果をパースして返す。
+
+    Args:
+        args: `databricks` に続くサブコマンド引数のリスト。
+
+    Returns:
+        CLI出力をJSONパースした辞書。
+    """
+    result = subprocess.run(
+        ["databricks", *args, "--output", "json", *databricks_cli_base_args()],
+        capture_output=True,
+        text=True,
+        encoding="utf-8",
+        check=True,
+    )
+    return json.loads(result.stdout)

@@ -1,17 +1,10 @@
 """pytest共有フィクスチャ。"""
 
-import os
-import sys
 
 import pytest
 from pyspark.sql import DataFrame, SparkSession
 
 from shogi_kif_rag.kif.schemas.shemas import get_analysis_schema
-
-# Driverが使っているPython実行ファイルをWorkerにも強制させる
-# (uv環境でPATH上に複数バージョンのPythonが存在する場合のバージョン不一致を防ぐ)
-os.environ["PYSPARK_PYTHON"] = sys.executable
-os.environ["PYSPARK_DRIVER_PYTHON"] = sys.executable
 
 
 @pytest.fixture(scope="session")

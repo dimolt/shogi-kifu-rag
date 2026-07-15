@@ -1,16 +1,10 @@
 import sys
 import types
-from pathlib import Path
 
 import pandas as pd
 import pytest
 
 from shogi_kif_rag.vector import chromadb_service
-
-ROOT = Path(__file__).resolve().parents[3]
-SRC = ROOT / "src"
-if str(SRC) not in sys.path:
-    sys.path.insert(0, str(SRC))
 
 
 def _install_dependency_stubs() -> None:
