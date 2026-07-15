@@ -1,3 +1,48 @@
+# Devinプロジェクト設定
+project:
+  name: shogi-kif-rag
+  description: 将棋棋譜解析RAGシステム
+
+# デフォルトで使用するスキル
+default_skills:
+  - python-coding
+  - databricks-core
+  - shogi-rag-specific
+
+# タスクタイプ別のスキル設定
+task_skills:
+  coding:
+    - python-coding
+  databricks:
+    - databricks-core
+    - databricks-dabs
+  deployment:
+    - databricks-dabs
+    - shogi-rag-specific
+  debugging:
+    - python-coding
+    - shogi-rag-specific
+
+# プロジェクト固有のルール
+rules:
+  - コード変更時は必ずpython-codingスキルを参照
+  - Databricks操作時は必ずprofile選択を行う
+  - デプロイ前は必ずbundle validateを実行
+  - 新規棋譜追加時はplaybook-new-kif-addition.mdを参照
+  - ドキュメント更新時はREADME.mdとdocs/ディレクトリの整合性を確認
+
+# 環境変数のデフォルト値
+env_defaults:
+  DATABRICKS_CONFIG_PROFILE: shogi
+  PYTHON_VERSION: "3.12"
+
+# テスト実行のデフォルト設定
+test_defaults:
+  unit: "uv run pytest tests/unit -v"
+  integration: "uv run pytest tests/integration -v"
+  e2e: "uv run pytest tests/e2e -v"
+
+# コンテキスト認識の強化
 context_awareness:
   directory_roles:
     src/shogi_kif_rag/:
@@ -6,9 +51,25 @@ context_awareness:
     dbx_bundle/pipelines/:
       role: databricks_pipelines
       skills: [databricks-core, databricks-dabs]
+    dbx_bundle/notebooks/:
+      role: databricks_notebooks
+      skills: [databricks-core]
     tests/:
       role: test_code
       skills: [python-coding]
     docs/:
       role: documentation
       update_trigger: code_change
+  file_roles:
+    README.md:
+      role: documentation
+      update_trigger: code_change
+    CHANGELOG.md:
+      role: documentation
+      update_trigger: code_change
+    pyproject.toml:
+      role: dependency_config
+      update_trigger: dependency_change
+    databricks.yml:
+      role: deployment_config
+      update_trigger: deployment_change
