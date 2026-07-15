@@ -10,6 +10,7 @@ import pytest
 from databricks.sdk import WorkspaceClient
 from helpers.job_monitoring import JobMonitor  #noqa: E402
 from helpers.models import JobRunResult, TestDataScenarioConfig  #noqa: E402
+from helpers.spark_fixture import spark  #noqa: F401
 from pyspark.sql import DataFrame, SparkSession
 
 
@@ -221,7 +222,7 @@ def job_run_result(workspace_client: WorkspaceClient, job_id: int) -> JobRunResu
 
 
 @pytest.fixture(scope="session")
-def positions_df(spark: SparkSession, positions_fqn: str) -> DataFrame:
+def positions_df(spark: SparkSession, positions_fqn: str) -> DataFrame: #noqa: F811
     """Silverテーブルpositionsを読み込んだDataFrameを提供する。
 
     Returns:
@@ -231,7 +232,7 @@ def positions_df(spark: SparkSession, positions_fqn: str) -> DataFrame:
 
 
 @pytest.fixture(scope="session")
-def position_features_df(spark: SparkSession, position_features_fqn: str) -> DataFrame:
+def position_features_df(spark: SparkSession, position_features_fqn: str) -> DataFrame:  #noqa: F811
     """Goldテーブルposition_featuresを読み込んだDataFrameを提供する。
 
     Returns:
@@ -241,7 +242,7 @@ def position_features_df(spark: SparkSession, position_features_fqn: str) -> Dat
 
 
 @pytest.fixture(scope="session")
-def game_summary_df(spark: SparkSession, game_summary_fqn: str) -> DataFrame:
+def game_summary_df(spark: SparkSession, game_summary_fqn: str) -> DataFrame:    #noqa: F811
     """Goldテーブルgame_summaryを読み込んだDataFrameを提供する。
 
     Returns:
