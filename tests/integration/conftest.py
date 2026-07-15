@@ -3,29 +3,14 @@
 spark, pipeline_id, FQN系のフィクスチャは [tests/conftest.py](cci:7://file:///c:/shogi-kif-rag/tests/conftest.py:0:0-0:0)（ルート）に
 集約されているため、ここではintegration層固有のDataFrame系フィクスチャのみ定義する。
 """
-import sys
 from pathlib import Path
 from typing import List
 
 import pytest
-from databricks.connect import DatabricksSession
 from databricks.sdk import WorkspaceClient
-from pyspark.sql import DataFrame, SparkSession
-
-# databricksモジュールをインポート可能にするためPythonパスに追加
-# uv run pytestの場合でも、helpersモジュールとshogi_kif_ragモジュールを
-# インポート可能にするためにプロジェクトルートを追加
-project_root = Path(__file__).parent.parent.parent
-sys.path.insert(0, str(project_root))
-
-# uv実行時はプロジェクトがインストールされているため、
-# helpersモジュールもtestsディレクトリからインポート可能にする
-tests_dir = project_root / "tests"
-if str(tests_dir) not in sys.path:
-    sys.path.insert(0, str(tests_dir))
-
 from helpers.job_monitoring import JobMonitor  #noqa: E402
 from helpers.models import JobRunResult, TestDataScenarioConfig  #noqa: E402
+from pyspark.sql import DataFrame, SparkSession
 
 
 @pytest.fixture(scope="session")
@@ -42,6 +27,7 @@ def test_data_config() -> dict[str, List[TestDataScenarioConfig]]:
     Returns:
         dict[str, TestDataScenarioConfig]: シナリオ名 -> 設定。
     """
+    project_root = Path(__file__).parent.parent.parent
     return {
         "small": [TestDataScenarioConfig(
             kif_path=project_root / "data" / "kif_files" / "sample.kif",
@@ -102,24 +88,6 @@ def test_scenario(test_data_config: dict[str, List[TestDataScenarioConfig]],
         scenario = "small"
 
     return test_data_config[scenario]
-
-
-@pytest.fixture(scope="session")
-def spark(databricks_profile: str) -> SparkSession:
-    """環境に応じてDatabricks Connectセッションを構築する。
-
-    ローカル実行時はDATABRICKS_CONFIG_PROFILE環境変数で指定したプロファイルを使用し、
-    CI/CD（サービスプリンシパル認証）ではprofile()を呼ばず、環境変数ベースの
-    デフォルト認証チェーン（oauth-m2m）に委ねる。
-
-    ローカルの`.databrickscfg`ではプロファイル側の`serverless_compute_id = auto`に
-    暗黙的に依存していたが、CD環境にはプロファイル自体が存在せずクラスタ／サーバーレスの
-    どちらも解決できないため、`.serverless()`を明示的に指定し環境差を無くす。
-    """
-    builder = DatabricksSession.builder.serverless()
-    if databricks_profile:
-        builder = builder.profile(databricks_profile)
-    return builder.getOrCreate()
 
 
 @pytest.fixture(scope="session")

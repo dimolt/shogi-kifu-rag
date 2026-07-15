@@ -2,7 +2,7 @@
 
 Databricks Connect経由のSpark統合テスト用フィクスチャを提供する。
 integration層・e2e層の両方から参照される。
-unitテストからは参照しないこと（Databricksへの接続が発生するため）。
+Databricks接続フィクスチャ（spark, pipeline_id等）はunitテストから参照しないこと。
 """
 import json
 import os
@@ -22,7 +22,11 @@ os.environ["PYSPARK_DRIVER_PYTHON"] = sys.executable
 
 # databricksモジュールをインポート可能にするためPythonパスに追加
 _PROJECT_ROOT = Path(__file__).parent.parent
-sys.path.insert(0, _PROJECT_ROOT)
+sys.path.insert(0, str(_PROJECT_ROOT))
+
+# testsディレクトリも追加（helpersモジュールのインポート用）
+_TESTS_DIR = _PROJECT_ROOT / "tests"
+sys.path.insert(0, str(_TESTS_DIR))
 
 # dotenvで環境変数をロードする
 load_dotenv(_PROJECT_ROOT / ".env")
