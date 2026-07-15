@@ -1,22 +1,4 @@
-# Python開発環境構築・運用ルール
-
-## 概要
-
-本プロジェクトでは以下の2種類のpyproject.dependency-groupsを利用する。
-
-| 環境     | 用途                                  |
-| ------ | ----------------------------------- |
-| pyspark  | ローカルPySparkによるユニットテスト・開発 |
-| dbx | Databricks Connectを利用したDatabricks実行（コア） |
-| rag | RAG/ベクトル検索（ChromaDB, sentence-transformers） |
-| web | Webスクレイピング/HTTP（requests, beautifulsoup4） |
-| ui | UI（Gradio） |
-| llm | AI/LLM（Gemini, Groq） |
-
-依存関係は `pyproject.toml` と `uv.lock` を唯一の管理対象とし、各仮想環境はそこから再生成する。
-環境切り替え用スクリプト: `switch-env.ps1`
-
-## プロジェクト概要
+# プロジェクト概要
 
 将棋棋譜解析RAGシステム。以下の機能を提供する。
 
@@ -25,11 +7,16 @@
 - **RAGチェーン**: ChromaDBによる類似局面検索とLLMによる局面解説生成
 - **Notebook UI**: Gradioによる対話型検索インターフェース
 
+## 開発手順
+
+詳細な開発手順（セットアップ、ワークフロー、トラブルシューティング）は
+[docs/development.md](docs/development.md) を参照してください。
+
 ---
 
 # ディレクトリ構成
 
-```text
+```
 shogi-kif-rag/
 ├─ pyproject.toml
 ├─ uv.lock
@@ -63,196 +50,8 @@ shogi-kif-rag/
 │        └─ sdp_pipeline.yml
 ├─ tests/
 ├─ docs/
-
----
-
-# Pythonバージョン
-
-```toml
-requires-python = ">=3.12,<3.13"
 ```
 
-Python 3.12 系を利用する。
-
-確認方法
-
-```powershell
-python --version
-```
-
----
-
-# 依存関係管理
-
-## pyproject.toml
-
-依存関係はグループで管理する。
-
-```toml
-[dependency-groups]
-
-pyspark = [
-    "pyspark",
-]
-
-dbx = [
-    "databricks-connect>=15.4,<15.5",
-    "databricks-sdk",
-]
-
-rag = [
-    "chromadb",
-    "sentence-transformers",
-]
-
-web = [
-    "requests",
-    "beautifulsoup4",
-]
-
-ui = [
-    "gradio",
-]
-
-llm = [
-    "google-generativeai",
-    "groq",
-]
-
-devTools = [
-    "pytest",
-    "ruff",
-    "mypy",
-    "ipykernel",
-]
-```
-
----
-
-## グループの役割
-
-### pyspark
-
-ローカルPySparkによるユニットテスト・開発用。
-
-```text
-PySpark
-```
-
-を利用する。
-
-Databricks接続は行わない。
-
----
-
-### dbx
-
-Databricks Connectを利用したDatabricks実行用（コア機能）。
-
-```text
-Databricks Connect
-Databricks SDK
-```
-
-を利用する。
-
----
-
-### rag
-
-RAG/ベクトル検索用。
-
-```text
-ChromaDB
-sentence-transformers
-```
-
-を利用する。
-
----
-
-### web
-
-Webスクレイピング/HTTP用。
-
-```text
-requests
-beautifulsoup4
-```
-
-を利用する。
-
----
-
-### ui
-
-UI用。
-
-```text
-Gradio
-```
-
-を利用する。
-
----
-
-### llm
-
-AI/LLM用。
-
-```text
-google-generativeai
-groq
-```
-
-を利用する。
-
----
-
-### devTools
-
-共通開発ツール。
-
-```text
-pytest
-ruff
-mypy
-ipykernel
-```
-
-を利用する。
-
-
----
-
-# 仮想環境切り替え
-
-単一の `.venv` を使用し、環境切り替え時は再構築します。
-
-## (PySpark
-
-```powershell
-.\scripts\switch-env.ps1 pyspark
-```
-
-## Databricks Connect
-
-```powershell
-.\scripts\switch-env.ps1 dbx
-```
-
-このスクリプトは以下を実行します:
-- 既存の `.venv` を削除
-- 新しい `.venv` を作成
-- 指定したグループで `uv sync` を実行
-
----
-
-# 運用ルール
-* 環境切り替えは `switch-env.ps1` を使用する
-* 開発者は pyproject.toml から環境を再生成できる状態を維持する
-
----
 
 # RAGシステム
 
@@ -428,51 +227,6 @@ tests/
   - `test_pipeline_expectations.py`: `event_log()` TVF経由で`@dp.expect`が実際に発火し`failed_records=0`であることを確認する品質ゲート検証。`silver_pipeline` / `gold_pipeline`はresource keyが分かれているため、`silver_pipeline_id` / `gold_pipeline_id`の2fixtureで個別に検証する
 - event_logの鮮度は24時間以内の実行を前提とし、古い場合は該当テストを`skip`する
 - **post-merge / 定期実行**（CIでは毎回実行しない）
-
-### 実行前の前提条件
-
-```bash
-# 1. devターゲットへのデプロイが完了していること
-databricks bundle deploy -t dev -p shogi
-
-# 2. 対象パイプラインが直近24時間以内に実行されていること
-databricks bundle run silver_pipeline -t dev -p shogi
-databricks bundle run gold_pipeline -t dev -p shogi
-```
-
-### 環境変数設定
-
-ローカル実行時は`.env`ファイルに以下を設定してください：
-
-```bash
-# Databricks認証設定
-DATABRICKS_CONFIG_PROFILE=shogi
-
-# やねうら王エンジン設定
-YANEURAOU_PATH="C:\Program Files (x86)\ShogiGUI\Yaneura\YaneuraOu_NNUE-tournament-clang++-avx2.exe"
-YANEURAOU_OPTIONS=EvalDir "C:\Program Files (x86)\ShogiGUI\Yaneura\eval"
-ANALYSIS_DEPTH=20
-ANALYSIS_NODES=1000000
-```
-
-環境変数を有効化するには、以下のいずれかの方法を使用してください：
-
-**PowerShell:**
-```powershell
-Get-Content .env | ForEach-Object { if ($_ -match '^([^=]+)=(.*)$') { [Environment]::SetEnvironmentVariable($matches[1], $matches[2]) } }
-```
-
-**または手動で設定:**
-```powershell
-$env:DATABRICKS_CONFIG_PROFILE="shogi"
-```
-
-CI/CD環境ではこの環境変数を設定しないことで、サービスプリンシパル認証（環境変数ベースのデフォルト認証チェーン）に自動的にフォールバックします。
-
-```bash
-# 実行方法
-uv run pytest tests/integration/ -v
-```
 
 ## Layer 3: E2Eテスト（`tests/e2e/`）
 
