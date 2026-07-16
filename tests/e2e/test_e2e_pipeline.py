@@ -13,7 +13,7 @@
 """
 
 import pytest
-from pyspark.sql import SparkSession
+from pyspark.sql import DataFrame, SparkSession
 
 from tests.helpers.expectations import (
     GOLD_EXPECTATIONS,
@@ -49,22 +49,22 @@ class TestE2EPipeline:
         assert_expectations_pass(spark, gold_update_result.pipeline_id, GOLD_EXPECTATIONS)
 
     def test_positions_テーブル_パイプライン完了後_存在してデータがある(
-        self, spark: SparkSession, silver_update_result: UpdateResult, positions_fqn: str
+        self,
+        positions_df: DataFrame
     ) -> None:
-        count = spark.table(positions_fqn).count()
+        count = positions_df.count()
         assert count > 0
 
     def test_position_features_テーブル_パイプライン完了後_存在してデータがある(
         self,
-        spark: SparkSession,
-        gold_update_result: UpdateResult,
-        position_features_fqn: str,
+        game_summary_df: DataFrame,
     ) -> None:
-        count = spark.table(position_features_fqn).count()
+        count = game_summary_df.count()
         assert count > 0
 
     def test_game_summary_テーブル_パイプライン完了後_存在してデータがある(
-        self, spark: SparkSession, gold_update_result: UpdateResult, game_summary_fqn: str
+        self,
+        game_summary_df: DataFrame
     ) -> None:
-        count = spark.table(game_summary_fqn).count()
+        count = game_summary_df.count()
         assert count > 0
