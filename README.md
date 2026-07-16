@@ -12,6 +12,12 @@
 詳細な開発手順（セットアップ、ワークフロー、トラブルシューティング）は
 [docs/development.md](docs/development.md) を参照してください。
 
+## デプロイフロー
+
+詳細なデプロイフローは
+[docs/deployment_flow.md](docs/deployment_flow.md) を参照してください。
+
+
 ---
 
 # ディレクトリ構成
