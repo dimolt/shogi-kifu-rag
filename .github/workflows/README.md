@@ -43,22 +43,7 @@ This directory contains GitHub Actions workflows for continuous integration and 
 3. Setup Databricks CLI
 4. Run integration tests (tests/integration)
 
-**Usage**: Run during development to validate data logic against dev environment
-
-### Integration-Exec Tests (ci-integration-exec.yml)
-
-**Trigger**: Manual (workflow_dispatch)
-
-**Jobs**:
-- **integration-exec**: Runs integration-exec tests (job/pipeline execution validation)
-
-**Steps**:
-1. Checkout code
-2. Setup dependencies
-3. Setup Databricks CLI
-4. Run integration-exec tests (tests/integration-exec)
-
-**Usage**: Run during development to validate job/pipeline execution
+**Usage**: Run during development to validate data logic against dev environment (shogi_dev)
 
 ### CD Pipeline (cd.yml)
 
@@ -75,19 +60,10 @@ This directory contains GitHub Actions workflows for continuous integration and 
   4. Validate bundle (test)
   5. Deploy to test environment using Databricks Bundle
   6. Run E2E tests (with TEST_CATALOG=shogi_test)
-
-#### integration-check
-- **Trigger**: Tags matching `v*.*.*` (not ending with `-test`)
-- **Steps**:
-  1. Checkout code
-  2. Setup dependencies
-  3. Setup Databricks CLI
-  4. Run integration tests (dev environment validation)
-- **Purpose**: Gate before prod deployment to ensure dev environment data is valid
+  7. Run integration tests (with TEST_CATALOG=shogi_test)
 
 #### deploy-prod
 - **Trigger**: Tags matching `v*.*.*` (not ending with `-test`)
-- **Needs**: integration-check
 - **Steps**:
   1. Checkout code
   2. Setup dependencies
@@ -116,13 +92,6 @@ Create a pull request to the main branch. CI will automatically run unit tests, 
 3. Click "Run workflow"
 4. Select branch and run
 
-### Run Integration-Exec Tests (Manual)
-
-1. Go to GitHub Actions tab
-2. Select "Integration-Exec Tests" workflow
-3. Click "Run workflow"
-4. Select branch and run
-
 ### Deploy to Test
 
 ```bash
@@ -132,7 +101,8 @@ git push origin v0.1.0-test
 
 This will:
 - Deploy to test environment
-- Run E2E tests
+- Run E2E tests (pipeline execution + data validation)
+- Run integration tests (additional data validation)
 
 ### Deploy to Prod
 
@@ -142,14 +112,15 @@ git push origin v0.1.0
 ```
 
 This will:
-- Run integration tests (dev environment validation)
-- Deploy to prod environment (only if integration tests pass)
+- Deploy to prod environment
+
+**Note**: Prod deployment assumes test environment validation has been completed successfully.
 
 ## Deployment Flow
 
-1. **Development**: Run unit tests (CI), integration/integration-exec tests (manual as needed)
-2. **Test Deployment**: Create test tag → deploy-test → E2E tests → manual testing
-3. **Prod Deployment**: Create prod tag → integration-check → deploy-prod
+1. **Development**: Run unit tests (CI), integration tests (manual as needed)
+2. **Test Deployment**: Create test tag → deploy-test → E2E + integration tests → manual testing
+3. **Prod Deployment**: Create prod tag → deploy-prod
 
 ## Deployment Targets
 
