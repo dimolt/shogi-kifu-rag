@@ -4,21 +4,46 @@ This directory contains GitHub Actions workflows for continuous integration and 
 
 ## Workflows
 
-### CI Pipeline (ci.yml)
+### CI Pipeline (ci-python-checks.yml)
 
-**Trigger**: Pull requests to master branch
+**Trigger**: Pull requests to main branch (src/tests changes)
 
 **Jobs**:
-- **test**: Runs unit tests, Ruff linting, and mypy type checking
+- **unit-tests**: Runs unit tests
+- **lint**: Runs Ruff linting
+- **type-check**: Runs mypy type checking
 
 **Steps**:
 1. Checkout code
-2. Set up Python 3.12
-3. Install uv
-4. Install dependencies
-5. Run unit tests
-6. Run Ruff
-7. Run mypy
+2. Setup dependencies
+3. Run unit tests / Ruff / mypy
+
+### Bundle Validate (ci-bundle-validate.yml)
+
+**Trigger**: Pull requests to main branch (bundle changes)
+
+**Jobs**:
+- **bundle-validate**: Validates Databricks bundle configuration
+
+**Steps**:
+1. Checkout code
+2. Setup Databricks CLI
+3. Run bundle validate
+
+### Integration Tests (ci-integration.yml)
+
+**Trigger**: Manual (workflow_dispatch)
+
+**Jobs**:
+- **integration**: Runs integration tests (data validation only, no pipeline execution)
+
+**Steps**:
+1. Checkout code
+2. Setup dependencies
+3. Setup Databricks CLI
+4. Run integration tests (tests/integration)
+
+**Usage**: Run during development to validate data logic against dev environment (shogi_dev)
 
 ### CD Pipeline (cd.yml)
 
@@ -30,24 +55,21 @@ This directory contains GitHub Actions workflows for continuous integration and 
 - **Trigger**: Tags matching `v*.*.*-test`
 - **Steps**:
   1. Checkout code
-  2. Set up Python 3.12
-  3. Install uv
-  4. Install dependencies
-  5. Setup Databricks CLI
-  6. Validate bundle (test)
-  7. Deploy to test environment using Databricks Bundle
-  8. Run E2E tests (with TEST_CATALOG=shogi_test)
+  2. Setup dependencies
+  3. Setup Databricks CLI
+  4. Validate bundle (test)
+  5. Deploy to test environment using Databricks Bundle
+  6. Run E2E tests (with TEST_CATALOG=shogi_test)
+  7. Run integration tests (with TEST_CATALOG=shogi_test)
 
 #### deploy-prod
 - **Trigger**: Tags matching `v*.*.*` (not ending with `-test`)
 - **Steps**:
   1. Checkout code
-  2. Set up Python 3.12
-  3. Install uv
-  4. Install dependencies
-  5. Setup Databricks CLI
-  6. Validate bundle (prod)
-  7. Deploy to prod environment using Databricks Bundle
+  2. Setup dependencies
+  3. Setup Databricks CLI
+  4. Validate bundle (prod)
+  5. Deploy to prod environment using Databricks Bundle
 
 ## Required Secrets
 
@@ -61,7 +83,14 @@ The following secrets must be configured in GitHub repository settings:
 
 ### Trigger CI
 
-Create a pull request to the master branch. CI will automatically run.
+Create a pull request to the main branch. CI will automatically run unit tests, linting, and type checking.
+
+### Run Integration Tests (Manual)
+
+1. Go to GitHub Actions tab
+2. Select "Integration Tests" workflow
+3. Click "Run workflow"
+4. Select branch and run
 
 ### Deploy to Test
 
@@ -70,12 +99,28 @@ git tag v0.1.0-test
 git push origin v0.1.0-test
 ```
 
+This will:
+- Deploy to test environment
+- Run E2E tests (pipeline execution + data validation)
+- Run integration tests (additional data validation)
+
 ### Deploy to Prod
 
 ```bash
 git tag v0.1.0
 git push origin v0.1.0
 ```
+
+This will:
+- Deploy to prod environment
+
+**Note**: Prod deployment assumes test environment validation has been completed successfully.
+
+## Deployment Flow
+
+1. **Development**: Run unit tests (CI), integration tests (manual as needed)
+2. **Test Deployment**: Create test tag → deploy-test → E2E + integration tests → manual testing
+3. **Prod Deployment**: Create prod tag → deploy-prod
 
 ## Deployment Targets
 

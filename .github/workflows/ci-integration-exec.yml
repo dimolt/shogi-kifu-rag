@@ -1,0 +1,33 @@
+name: Integration-Exec Tests
+
+on:
+  workflow_dispatch:
+
+concurrency:
+  group: integration-exec-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  integration-exec:
+    name: Integration-exec tests
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    env:
+      DATABRICKS_HOST: ${{ secrets.DATABRICKS_HOST }}
+      DATABRICKS_CLIENT_ID: ${{ secrets.DATABRICKS_CLIENT_ID }}
+      DATABRICKS_CLIENT_SECRET: ${{ secrets.DATABRICKS_CLIENT_SECRET }}
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup dependencies
+        uses: ./.github/actions/setup-deps
+        with:
+          groups: '--group dbx --group rag --group web --group ui --group llm --group devTools'
+
+      - name: Setup Databricks CLI
+        uses: ./.github/actions/setup-databricks-cli
+
+      - name: Run integration-exec tests
+        run: uv run pytest tests/integration-exec -v
