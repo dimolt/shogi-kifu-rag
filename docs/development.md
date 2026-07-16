@@ -144,16 +144,35 @@ uv run pytest tests/unit -v
 
 ### 統合テスト
 
+- 事前にデプロイが必要
+- 統合テストでは `shogi_dev` カタログを使用します。
+
 ```bash
-# 事前にデプロイが必要
+# 環境変数を設定して実行（推奨）
+$env:TEST_CATALOG = "shogi_dev"
 uv run pytest tests/integration -v
+
+# または .env ファイルに TEST_CATALOG=shogi_dev を設定
 ```
 
 ### E2Eテスト
+- 事前にデプロイが必要
+- E2Eテストでは `shogi_test` カタログを使用します。
 
 ```bash
-# 事前にデプロイが必要
+# 環境変数を設定して実行（推奨）
+$env:TEST_CATALOG = "shogi_test"
 uv run pytest tests/e2e/ -v
+
+# または .env ファイルに TEST_CATALOG=shogi_test を設定
+```
+
+### テストカタログの運用ルール
+
+- **integration テスト**: `shogi_dev` カタログを使用
+- **e2e テスト**: `shogi_test` カタログを使用
+- 環境変数 `TEST_CATALOG` でカタログ名を指定
+- 未設定時のデフォルト値は `shogi_dev`
 ```
 
 ## デプロイ手順
