@@ -11,7 +11,7 @@ table_registry.ALL_TABLES から動的に生成する。
 import pytest
 from pyspark.sql import DataFrame, SparkSession
 
-from tests.helpers.table_registry import ALL_TABLES, fqn
+from tests.helpers.config.table_registry import ALL_TABLES, fqn
 
 
 def _make_table_df_fixture(table_name: str):

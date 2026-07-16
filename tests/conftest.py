@@ -20,7 +20,7 @@ from tests.fixtures.tables import (  # noqa: F401
     position_features_df,
     positions_df,
 )
-from tests.helpers.databricks_cli import databricks_cli_base_args
+from tests.helpers.databricks.cli import databricks_cli_base_args
 
 # Driverが使っているPython実行ファイルをWorkerにも強制させる
 # (uv環境でPATH上に複数バージョンのPythonが存在する場合のバージョン不一致を防ぐ)

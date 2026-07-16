@@ -15,12 +15,12 @@
 import pytest
 from pyspark.sql import DataFrame, SparkSession
 
-from tests.helpers.expectations import (
+from tests.helpers.models import UpdateResult
+from tests.helpers.monitoring.expectations import (
     GOLD_EXPECTATIONS,
     SILVER_EXPECTATIONS,
     assert_expectations_pass,
 )
-from tests.helpers.models import UpdateResult
 
 pytestmark = pytest.mark.e2e
 

@@ -14,7 +14,7 @@ import datetime as dt
 
 import pytest
 
-from tests.helpers.expectations import GOLD_EXPECTATIONS, SILVER_EXPECTATIONS
+from tests.helpers.monitoring.expectations import GOLD_EXPECTATIONS, SILVER_EXPECTATIONS
 
 pytestmark = pytest.mark.integration
 

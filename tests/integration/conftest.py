@@ -13,7 +13,7 @@ FQN（catalog.schema.table）はfixtureではなく tests/table_registry.py の 
                                           （tests/table_registry.py の一覧から自動生成）
 
 """
-from tests.helpers.spark_fixture import spark  # noqa: F401
+from tests.helpers.databricks.spark_fixture import spark  # noqa: F401
 from tests.integration.fixtures.job_execution import (  # noqa: F401,E501
     job_id,
     job_run_result,

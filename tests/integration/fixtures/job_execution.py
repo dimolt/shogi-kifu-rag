@@ -2,8 +2,8 @@
 import pytest
 from databricks.sdk import WorkspaceClient
 
-from tests.helpers.job_monitoring import JobMonitor
 from tests.helpers.models import JobRunResult
+from tests.helpers.monitoring.job_monitoring import JobMonitor
 
 
 @pytest.fixture(scope="session")
