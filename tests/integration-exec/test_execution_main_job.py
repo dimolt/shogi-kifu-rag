@@ -11,7 +11,7 @@ import pytest
 
 from tests.helpers.models import JobRunResult
 
-pytestmark = pytest.mark.integration
+pytestmark = pytest.mark.integration_exec
 
 
 def test_job全体が正常に完了する(job_run_result: JobRunResult) -> None:
