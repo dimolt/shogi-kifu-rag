@@ -42,6 +42,8 @@ jobs:
 
       - name: Run E2E tests
         timeout-minutes: 15
+        env:
+          TEST_CATALOG: shogi_test
         run: uv run pytest tests/e2e/ -v
 
   deploy-prod:

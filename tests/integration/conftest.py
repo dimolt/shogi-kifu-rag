@@ -8,17 +8,19 @@ FQN（catalog.schema.table）はfixtureではなく tests/table_registry.py の 
 実装本体は関心事ごとに以下へ分割している。
 
 - integration/fixtures/scenarios.py    : テストシナリオ（small/medium/...）関連
-- integration/fixtures/job_execution.py: Databricks Job実行・監視関連
 - integration/fixtures/tables.py       : Silver/Gold テーブルDataFrame関連
                                           （tests/table_registry.py の一覧から自動生成）
 
+Note:
+    integration層はパイプライン/Jobを起動しないデータ検証のみを行うため、
+    job_execution関連のfixtureは含まない。Job実行検証はLayer 2.5 (integration-exec) の責務。
 """
+import os
+
+# integration層は常にshogi_devを使用
+os.environ["TEST_CATALOG"] = "shogi_dev"
+
 from tests.helpers.databricks.spark_fixture import spark  # noqa: F401
-from tests.integration.fixtures.job_execution import (  # noqa: F401,E501
-    job_id,
-    job_run_result,
-    workspace_client,
-)
 from tests.integration.fixtures.scenarios import (  # noqa: F401
     test_data_config,
     test_scenario,

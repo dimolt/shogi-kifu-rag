@@ -12,7 +12,7 @@ from pyspark.sql import DataFrame
 
 from tests.helpers.models import JobRunResult, TaskResult
 
-pytestmark = pytest.mark.integration
+pytestmark = pytest.mark.integration_exec
 
 
 @pytest.fixture(scope="session")
