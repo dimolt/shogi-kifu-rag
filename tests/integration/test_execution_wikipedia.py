@@ -31,23 +31,6 @@ def wikipedia_task_result(job_run_result: JobRunResult) -> TaskResult:
     raise ValueError("wikipedia task not found in job_run_result")
 
 
-@pytest.fixture(scope="session")
-def wikipedia_output_df(spark, joseki_knowledge_fqn: str) -> DataFrame:
-    """wikipediaタスクが出力したテーブルを読み込む。
-
-    wikipediaタスクが出力するテーブルのFQNを指定してDataFrameを返す。
-    テーブル構造に応じて調整が必要。
-
-    Args:
-        spark: SparkSession。
-        joseki_knowledge_fqn: テーブル完全修飾名
-
-    Returns:
-        DataFrame: wikipedia出力テーブルのDataFrame。
-    """
-    return spark.table(joseki_knowledge_fqn)
-
-
 def test_wikipediaタスクが正常に完了する(wikipedia_task_result: TaskResult) -> None:
     """wikipediaタスクがSUCCESS状態で完了することを検証する。
 
@@ -101,7 +84,7 @@ def test_wikipediaタスクのrun_idが取得できている(wikipedia_task_resu
     )
 
 
-def test_wikipedia出力テーブルにデータが存在する(wikipedia_output_df: DataFrame) -> None:
+def test_wikipedia出力テーブルにデータが存在する(joseki_knowledge_df: DataFrame) -> None:
     """wikipedia出力テーブルにデータが存在することを検証する。
 
     Arrange:
@@ -112,7 +95,7 @@ def test_wikipedia出力テーブルにデータが存在する(wikipedia_output
         行数が0より大きいこと。
     """
     # Act
-    row_count = wikipedia_output_df.count()
+    row_count = joseki_knowledge_df.count()
 
     # Assert
     assert row_count > 0, "wikipedia output table should contain data"

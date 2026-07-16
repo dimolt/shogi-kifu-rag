@@ -13,7 +13,13 @@ from pathlib import Path
 import pytest
 from dotenv import load_dotenv
 
-from tests.helpers.constants import TEST_CATALOG, TEST_GOLD_SCHEMA, TEST_SILVER_SCHEMA
+from tests.fixtures.tables import (  # noqa: F401
+    floodgate_positions_df,
+    game_summary_df,
+    joseki_knowledge_df,
+    position_features_df,
+    positions_df,
+)
 from tests.helpers.databricks_cli import databricks_cli_base_args
 
 # Driverが使っているPython実行ファイルをWorkerにも強制させる
@@ -85,49 +91,3 @@ def gold_pipeline_id(_bundle_resources: dict) -> str:
         str: databricks.yml で定義されたgold_pipelineのID。
     """
     return _bundle_resources["resources"]["pipelines"]["gold_pipeline"]["id"]
-
-
-# =============================================================================
-# テーブル完全修飾名
-# =============================================================================
-def _fqn(schema: str, table: str) -> str:
-    """カタログ・スキーマ・テーブル名から完全修飾名を組み立てる。
-
-    Args:
-        schema: スキーマ名（Silver/Gold）。
-        table: テーブル名。
-
-    Returns:
-        str: `catalog.schema.table` 形式の完全修飾名。
-    """
-    return f"{TEST_CATALOG}.{schema}.{table}"
-
-
-@pytest.fixture(scope="session")
-def positions_fqn() -> str:
-    """SilverテーブルpositionsのFQNを返す。"""
-    return _fqn(TEST_SILVER_SCHEMA, "positions")
-
-
-@pytest.fixture(scope="session")
-def floodgate_positions_fqn() -> str:
-    """Silverテーブルfloodgate_positionsのFQNを返す。"""
-    return _fqn(TEST_SILVER_SCHEMA, "floodgate_positions")
-
-
-@pytest.fixture(scope="session")
-def joseki_knowledge_fqn() -> str:
-    """Silverテーブルjoseki_knowledgeのFQNを返す。"""
-    return _fqn(TEST_SILVER_SCHEMA, "joseki_knowledge")
-
-
-@pytest.fixture(scope="session")
-def position_features_fqn() -> str:
-    """Goldテーブルposition_featuresのFQNを返す。"""
-    return _fqn(TEST_GOLD_SCHEMA, "position_features")
-
-
-@pytest.fixture(scope="session")
-def game_summary_fqn() -> str:
-    """Goldテーブルgame_summaryのFQNを返す。"""
-    return _fqn(TEST_GOLD_SCHEMA, "game_summary")

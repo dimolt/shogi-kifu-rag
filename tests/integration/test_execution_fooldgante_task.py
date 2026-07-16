@@ -31,23 +31,6 @@ def floodgate_task_result(job_run_result: JobRunResult) -> TaskResult:
     raise ValueError("floodgate task not found in job_run_result")
 
 
-@pytest.fixture(scope="session")
-def floodgate_output_df(spark, floodgate_positions_fqn: str) -> DataFrame:
-    """floodgateタスクが出力したテーブルを読み込む。
-
-    floodgateタスクが出力するテーブルのFQNを指定してDataFrameを返す。
-    テーブル構造に応じて調整が必要。
-
-    Args:
-        spark: SparkSession。
-        floodgate_positions_fqn: テーブル完全修飾名。
-
-    Returns:
-        DataFrame: floodgate出力テーブルのDataFrame。
-    """
-    return spark.table(floodgate_positions_fqn)
-
-
 def test_floodgateタスクが正常に完了する(floodgate_task_result: TaskResult) -> None:
     """floodgateタスクがSUCCESS状態で完了することを検証する。
 
@@ -101,7 +84,7 @@ def test_floodgateタスクのrun_idが取得できている(floodgate_task_resu
     )
 
 
-def test_floodgate出力テーブルにデータが存在する(floodgate_output_df: DataFrame) -> None:
+def test_floodgate出力テーブルにデータが存在する(floodgate_positions_df: DataFrame) -> None:
     """floodgate出力テーブルにデータが存在することを検証する。
 
     Arrange:
@@ -112,7 +95,7 @@ def test_floodgate出力テーブルにデータが存在する(floodgate_output
         行数が0より大きいこと。
     """
     # Act
-    row_count = floodgate_output_df.count()
+    row_count = floodgate_positions_df.count()
 
     # Assert
     assert row_count > 0, "floodgate output table should contain data"
