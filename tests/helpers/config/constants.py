@@ -6,6 +6,6 @@
 """
 import os
 
-TEST_CATALOG = os.environ.get("TEST_CATALOG", "shogi_test")
+TEST_CATALOG = os.environ.get("TEST_CATALOG", "shogi_dev")
 TEST_SILVER_SCHEMA = "shogi_silver"
 TEST_GOLD_SCHEMA = "shogi_gold"
