@@ -15,6 +15,7 @@ from tests.helpers.constants import TEST_CATALOG, TEST_GOLD_SCHEMA, TEST_SILVER_
 from tests.helpers.models import UpdateResult
 from tests.helpers.pipeline_helpers import start_pipeline_update, wait_for_update
 from tests.helpers.schema_helpers import drop_recreate_schema
+from tests.helpers.spark_fixture import spark  # noqa: F401
 
 
 @pytest.fixture(scope="session", autouse=True)
@@ -30,7 +31,9 @@ def clean_schemas() -> None:
 
 @pytest.fixture(scope="session")
 def silver_update_result(
-    clean_schemas: None, spark: SparkSession, silver_pipeline_id: str
+    clean_schemas: None,
+    spark: SparkSession,    #noqa: F811
+    silver_pipeline_id: str
 ) -> UpdateResult:
     """Silverパイプラインを起動し、COMPLETEDになるまで待機した結果を提供する。"""
     update_id = start_pipeline_update(silver_pipeline_id)
@@ -39,7 +42,9 @@ def silver_update_result(
 
 @pytest.fixture(scope="session")
 def gold_update_result(
-    silver_update_result: UpdateResult, spark: SparkSession, gold_pipeline_id: str
+    silver_update_result: UpdateResult,
+    spark: SparkSession,    #noqa: F811
+    gold_pipeline_id: str
 ) -> UpdateResult:
     """Silver完了後にGoldパイプラインを起動し、COMPLETEDになるまで待機した結果を提供する。"""
     update_id = start_pipeline_update(gold_pipeline_id)
