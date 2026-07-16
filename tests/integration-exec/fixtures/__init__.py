@@ -1,1 +1,0 @@
-"""Integration-Executionテスト用フィクスチャモジュール。"""
