@@ -8,6 +8,8 @@ spark, silver_pipeline_id, gold_pipeline_id は `tests/conftest.py`（ルート�
 """
 
 
+import os
+
 import pytest
 from pyspark.sql import SparkSession
 
@@ -23,6 +25,9 @@ from tests.helpers.monitoring.pipeline_helpers import (
     wait_for_update,
 )
 from tests.helpers.operations.schema_helpers import drop_recreate_schema
+
+# e2e層は常にshogi_testを使用
+os.environ["TEST_CATALOG"] = "shogi_test"
 
 
 @pytest.fixture(scope="session", autouse=True)
