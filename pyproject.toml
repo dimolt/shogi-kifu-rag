@@ -148,8 +148,9 @@ wikipedia = "shogi_kif_rag.tasks.wikipedia:main"
 # markerの誤字を検知するため、未登録markerはエラーにする
 addopts = "--strict-markers"
 markers = [
-    "integration: Databricks Connect経由でServerless computeに接続する統合テスト",
-    "e2e: Databricks Asset Bundles経由でジョブ/パイプラインを実行するE2Eテスト",
+    "integration: Layer 2 integration tests (data validation only, no pipeline execution)",
+    "integration_exec: Layer 2.5 integration-execution tests (job/pipeline execution validation)",
+    "e2e: Layer 3 end-to-end tests (full pipeline execution after deployment)",
 ]
 
 
