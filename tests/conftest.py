@@ -91,3 +91,16 @@ def gold_pipeline_id(_bundle_resources: dict) -> str:
         str: databricks.yml で定義されたgold_pipelineのID。
     """
     return _bundle_resources["resources"]["pipelines"]["gold_pipeline"]["id"]
+
+
+@pytest.fixture(scope="session")
+def main_job_id(_bundle_resources: dict) -> str:
+    """デプロイ済みshogi_kif_rag_main_jobのjob_idを取得する。
+
+    前提:
+        本fixtureはJobを起動しない。e2e層では呼び出し元がこのIDを使って自ら起動する。
+
+    Returns:
+        str: jobs.yml で定義されたshogi_kif_rag_main_jobのID。
+    """
+    return _bundle_resources["resources"]["jobs"]["shogi_kif_rag_main_job"]["id"]
