@@ -25,8 +25,8 @@ def _make_table_df_fixture(table_name: str):
     """
 
     @pytest.fixture(scope="session")
-    def _table_df(spark: SparkSession) -> DataFrame:
-        return spark.table(fqn(table_name))
+    def _table_df(spark: SparkSession, catalog: str) -> DataFrame:
+        return spark.table(fqn(catalog, table_name))
 
     return _table_df
 

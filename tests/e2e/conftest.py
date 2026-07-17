@@ -14,7 +14,6 @@ import pytest
 from databricks.sdk import WorkspaceClient
 
 from tests.helpers.config.constants import (
-    TEST_CATALOG,
     TEST_GOLD_SCHEMA,
     TEST_SILVER_SCHEMA,
 )
@@ -23,19 +22,20 @@ from tests.helpers.models import JobRunResult
 from tests.helpers.monitoring.job_monitoring import JobMonitor, start_job_run
 from tests.helpers.operations.schema_helpers import drop_recreate_schema
 
-# e2e層は常にshogi_testを使用
+# e2e層向けに環境変数を設定
+os.environ["DATABRICKS_BUNDLE_TARGET"] = "test"
 os.environ["TEST_CATALOG"] = "shogi_test"
 
 
 @pytest.fixture(scope="session", autouse=True)
-def clean_schemas() -> None:
+def clean_schemas(catalog: str) -> None:
     """E2Eテスト実行前にSilver/Goldスキーマをdrop & recreateする。
 
     テーブル・MVはLakeflowパイプライン実行時に自動作成されるため、
     ここではスキーマの器のみをクリーンな状態にする。
     """
-    drop_recreate_schema(TEST_CATALOG, TEST_SILVER_SCHEMA)
-    drop_recreate_schema(TEST_CATALOG, TEST_GOLD_SCHEMA)
+    drop_recreate_schema(catalog, TEST_SILVER_SCHEMA)
+    drop_recreate_schema(catalog, TEST_GOLD_SCHEMA)
 
 
 @pytest.fixture(scope="session")

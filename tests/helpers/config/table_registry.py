@@ -15,7 +15,6 @@ scopeによるキャッシュを必要とするリソースではないため、
 普通の関数としてimportする方が呼び出し側もシンプルになる。
 """
 from tests.helpers.config.constants import (
-    TEST_CATALOG,
     TEST_GOLD_SCHEMA,
     TEST_SILVER_SCHEMA,
 )
@@ -36,10 +35,11 @@ GOLD_TABLES: dict[str, str] = {
 ALL_TABLES: dict[str, str] = {**SILVER_TABLES, **GOLD_TABLES}
 
 
-def fqn(table_name: str) -> str:
+def fqn(catalog_name: str, table_name: str) -> str:
     """登録済みテーブルのFQN（catalog.schema.table）を返す。
 
     Args:
+        catalog_name: カタログ名
         table_name: ALL_TABLESに登録済みのテーブル名。
 
     Returns:
@@ -49,4 +49,4 @@ def fqn(table_name: str) -> str:
         KeyError: table_nameがALL_TABLESに未登録の場合。
     """
     schema_name = ALL_TABLES[table_name]
-    return f"{TEST_CATALOG}.{schema_name}.{table_name}"
+    return f"{catalog_name}.{schema_name}.{table_name}"
