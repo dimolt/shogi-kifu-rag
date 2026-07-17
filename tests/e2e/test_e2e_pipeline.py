@@ -6,16 +6,15 @@
 
 フロー:
     1. Silver/Goldスキーマをdrop & recreate（conftest.pyのclean_schemasで実施）
-    2. Silverパイプライン起動 -> COMPLETED待機
-    3. Goldパイプライン起動（Silver完了後）-> COMPLETED待機
-    4. event_log()ベースのexpectations確認
-    5. 最終テーブルの存在・データ件数の最小限のスモークチェック
+    2. shogi_kif_rag_main_job起動 -> SUCCESS待機
+    3. event_log()ベースのexpectations確認
+    4. 最終テーブルの存在・データ件数の最小限のスモークチェック
 """
 
 import pytest
 from pyspark.sql import DataFrame, SparkSession
 
-from tests.helpers.models import UpdateResult
+from tests.helpers.models import JobRunResult
 from tests.helpers.monitoring.expectations import (
     GOLD_EXPECTATIONS,
     SILVER_EXPECTATIONS,
@@ -26,27 +25,22 @@ pytestmark = pytest.mark.e2e
 
 
 class TestE2EPipeline:
-    """Silver/Goldパイプラインの実行完了・データ品質を検証する。"""
+    """shogi_kif_rag_main_jobの実行完了・データ品質を検証する。"""
 
-    def test_start_pipeline_update_Silverパイプライン起動後_COMPLETEDになる(
-        self, silver_update_result: UpdateResult
+    def test_main_job実行後_SUCCESSになる(
+        self, main_job_run_result: JobRunResult
     ) -> None:
-        assert silver_update_result.state == "COMPLETED"
-
-    def test_start_pipeline_update_Silver完了後にGoldを起動すると_COMPLETEDになる(
-        self, gold_update_result: UpdateResult
-    ) -> None:
-        assert gold_update_result.state == "COMPLETED"
+        assert main_job_run_result.result_state == "SUCCESS"
 
     def test_assert_expectations_pass_Silver実行後_全expectationsのfailed_recordsが0(
-        self, spark: SparkSession, silver_update_result: UpdateResult
+        self, spark: SparkSession, silver_pipeline_id: str
     ) -> None:
-        assert_expectations_pass(spark, silver_update_result.pipeline_id, SILVER_EXPECTATIONS)
+        assert_expectations_pass(spark, silver_pipeline_id, SILVER_EXPECTATIONS)
 
     def test_assert_expectations_pass_Gold実行後_全expectationsのfailed_recordsが0(
-        self, spark: SparkSession, gold_update_result: UpdateResult
+        self, spark: SparkSession, gold_pipeline_id: str
     ) -> None:
-        assert_expectations_pass(spark, gold_update_result.pipeline_id, GOLD_EXPECTATIONS)
+        assert_expectations_pass(spark, gold_pipeline_id, GOLD_EXPECTATIONS)
 
     def test_positions_テーブル_パイプライン完了後_存在してデータがある(
         self,
@@ -57,9 +51,9 @@ class TestE2EPipeline:
 
     def test_position_features_テーブル_パイプライン完了後_存在してデータがある(
         self,
-        game_summary_df: DataFrame,
+        position_features_df: DataFrame,
     ) -> None:
-        count = game_summary_df.count()
+        count = position_features_df.count()
         assert count > 0
 
     def test_game_summary_テーブル_パイプライン完了後_存在してデータがある(
