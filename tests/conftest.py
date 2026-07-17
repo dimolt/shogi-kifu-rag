@@ -79,13 +79,6 @@ def catalog(request):
 
 
 @pytest.fixture(scope="session")
-def _bundle_resources(bundle_target: str) -> dict:
-    return subprocess.run(
-        ["databricks", "bundle", "summary", "--output", "json", "-t", bundle_target, *databricks_cli_base_args()],
-        # ...
-    )
-
-@pytest.fixture(scope="session")
 def databricks_profile() -> str | None:
     """Databricks CLIのプロファイル名を返す。
 
