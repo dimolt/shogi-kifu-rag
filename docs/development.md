@@ -158,6 +158,7 @@ uv run pytest tests/integration -v
 ### E2Eテスト
 - 事前にデプロイが必要
 - E2Eテストでは `shogi_test` カタログを使用します。
+- Job単位でテストを実行します（`shogi_kif_rag_main_job`を起動し、SUCCESSになるまで待機）
 
 ```bash
 # 環境変数を設定して実行（推奨）

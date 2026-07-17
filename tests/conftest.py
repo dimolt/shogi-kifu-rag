@@ -36,6 +36,48 @@ load_dotenv(_PROJECT_ROOT / ".env")
 _DATABRICKS_PROFILE = os.environ.get("DATABRICKS_CONFIG_PROFILE")
 
 
+def pytest_addoption(parser):
+    """pytestコマンドラインオプションを追加する。
+
+    Args:
+        parser: pytestのコマンドラインパーサー。
+    """
+    parser.addoption("--bundle-target", default="dev", help="Bundle target (dev/test/prod)")
+    parser.addoption("--catalog", default="shogi_dev", help="catalog name (shogi_dev/shogi_test/shogi)")
+
+
+@pytest.fixture(scope="session")
+def bundle_target(request):
+    """Databricks Bundleのターゲット環境を返す。
+
+    各テスト層のconftest.pyでpytest_configure()を通じて自動設定される。
+    コマンドラインで--bundle-targetオプションを指定することで明示的に上書きも可能。
+
+    Args:
+        request: pytestのrequestオブジェクト。
+
+    Returns:
+        str: bundle target (dev/test/prod)。
+    """
+    return request.config.getoption("--bundle-target")
+
+
+@pytest.fixture(scope="session")
+def catalog(request):
+    """テスト対象のUnity Catalogカタログ名を返す。
+
+    各テスト層のconftest.pyでpytest_configure()を通じて自動設定される。
+    コマンドラインで--catalogオプションを指定することで明示的に上書きも可能。
+
+    Args:
+        request: pytestのrequestオブジェクト。
+
+    Returns:
+        str: catalog name (shogi_dev/shogi_test/shogi)。
+    """
+    return request.config.getoption("--catalog")
+
+
 @pytest.fixture(scope="session")
 def databricks_profile() -> str | None:
     """Databricks CLIのプロファイル名を返す。
@@ -47,19 +89,23 @@ def databricks_profile() -> str | None:
 
 
 @pytest.fixture(scope="session")
-def _bundle_resources() -> dict:
+def _bundle_resources(bundle_target: str) -> dict:
     """`databricks bundle summary`の実行結果をパースして返す。
+
+    Args:
+        bundle_target: バンドルターゲット。
 
     Returns:
         dict: `resources`セクションを含むbundle summaryのJSON全体。
     """
     result = subprocess.run(
-        ["databricks", "bundle", "summary", "--output", "json", "-t", "dev", *databricks_cli_base_args()],
+        ["databricks", "bundle", "summary", "--output", "json", "-t", bundle_target, *databricks_cli_base_args()],
         capture_output=True,
         text=True,
         encoding="utf-8",
         check=True,
     )
+
     return json.loads(result.stdout)
 
 
@@ -91,3 +137,16 @@ def gold_pipeline_id(_bundle_resources: dict) -> str:
         str: databricks.yml で定義されたgold_pipelineのID。
     """
     return _bundle_resources["resources"]["pipelines"]["gold_pipeline"]["id"]
+
+
+@pytest.fixture(scope="session")
+def main_job_id(_bundle_resources: dict) -> str:
+    """デプロイ済みshogi_kif_rag_main_jobのjob_idを取得する。
+
+    前提:
+        本fixtureはJobを起動しない。e2e層では呼び出し元がこのIDを使って自ら起動する。
+
+    Returns:
+        str: jobs.yml で定義されたshogi_kif_rag_main_jobのID。
+    """
+    return _bundle_resources["resources"]["jobs"]["shogi_kif_rag_main_job"]["id"]
