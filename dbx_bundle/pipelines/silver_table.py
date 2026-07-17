@@ -5,7 +5,7 @@ from silver_transforms import build_positions
 
 CATALOG = spark.conf.get("bundle.catalog")
 LANDING_SCHEMA = spark.conf.get("bundle.landing_schema")
-CSV_PATH = f"/Volumes/{CATALOG}/{LANDING_SCHEMA}/analyzed/analysis.csv"
+CSV_PATH = f"/Volumes/{CATALOG}/{LANDING_SCHEMA}/analyzed/*.csv"
 
 @dp.table
 @dp.expect("valid_game_id", "game_id IS NOT NULL")
