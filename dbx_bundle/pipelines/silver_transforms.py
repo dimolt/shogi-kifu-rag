@@ -35,9 +35,12 @@ def build_positions(spark: SparkSession, csv_path: str) -> DataFrame:
 
     Args:
         spark: 読み込みに使用するSparkSession。
-        csv_path: 読み込み対象のCSVファイルパス。
+        csv_path: 読み込み対象のCSVファイルパス（単一ファイル、ディレクトリ、
+                  ワイルドカードパターンをサポート）。
 
     Returns:
         get_analysis_schema()に基づいて型付けされたDataFrame。
+        game_idとmove_numberの組み合わせで重複排除を行う。
     """
-    return spark.read.csv(csv_path, header=True, schema=get_analysis_schema())
+    df = spark.read.csv(csv_path, header=True, schema=get_analysis_schema())
+    return df.dropDuplicates(["game_id", "move_number"])

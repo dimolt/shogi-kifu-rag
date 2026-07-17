@@ -8,11 +8,14 @@
     Silverテーブルが実データで実体化されていること。
 """
 
+from pathlib import Path
+
 import pytest
-from pyspark.sql import DataFrame, Window
+from pyspark.sql import DataFrame, SparkSession, Window
 from pyspark.sql import functions as F  # noqa: N812
 
-from dbx_bundle.pipelines.silver_transforms import get_analysis_schema
+from dbx_bundle.pipelines.silver_transforms import build_positions, get_analysis_schema
+from tests.helpers.csv_helpers import write_analysis_csv
 
 pytestmark = pytest.mark.integration
 
@@ -135,3 +138,55 @@ def test_positionsテーブルのデータ品質(positions_df: DataFrame) -> Non
         F.count("*").alias("cnt")
     ).filter(F.col("cnt") > 1).count()
     assert duplicate_count == 0, f"重複行が存在する: {duplicate_count}件"
+
+
+def test_build_positions_複数CSVファイルをワイルドカードで読み込める(
+    spark: SparkSession, tmp_path: Path
+) -> None:
+    # Arrange
+    write_analysis_csv(
+        tmp_path / "small_01.csv",
+        "G1,0,sfen0,,7g7f,black,Alice,Bob,7g7f,50,\n"
+        "G1,1,sfen1,sfen0,3c3d,white,Alice,Bob,3c3d,30,\n"
+    )
+    write_analysis_csv(
+        tmp_path / "small_02.csv",
+        "G2,0,sfen0,,7g7f,black,Carol,David,7g7f,45,\n"
+        "G2,1,sfen1,sfen0,3c3d,white,Carol,David,3c3d,25,\n"
+    )
+
+    # Act
+    csv_path = (tmp_path / "small_*.csv").as_posix()  # Windowsパスをフォワードスラッシュに変換
+    result_df = build_positions(spark, csv_path)
+
+    # Assert
+    assert result_df.count() == 4
+    game_ids = [row["game_id"] for row in result_df.select("game_id").distinct().collect()]
+    assert set(game_ids) == {"G1", "G2"}
+
+
+def test_build_positions_重複するgame_id_move_numberが含まれる場合_重複排除される(
+    spark: SparkSession, tmp_path: Path
+) -> None:
+    # Arrange
+    write_analysis_csv(
+        tmp_path / "file1.csv",
+        "G1,0,sfen0,,7g7f,black,Alice,Bob,7g7f,50,\n"
+        "G1,1,sfen1,sfen0,3c3d,white,Alice,Bob,3c3d,30,\n"
+    )
+    write_analysis_csv(
+        tmp_path / "file2.csv",
+        "G1,0,sfen0,,7g7f,black,Alice,Bob,7g7f,55,\n"  # G1,0が重複
+        "G1,2,sfen2,sfen1,2g2f,black,Alice,Bob,2g2f,20,\n"
+    )
+
+    # Act
+    csv_path = (tmp_path / "*.csv").as_posix()  # Windowsパスをフォワードスラッシュに変換
+    result_df = build_positions(spark, csv_path)
+
+    # Assert
+    assert result_df.count() == 3  # 重複排除後は3行
+    rows = result_df.filter(F.col("game_id") == "G1").orderBy("move_number").collect()
+    assert rows[0]["move_number"] == 0
+    assert rows[1]["move_number"] == 1
+    assert rows[2]["move_number"] == 2
