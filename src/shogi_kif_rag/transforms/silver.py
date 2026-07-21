@@ -3,6 +3,7 @@
 from pyspark.sql import DataFrame, SparkSession
 
 from shogi_kif_rag.kif.schemas.shemas import get_analysis_schema
+from shogi_kif_rag.kif.utils import resolve_csv_paths
 
 
 def build_positions(spark: SparkSession, csv_path: str) -> DataFrame:
@@ -17,5 +18,6 @@ def build_positions(spark: SparkSession, csv_path: str) -> DataFrame:
         get_analysis_schema()に基づいて型付けされたDataFrame。
         game_idとmove_numberの組み合わせで重複排除を行う。
     """
-    df = spark.read.csv(csv_path, header=True, schema=get_analysis_schema())
+    paths = resolve_csv_paths(csv_path)
+    df = spark.read.csv(paths, header=True, schema=get_analysis_schema())
     return df.dropDuplicates(["game_id", "move_number"])
