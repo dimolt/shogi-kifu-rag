@@ -199,3 +199,26 @@ def test_build_positions_引用符崩れの行を含むCSVを渡すと_行末ま
     assert rows[1]["best_move"] == "3c3d"
     assert rows[1]["score_cp"] == 30
     assert rows[1]["pv"] == "3c3d 2g2f"
+
+
+def test_build_positions_game_id列を欠いたCSVを渡すと_位置ベースでマッピングされる(
+    spark: SparkSession, tmp_path: Path
+) -> None:
+    # Arrange
+    # game_id列を欠いたヘッダーを持つCSVを作成
+    custom_header = "move_number,sfen,prev_sfen,move_usi,player,black_player,white_player,best_move,score_cp,pv\n"
+    csv_path = tmp_path / "analysis.csv"
+    csv_path.write_text(custom_header + "1,sfen1,sfen0,7g7f,black,Alice,Bob,7g7f,50,7g7f 3c3d\n", encoding="utf-8")
+
+    # Act
+    result_df = build_positions(spark, str(csv_path))
+
+    # Assert
+    assert result_df.count() == 1
+    row = result_df.first()
+    # Sparkはヘッダー名ではなく位置でマッピングするため、
+    # CSVの1列目(move_number=1)がスキーマの1列目(game_id)にマッピングされる
+    assert row["game_id"] == "1"
+    # CSVの2列目(sfen="sfen1")がスキーマの2列目(move_number, IntegerType)にマッピングされるが、
+    # 型不一致のためnullになる
+    assert row["move_number"] is None
