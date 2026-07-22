@@ -195,7 +195,7 @@ select = ["E", "F", "I", "N", "W"]
 
 # Notebook や notebook 由来ファイルは lint 対象外
 # skillsフォルダ 対象外に追加
-exclude = ["*.ipynb", "ntb_*.py", ".agents/skills/*"]
+exclude = ["*.ipynb", "ntb_*.py", ".claude/skills/*"]
 
 
 # =========================================
