@@ -2,6 +2,9 @@ resources:
   jobs:
     shogi_kif_rag_main_job:
       name: shogi_kif_rag_main_job
+      parameters:
+        - name: catalog
+          default: ${var.catalog}
 
       environments:
         - environment_key: default
@@ -22,18 +25,22 @@ resources:
 
         - task_key: floodgate
           environment_key: default
+          max_retries: 0
+          disable_auto_optimization: true
           python_wheel_task:
             package_name: shogi-kif-rag
             entry_point: floodgate
             named_parameters:
-              catalog: ${var.catalog}
+              catalog: "{{job.parameters.catalog}}"
               silver_schema: ${var.silver_schema}
 
         - task_key: wikipedia
           environment_key: default
+          max_retries: 0
+          disable_auto_optimization: true
           python_wheel_task:
             package_name: shogi-kif-rag
             entry_point: wikipedia
             named_parameters:
-              catalog: ${var.catalog}
+              catalog: "{{job.parameters.catalog}}"
               silver_schema: ${var.silver_schema}
