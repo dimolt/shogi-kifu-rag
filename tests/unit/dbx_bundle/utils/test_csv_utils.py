@@ -1,10 +1,10 @@
-"""kif.utilsのユニットテスト。"""
+"""csv_utilsのユニットテスト。"""
 
 from pathlib import Path
 
 import pytest
 
-from shogi_kif_rag.kif.utils import resolve_csv_paths
+from dbx_bundle.utils.csv_utils import resolve_csv_paths
 
 
 def test_resolve_csv_paths_ワイルドカードなしの単一ファイルパスをそのまま返す(tmp_path: Path) -> None:
