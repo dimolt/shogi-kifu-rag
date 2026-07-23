@@ -1,4 +1,3 @@
-from typing import Dict
 
 from shogi_kif_rag.vector.chromadb_service import ChromadbService
 
@@ -13,7 +12,7 @@ def rag_query(
     collection_name: str = "positions",
     n_results: int = 5,
     llm_client=None,
-) -> Dict:
+) -> dict:
     """RAGクエリを実行
 
     Args:

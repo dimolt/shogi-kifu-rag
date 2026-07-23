@@ -71,8 +71,8 @@ def _assert_latest_run_is_recent(df) -> None:
     # Databricks Connect経由で取得したtimestamp列はtz-naiveなdatetimeとして
     # 返ってくる場合があるため、UTCとして明示的にtz付与してから比較する。
     if latest_ts.tzinfo is None:
-        latest_ts = latest_ts.replace(tzinfo=dt.timezone.utc)
-    age = dt.datetime.now(dt.timezone.utc) - latest_ts
+        latest_ts = latest_ts.replace(tzinfo=dt.UTC)
+    age = dt.datetime.now(dt.UTC) - latest_ts
     if age > dt.timedelta(hours=FRESHNESS_THRESHOLD_HOURS):
         pytest.skip(
             f"最新のパイプライン実行が{FRESHNESS_THRESHOLD_HOURS}時間以上前"

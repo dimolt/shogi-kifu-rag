@@ -1,4 +1,3 @@
-from typing import Dict, List
 
 import pytest
 from pytest_mock import MockerFixture
@@ -7,7 +6,7 @@ from shogi_kif_rag.rag.llm_client import LLMClient
 
 
 @pytest.fixture
-def sample_context() -> List[Dict]:
+def sample_context() -> list[dict]:
     """テスト用の関連ドキュメントリストを提供する。"""
     return [
         {"text": "▲7六歩 △3四歩 ▲2六歩", "metadata": {"source": "kif_001"}},

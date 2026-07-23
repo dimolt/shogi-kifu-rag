@@ -184,14 +184,16 @@ ignore_missing_imports = true
 # どのルールを有効にするか、どのファイルを除外するかを定義。
 # =========================================
 [tool.ruff.lint]
-
-# 有効化するルール
-# E: pycodestyle errors
-# F: pyflakes
-# I: import 並び順
-# N: pep8-naming
-# W: pycodestyle warnings
-select = ["E", "F", "I", "N", "W"]
+select = [
+    "E",    # pycodestyle errors
+    "W",    # pycodestyle warnings
+    "F",    # Pyflakes
+    "I",    # isort
+    "N",    # pep8-naming
+    "UP",   # pyupgrade
+    "B",    # flake8-bugbear
+    "TID",  # tidy imports
+ ]
 
 # Notebook や notebook 由来ファイルは lint 対象外
 # skillsフォルダ 対象外に追加

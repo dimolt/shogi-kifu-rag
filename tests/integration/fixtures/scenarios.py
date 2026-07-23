@@ -3,7 +3,6 @@
 Job-based integration testで使用するテストデータの構成を提供する。
 """
 from pathlib import Path
-from typing import List
 
 import pytest
 
@@ -12,7 +11,7 @@ from tests.helpers.models import TestDataScenarioConfig
 
 
 @pytest.fixture(scope="session")
-def test_data_config(catalog: str) -> dict[str, List[TestDataScenarioConfig]]:
+def test_data_config(catalog: str) -> dict[str, list[TestDataScenarioConfig]]:
     """Job-based integration testで使用するシナリオ別テストデータ設定を提供する。
 
     tests/scripts/setup_test_data_volume.py の定数（VOLUME_PATH, SAMPLE_KIF_PATH,
@@ -43,8 +42,8 @@ def test_data_config(catalog: str) -> dict[str, List[TestDataScenarioConfig]]:
 
 
 @pytest.fixture(scope="function")
-def test_scenario(test_data_config: dict[str, List[TestDataScenarioConfig]],
-                  request: pytest.FixtureRequest) -> List[TestDataScenarioConfig]:
+def test_scenario(test_data_config: dict[str, list[TestDataScenarioConfig]],
+                  request: pytest.FixtureRequest) -> list[TestDataScenarioConfig]:
     """テストシナリオ設定を提供する。
 
     Args:

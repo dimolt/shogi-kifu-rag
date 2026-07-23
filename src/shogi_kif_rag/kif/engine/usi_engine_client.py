@@ -3,7 +3,6 @@
 import re
 import subprocess
 import time
-from typing import Optional
 
 
 class UsiEngineClient:
@@ -18,7 +17,7 @@ class UsiEngineClient:
         """
         self.engine_path = engine_path
         self.options = options
-        self.process: Optional[subprocess.Popen] = None
+        self.process: subprocess.Popen | None = None
 
     def start(self) -> None:
         """エンジンを起動する"""

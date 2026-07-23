@@ -1,9 +1,8 @@
-from typing import Dict, List
 
 from .llm_client import LLMClient
 
 
-def generate_response(query: str, context: List[Dict], llm_client: LLMClient) -> str:
+def generate_response(query: str, context: list[dict], llm_client: LLMClient) -> str:
     """コンテキストに基づいて回答を生成
 
     Args:

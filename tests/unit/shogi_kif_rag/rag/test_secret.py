@@ -1,8 +1,8 @@
 """secrets.py のユニットテスト。"""
 
 import sys
+from collections.abc import Callable
 from types import ModuleType
-from typing import Callable, Optional
 
 from pytest_mock import MockerFixture
 
@@ -12,14 +12,14 @@ from shogi_kif_rag.rag.secrets import get_gemini_api_key, get_groq_api_key, get_
 class _FakeSecretValue:
     """WorkspaceClient.secrets.get() の戻り値を模したスタブ。"""
 
-    def __init__(self, value: Optional[str]) -> None:
+    def __init__(self, value: str | None) -> None:
         self.value = value
 
 
 class _FakeSecretsAPI:
     """WorkspaceClient.secrets を模したスタブ。"""
 
-    def __init__(self, value: Optional[str]) -> None:
+    def __init__(self, value: str | None) -> None:
         self._value = value
 
     def get(self, scope: str, key: str) -> _FakeSecretValue:
@@ -29,7 +29,7 @@ class _FakeSecretsAPI:
 class _FakeWorkspaceClient:
     """databricks.sdk.WorkspaceClient を模したスタブ。"""
 
-    def __init__(self, value: Optional[str] = "dummy-secret") -> None:
+    def __init__(self, value: str | None = "dummy-secret") -> None:
         self.secrets = _FakeSecretsAPI(value)
 
 

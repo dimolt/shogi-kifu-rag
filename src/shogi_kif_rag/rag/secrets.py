@@ -1,7 +1,6 @@
-from typing import Optional
 
 
-def get_secret(scope: str, key: str) -> Optional[str]:
+def get_secret(scope: str, key: str) -> str | None:
     """Databricks Secretsからシークレットを取得
 
     Args:
@@ -23,7 +22,7 @@ def get_secret(scope: str, key: str) -> Optional[str]:
         return os.getenv(f"{scope}_{key}")
 
 
-def get_gemini_api_key() -> Optional[str]:
+def get_gemini_api_key() -> str | None:
     """Gemini APIキーを取得
 
     Returns:
@@ -32,7 +31,7 @@ def get_gemini_api_key() -> Optional[str]:
     return get_secret("llm", "gemini_api_key")
 
 
-def get_groq_api_key() -> Optional[str]:
+def get_groq_api_key() -> str | None:
     """Groq APIキーを取得
 
     Returns:
