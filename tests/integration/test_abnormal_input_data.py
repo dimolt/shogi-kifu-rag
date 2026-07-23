@@ -6,14 +6,16 @@
     - テスト実行前にlanding volumeに不正CSVを配置し、パイプライン実行後に
       event_log()経由でexpectation発火を確認する。
 """
-import os
 from pathlib import Path
 
 import pytest
-from databricks.sdk import WorkspaceClient
 from pyspark.sql import SparkSession
 
 from tests.helpers.csv_helpers import CSV_HEADER
+from tests.helpers.databricks.volume_helpers import (
+    get_landing_volume_path,
+    upload_csv_to_volume,
+)
 from tests.helpers.monitoring.expectations import _get_latest_expectations_df
 from tests.helpers.monitoring.pipeline_helpers import (
     start_pipeline_update,
@@ -23,18 +25,6 @@ from tests.helpers.monitoring.pipeline_helpers import (
 pytestmark = pytest.mark.integration
 
 
-def _upload_csv_to_volume(local_path: Path, volume_path: str, filename: str) -> None:
-    """CSVをUnity Catalog Volumeにアップロードする。
-
-    Args:
-        local_path: ローカルのCSVファイルパス。
-        volume_path: アップロード先のVolumeディレクトリパス。
-        filename: Volume上のファイル名。
-    """
-    w = WorkspaceClient(profile=os.environ.get("DATABRICKS_CONFIG_PROFILE", "shogi"))
-    remote_path = f"{volume_path}/{filename}"
-    with local_path.open("rb") as f:
-        w.files.upload(remote_path, f, overwrite=True)
 
 
 def _assert_expectation_failed(
@@ -60,7 +50,7 @@ def _assert_expectation_failed(
     )
 
 
-def test_missing_game_id_column_expectation_fires(spark, silver_pipeline_id):
+def test_missing_game_id_column_expectation_fires(spark, silver_pipeline_id, catalog):
     """Issue #200: game_id列を欠いたCSVでvalid_game_id expectationが発火すること。
 
     Arrange:
@@ -86,8 +76,8 @@ def test_missing_game_id_column_expectation_fires(spark, silver_pipeline_id):
         )
 
         # Volumeにアップロード
-        volume_path = "/Volumes/shogi_dev/landing/analyzed"
-        _upload_csv_to_volume(csv_path, volume_path, "missing_game_id.csv")
+        volume_path = get_landing_volume_path(catalog)
+        upload_csv_to_volume(csv_path, volume_path, "missing_game_id.csv")
 
         # Act: Silver pipeline実行
         update_id = start_pipeline_update(silver_pipeline_id)
@@ -97,7 +87,7 @@ def test_missing_game_id_column_expectation_fires(spark, silver_pipeline_id):
         _assert_expectation_failed(spark, silver_pipeline_id, "positions", "valid_game_id")
 
 
-def test_invalid_move_number_data_type_expectation_fires(spark, silver_pipeline_id):
+def test_invalid_move_number_data_type_expectation_fires(spark, silver_pipeline_id, catalog):
     """Issue #202: move_numberに文字列を混入させたCSVでvalid_move_number expectationが発火すること。
 
     Arrange:
@@ -119,8 +109,8 @@ def test_invalid_move_number_data_type_expectation_fires(spark, silver_pipeline_
         )
 
         # Volumeにアップロード
-        volume_path = "/Volumes/shogi_dev/landing/analyzed"
-        _upload_csv_to_volume(csv_path, volume_path, "invalid_move_number.csv")
+        volume_path = get_landing_volume_path(catalog)
+        upload_csv_to_volume(csv_path, volume_path, "invalid_move_number.csv")
 
         # Act: Silver pipeline実行
         update_id = start_pipeline_update(silver_pipeline_id)

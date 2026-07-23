@@ -3,19 +3,22 @@ Job-based integration test用のテストデータをVolumeに配置するスク
 """
 
 import logging
+import os
 from pathlib import Path
 
-from databricks.sdk import WorkspaceClient
 from dotenv import load_dotenv
 
 from shogi_kif_rag.kif.local_analyze import analyze_kif_to_csv
+from tests.helpers.databricks.volume_helpers import (
+    get_test_data_volume_path,
+    upload_csv_to_volume,
+)
 
 logger = logging.getLogger(__name__)
 
 class DataIngestionError(Exception):
     """kifのパースに失敗した場合。"""
 
-VOLUME_PATH = "/Volumes/shogi_test/test/data"
 SAMPLE_KIF_PATH = Path("./data/kif_files/sample.kif").resolve()
 LOCAL_CSV_PATH = Path("./data/output/small.csv").resolve()
 
@@ -45,11 +48,8 @@ def upload_to_volume(local_path: Path, volume_path: str) -> None:
         local_path: ローカルのCSVファイルパス。
         volume_path: アップロード先のVolumeディレクトリパス。
     """
-    w = WorkspaceClient(profile="shogi")
-    remote_path = f"{volume_path}/small.csv"
-    with local_path.open("rb") as f:
-        w.files.upload(remote_path, f, overwrite=True)
-    logger.info("Volumeにアップロードしました: %s", remote_path)
+    upload_csv_to_volume(local_path, volume_path, "small.csv")
+    logger.info("Volumeにアップロードしました: %s/small.csv", volume_path)
 
 
 def main() -> None:
@@ -59,8 +59,12 @@ def main() -> None:
     project_root = Path(__file__).parent.parent.parent
     load_dotenv(project_root / ".env")
 
+    # カタログ名を取得（デフォルトはshogi_test）
+    catalog = os.environ.get("TEST_CATALOG", "shogi_test")
+    volume_path = get_test_data_volume_path(catalog)
+
     generate_small_csv(SAMPLE_KIF_PATH, LOCAL_CSV_PATH)
-    upload_to_volume(LOCAL_CSV_PATH, VOLUME_PATH)
+    upload_to_volume(LOCAL_CSV_PATH, volume_path)
 
 
 if __name__ == "__main__":
