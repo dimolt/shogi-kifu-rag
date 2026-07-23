@@ -21,6 +21,11 @@ from tests.fixtures.tables import (  # noqa: F401
     positions_df,
 )
 from tests.helpers.databricks.cli import databricks_cli_base_args
+from tests.helpers.databricks.volume_helpers import (
+    backup_csv_files,
+    get_landing_volume_path,
+    restore_csv_files,
+)
 
 # Driverが使っているPython実行ファイルをWorkerにも強制させる
 # (uv環境でPATH上に複数バージョンのPythonが存在する場合のバージョン不一致を防ぐ)
@@ -150,3 +155,22 @@ def main_job_id(_bundle_resources: dict) -> str:
         str: jobs.yml で定義されたshogi_kif_rag_main_jobのID。
     """
     return _bundle_resources["resources"]["jobs"]["shogi_kif_rag_main_job"]["id"]
+
+
+@pytest.fixture
+def empty_landing_volume(catalog: str):
+    """CSVファイルを一時的にバックアップし、テスト後に復元するfixture。
+
+    テスト実行前にlanding volumeのCSVファイルをバックアップし、
+    テスト実行後に復元する。テストが失敗しても復元は必ず実行される。
+
+    Args:
+        catalog: カタログ名。
+
+    Yields:
+        None: CSVファイルがバックアップされ、空の状態でテストが実行される。
+    """
+    volume_path = get_landing_volume_path(catalog)
+    backup = backup_csv_files(volume_path)
+    yield
+    restore_csv_files(volume_path, backup)

@@ -14,17 +14,11 @@
 """
 from __future__ import annotations
 
-from pathlib import Path
-
 import pytest
 from databricks.sdk import WorkspaceClient
 from databricks.sdk.service.jobs import RunResultState
 from pyspark.sql import SparkSession
 
-from tests.helpers.databricks.volume_helpers import (
-    get_landing_volume_path,
-    upload_csv_to_volume,
-)
 from tests.helpers.models import JobRunFailedError
 from tests.helpers.monitoring.job_monitoring import JobMonitor
 
@@ -49,34 +43,22 @@ def test_silver_pipeline_failure_prevents_gold_execution(
     workspace_client: WorkspaceClient,
     catalog: str,
     silver_pipeline_id: str,
+    empty_landing_volume,
 ) -> None:
     """Silver入力を意図的に破壊した状態でJobを実行し、gold_pipelineが実行されないことを確認する。
 
     Arrange:
-        game_id列を欠いた不正CSVをlanding volumeに配置。
+        empty_landing_volume fixtureを使用してlanding volumeのCSVファイルを一時的に削除し、
+        空の状態にする。テスト後にCSVファイルは自動的に復元される。
+        注: CSVの列欠損や型不一致はexpectation発火のみでパイプライン失敗にはならないため、
+        空のvolumeを参照させることでパイプライン失敗を誘発する。
     Act:
         Jobを実行し、完了まで待機。
     Assert:
         gold_pipelineタスクのresult_stateがUPSTREAM_FAILED（または相当）であり実行されないこと。
         失敗時に原因特定に足るエラーメッセージが取得できること（#206統合）。
     """
-    import tempfile
-
-    # Arrange: 不正CSVを作成・配置
-    with tempfile.TemporaryDirectory() as tmpdir:
-        csv_path = Path(tmpdir) / "missing_game_id.csv"
-        invalid_header = (
-            "move_number,sfen,prev_sfen,move_usi,player,black_player,"
-            "white_player,best_move,score_cp,pv\n"
-        )
-        csv_path.write_text(
-            invalid_header
-            + "1,lnsgkgsnl/1r5b1/ppppppppp/9/9/9/PPPPPPPPP/1B5R1/LNSGKGSNL b - 1,,black,player1,player2,7g7f,100,7g7f*",
-            encoding="utf-8",
-        )
-
-        volume_path = get_landing_volume_path(catalog)
-        upload_csv_to_volume(csv_path, volume_path, "missing_game_id.csv")
+    # Arrange: empty_landing_volume fixtureがCSVをバックアップし、空の状態にする
 
     # Act: Job実行（失敗を期待）
     waiter = workspace_client.jobs.run_now(job_id=job_id)
