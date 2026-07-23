@@ -8,7 +8,8 @@ from pyspark.sql.types import (
     StructField,
     StructType,
 )
-from utils.csv_utils import resolve_csv_paths
+
+from dbx_bundle.utils.csv_utils import resolve_csv_paths
 
 
 def get_analysis_schema():
