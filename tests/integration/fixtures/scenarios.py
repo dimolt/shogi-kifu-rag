@@ -7,11 +7,12 @@ from typing import List
 
 import pytest
 
+from tests.helpers.databricks.volume_helpers import get_test_data_volume_path
 from tests.helpers.models import TestDataScenarioConfig
 
 
 @pytest.fixture(scope="session")
-def test_data_config() -> dict[str, List[TestDataScenarioConfig]]:
+def test_data_config(catalog: str) -> dict[str, List[TestDataScenarioConfig]]:
     """Job-based integration testで使用するシナリオ別テストデータ設定を提供する。
 
     tests/scripts/setup_test_data_volume.py の定数（VOLUME_PATH, SAMPLE_KIF_PATH,
@@ -21,6 +22,9 @@ def test_data_config() -> dict[str, List[TestDataScenarioConfig]]:
     現時点で実データが用意されているのは"small"のみ。medium/large/edge_casesは
     対象のKIFファイルを用意した時点で追加する。
 
+    Args:
+        catalog: カタログ名（shogi_dev/shogi_test/shogi）。
+
     Returns:
         dict[str, List[TestDataScenarioConfig]]: シナリオ名 -> 設定のリスト。
     """
@@ -29,7 +33,7 @@ def test_data_config() -> dict[str, List[TestDataScenarioConfig]]:
         "small": [TestDataScenarioConfig(
             kif_path=project_root / "data" / "kif_files" / "sample.kif",
             csv_path=project_root / "data" / "output" / "small.csv",
-            volume_path="/Volumes/shogi_test/test/data",
+            volume_path=get_test_data_volume_path(catalog),
             expected_game_count=1,
             # data/kif_files/sample.kif の手数（121手、投了を除く）に基づく暫定値。
             expected_row_count=121,

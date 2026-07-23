@@ -8,6 +8,7 @@
     Silverテーブルが実データで実体化されていること。
 """
 
+import tempfile
 from pathlib import Path
 
 import pytest
@@ -16,6 +17,11 @@ from pyspark.sql import functions as F  # noqa: N812
 
 from dbx_bundle.pipelines.silver_transforms import build_positions, get_analysis_schema
 from tests.helpers.csv_helpers import write_analysis_csv
+from tests.helpers.databricks.volume_helpers import (
+    cleanup_volume_files,
+    get_test_data_volume_path,
+    upload_csv_to_volume,
+)
 
 pytestmark = pytest.mark.integration
 
@@ -140,53 +146,81 @@ def test_positionsテーブルのデータ品質(positions_df: DataFrame) -> Non
     assert duplicate_count == 0, f"重複行が存在する: {duplicate_count}件"
 
 
+
+
 def test_build_positions_複数CSVファイルをワイルドカードで読み込める(
-    spark: SparkSession, tmp_path: Path
+    spark: SparkSession, catalog: str
 ) -> None:
     # Arrange
-    write_analysis_csv(
-        tmp_path / "small_01.csv",
-        "G1,0,sfen0,,7g7f,black,Alice,Bob,7g7f,50,\n"
-        "G1,1,sfen1,sfen0,3c3d,white,Alice,Bob,3c3d,30,\n"
-    )
-    write_analysis_csv(
-        tmp_path / "small_02.csv",
-        "G2,0,sfen0,,7g7f,black,Carol,David,7g7f,45,\n"
-        "G2,1,sfen1,sfen0,3c3d,white,Carol,David,3c3d,25,\n"
-    )
+    volume_path = get_test_data_volume_path(catalog)
+    test_prefix = "test_build_positions_wildcard"
 
-    # Act
-    csv_path = str(tmp_path / "small_*.csv")
-    result_df = build_positions(spark, csv_path)
+    with tempfile.TemporaryDirectory() as tmpdir:
+        tmp_path = Path(tmpdir)
+        write_analysis_csv(
+            tmp_path / "small_01.csv",
+            "G1,0,sfen0,,7g7f,black,Alice,Bob,7g7f,50,\n"
+            "G1,1,sfen1,sfen0,3c3d,white,Alice,Bob,3c3d,30,\n"
+        )
+        write_analysis_csv(
+            tmp_path / "small_02.csv",
+            "G2,0,sfen0,,7g7f,black,Carol,David,7g7f,45,\n"
+            "G2,1,sfen1,sfen0,3c3d,white,Carol,David,3c3d,25,\n"
+        )
 
-    # Assert
-    assert result_df.count() == 4
-    game_ids = [row["game_id"] for row in result_df.select("game_id").distinct().collect()]
-    assert set(game_ids) == {"G1", "G2"}
+        # Volumeにアップロード
+        upload_csv_to_volume(tmp_path / "small_01.csv", volume_path, f"{test_prefix}_01.csv")
+        upload_csv_to_volume(tmp_path / "small_02.csv", volume_path, f"{test_prefix}_02.csv")
+
+    try:
+        # Act
+        csv_path = f"{volume_path}/{test_prefix}_*.csv"
+        result_df = build_positions(spark, csv_path)
+
+        # Assert
+        assert result_df.count() == 4
+        game_ids = [row["game_id"] for row in result_df.select("game_id").distinct().collect()]
+        assert set(game_ids) == {"G1", "G2"}
+    finally:
+        # Cleanup
+        cleanup_volume_files(volume_path, test_prefix)
 
 
 def test_build_positions_重複するgame_id_move_numberが含まれる場合_重複排除される(
-    spark: SparkSession, tmp_path: Path
+    spark: SparkSession, catalog: str
 ) -> None:
     # Arrange
-    write_analysis_csv(
-        tmp_path / "file1.csv",
-        "G1,0,sfen0,,7g7f,black,Alice,Bob,7g7f,50,\n"
-        "G1,1,sfen1,sfen0,3c3d,white,Alice,Bob,3c3d,30,\n"
-    )
-    write_analysis_csv(
-        tmp_path / "file2.csv",
-        "G1,0,sfen0,,7g7f,black,Alice,Bob,7g7f,55,\n"  # G1,0が重複
-        "G1,2,sfen2,sfen1,2g2f,black,Alice,Bob,2g2f,20,\n"
-    )
+    volume_path = get_test_data_volume_path(catalog)
+    test_prefix = "test_build_positions_duplicates"
 
-    # Act
-    csv_path = str(tmp_path / "*.csv")
-    result_df = build_positions(spark, csv_path)
+    with tempfile.TemporaryDirectory() as tmpdir:
+        tmp_path = Path(tmpdir)
+        write_analysis_csv(
+            tmp_path / "file1.csv",
+            "G1,0,sfen0,,7g7f,black,Alice,Bob,7g7f,50,\n"
+            "G1,1,sfen1,sfen0,3c3d,white,Alice,Bob,3c3d,30,\n"
+        )
+        write_analysis_csv(
+            tmp_path / "file2.csv",
+            "G1,0,sfen0,,7g7f,black,Alice,Bob,7g7f,55,\n"  # G1,0が重複
+            "G1,2,sfen2,sfen1,2g2f,black,Alice,Bob,2g2f,20,\n"
+        )
 
-    # Assert
-    assert result_df.count() == 3  # 重複排除後は3行
-    rows = result_df.filter(F.col("game_id") == "G1").orderBy("move_number").collect()
-    assert rows[0]["move_number"] == 0
-    assert rows[1]["move_number"] == 1
-    assert rows[2]["move_number"] == 2
+        # Volumeにアップロード
+        upload_csv_to_volume(tmp_path / "file1.csv", volume_path, f"{test_prefix}_1.csv")
+        upload_csv_to_volume(tmp_path / "file2.csv", volume_path, f"{test_prefix}_2.csv")
+
+    try:
+        # Act
+        csv_path = f"{volume_path}/{test_prefix}_*.csv"
+        result_df = build_positions(spark, csv_path)
+
+        # Assert
+        assert result_df.count() == 3  # 重複排除後は3行
+        rows = result_df.filter(F.col("game_id") == "G1").orderBy("move_number").collect()
+        assert rows[0]["move_number"] == 0
+        assert rows[1]["move_number"] == 1
+        assert rows[2]["move_number"] == 2
+    finally:
+        # Cleanup
+        cleanup_volume_files(volume_path, test_prefix)
