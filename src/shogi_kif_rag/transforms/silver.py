@@ -2,8 +2,8 @@
 
 from pyspark.sql import DataFrame, SparkSession
 
+from dbx_bundle.utils.csv_utils import resolve_csv_paths
 from shogi_kif_rag.kif.schemas.shemas import get_analysis_schema
-from shogi_kif_rag.kif.utils import resolve_csv_paths
 
 
 def build_positions(spark: SparkSession, csv_path: str) -> DataFrame:
