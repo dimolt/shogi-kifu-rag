@@ -82,7 +82,7 @@ def test_silver_pipeline_failure_prevents_gold_execution(
     assert gold_task is not None, "gold_pipeline task not found"
     assert gold_task.state.result_state in (
         RunResultState.FAILED,
-        RunResultState.SKIPPED,
+        RunResultState.UPSTREAM_FAILED,
         None,  # 実行されなかった場合
     ), (
         f"gold_pipeline should be UPSTREAM_FAILED/SKIPPED, but got {gold_task.state.result_state}"

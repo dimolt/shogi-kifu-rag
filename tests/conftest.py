@@ -21,11 +21,6 @@ from tests.fixtures.tables import (  # noqa: F401
     positions_df,
 )
 from tests.helpers.databricks.cli import databricks_cli_base_args
-from tests.helpers.databricks.volume_helpers import (
-    backup_csv_files,
-    get_landing_volume_path,
-    restore_csv_files,
-)
 
 # Driverが使っているPython実行ファイルをWorkerにも強制させる
 # (uv環境でPATH上に複数バージョンのPythonが存在する場合のバージョン不一致を防ぐ)
@@ -170,6 +165,15 @@ def empty_landing_volume(catalog: str):
     Yields:
         None: CSVファイルがバックアップされ、空の状態でテストが実行される。
     """
+
+    # unit test では使用しない
+    # import を関数内で行う
+    from tests.helpers.databricks.volume_helpers import (
+        backup_csv_files,
+        get_landing_volume_path,
+        restore_csv_files,
+    )
+
     volume_path = get_landing_volume_path(catalog)
     backup = backup_csv_files(volume_path)
     yield
