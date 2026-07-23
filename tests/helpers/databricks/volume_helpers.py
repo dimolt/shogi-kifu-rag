@@ -18,16 +18,17 @@ def get_test_data_volume_path(catalog: str) -> str:
     return f"/Volumes/{catalog}/test/data"
 
 
-def get_landing_volume_path(catalog: str) -> str:
+def get_landing_volume_path(catalog: str, schema: str = "landing") -> str:
     """Landing Volumeパスを取得する。
 
     Args:
         catalog: カタログ名（shogi_dev/shogi_test/shogi）。
+        schema: スキーマ名（デフォルト: "landing"）。
 
     Returns:
-        Landing Volumeパス（/Volumes/{catalog}/landing/analyzed）。
+        Landing Volumeパス（/Volumes/{catalog}/{schema}/analyzed）。
     """
-    return f"/Volumes/{catalog}/landing/analyzed"
+    return f"/Volumes/{catalog}/{schema}/analyzed"
 
 
 def upload_csv_to_volume(local_path: Path, volume_path: str, filename: str) -> None:
@@ -60,3 +61,38 @@ def cleanup_volume_files(volume_path: str, pattern: str) -> None:
     except Exception:
         # Volumeが存在しない場合は無視
         pass
+
+
+def backup_csv_files(volume_path: str) -> dict[str, bytes]:
+    """Volume上のCSVファイルをバックアップする。
+
+    Args:
+        volume_path: Volumeディレクトリパス。
+
+    Returns:
+        ファイルパスと内容のマッピング。
+    """
+    w = WorkspaceClient(profile=os.environ.get("DATABRICKS_CONFIG_PROFILE", "shogi"))
+    backup: dict[str, bytes] = {}
+    try:
+        files = w.files.list(volume_path)
+        for file_info in files:
+            if file_info.path.endswith(".csv"):
+                content = w.files.download(file_info.path).contents.read()
+                backup[file_info.path] = content
+    except Exception:
+        # Volumeが存在しない場合は空のバックアップを返す
+        pass
+    return backup
+
+
+def restore_csv_files(volume_path: str, backup: dict[str, bytes]) -> None:
+    """バックアップしたCSVファイルを復元する。
+
+    Args:
+        volume_path: Volumeディレクトリパス。
+        backup: ファイルパスと内容のマッピング。
+    """
+    w = WorkspaceClient(profile=os.environ.get("DATABRICKS_CONFIG_PROFILE", "shogi"))
+    for file_path, content in backup.items():
+        w.files.upload(file_path, content, overwrite=True)
