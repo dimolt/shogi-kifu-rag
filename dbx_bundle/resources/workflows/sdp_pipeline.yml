@@ -2,7 +2,7 @@ resources:
   pipelines:
     silver_pipeline:
       name: silver_pipeline
-      root_path: ../..
+      root_path: ../../..
       configuration:
         bundle.catalog: "${var.catalog}"  # 予約語 catalogとの衝突を回避
         bundle.landing_schema: "${var.landing_schema}"
@@ -20,6 +20,7 @@ resources:
 
     gold_pipeline:
       name: gold_pipeline
+      root_path: ../../..
       configuration:
         bundle.catalog: "${var.catalog}"  # 予約語 catalogとの衝突を回避
         bundle.silver_schema: "${var.silver_schema}"

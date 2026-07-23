@@ -1,7 +1,8 @@
 """Silver Table: analysis.csvから棋譜局面を登録するLakeflowパイプライン定義。"""
 
 from pyspark import pipelines as dp
-from silver_transforms import build_positions
+
+from dbx_bundle.pipelines.silver_transforms import build_positions
 
 CATALOG = spark.conf.get("bundle.catalog")
 LANDING_SCHEMA = spark.conf.get("bundle.landing_schema")
