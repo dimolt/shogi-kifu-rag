@@ -89,3 +89,58 @@ def test_resolve_csv_paths_クエスチョンマークワイルドカードを�
         str(tmp_path / "file_a.csv"),
         str(tmp_path / "file_b.csv"),
     ]
+
+
+# ---------------------------------------------------------------------------
+# /Volumes/ で始まるパス（Databricks Volumeパス）
+# ---------------------------------------------------------------------------
+
+
+def test_resolve_csv_paths_Volumesパスの場合_ワイルドカードを含んでいても展開せずそのまま返す() -> None:
+    # Arrange
+    # Databricks Volumeパスはローカルファイルシステム上に存在しないため、
+    # ワイルドカード展開をスキップしてSparkに処理を委ねる仕様を検証する。
+    csv_path = "/Volumes/shogi/landing/analyzed/*.csv"
+
+    # Act
+    result = resolve_csv_paths(csv_path)
+
+    # Assert
+    assert result == csv_path
+
+
+def test_resolve_csv_paths_Volumesパスの場合_ワイルドカードなしでもそのまま返す() -> None:
+    # Arrange
+    csv_path = "/Volumes/shogi/landing/analyzed/single.csv"
+
+    # Act
+    result = resolve_csv_paths(csv_path)
+
+    # Assert
+    assert result == csv_path
+
+
+def test_resolve_csv_paths_Volumesパスの場合_ローカルに一致ファイルが存在しなくてもFileNotFoundErrorを送出しない() -> None:
+    # Arrange
+    # ローカルファイルシステムには存在しないVolumesパスでも、
+    # ワイルドカード展開自体をスキップするため例外は発生しないことを確認する。
+    csv_path = "/Volumes/nonexistent_catalog/nonexistent_schema/nonexistent_volume/*.csv"
+
+    # Act
+    result = resolve_csv_paths(csv_path)
+
+    # Assert
+    assert result == csv_path
+
+
+def test_resolve_csv_paths_Volumesパスの場合_戻り値は文字列でありリストにならない() -> None:
+    # Arrange
+    csv_path = "/Volumes/shogi/landing/analyzed/*.csv"
+
+    # Act
+    result = resolve_csv_paths(csv_path)
+
+    # Assert
+    # 通常のワイルドカードパスはlist[str]を返しうるが、
+    # Volumesパスは常に単一文字列のまま返る（Spark側でワイルドカード解決される）。
+    assert isinstance(result, str)

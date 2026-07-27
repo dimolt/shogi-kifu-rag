@@ -299,6 +299,36 @@ uv pip tree
 uv lock
 ```
 
+## 並行実行の挙動
+
+### CIレベルの並行実行制御
+GitHub Actionsのワークフローでは、以下の並行実行制御が設定されています：
+
+- **ci-integration.yml**: `concurrency: group: integration-${{ github.ref }}` with `cancel-in-progress: true`
+- **ci-integration-exec.yml**: `concurrency: group: integration-exec-${{ github.ref }}` with `cancel-in-progress: true`
+
+これにより、同一ブランチでのワークフロー実行が重複した場合、進行中の実行がキャンセルされます。
+
+### Databricks Jobレベルの並行実行挙動
+Databricks Jobの並行実行挙動は、Jobの設定に依存します：
+
+- **デフォルト設定**: 同一Jobの並行実行が許可されます
+- **キューイング設定**: Job設定で並行実行数を制限している場合、後続の実行はキューイングされます
+
+### テストによる挙動確認
+並行実行の挙動は `tests/integration_exec/test_abnormal_resource.py` のテストで確認できます：
+
+```bash
+uv run pytest tests/integration_exec/test_abnormal_resource.py -v -s
+```
+
+このテストは同一Jobを2回並行起動し、実際の挙動を検証します。テスト出力に並行実行時の挙動が記録されるため、環境ごとの挙動の違いを確認できます。
+
+### 注意点
+- CIレベルの並行実行制御とDatabricks Jobレベルの並行実行制御は独立しています
+- テスト実行時は既存Jobへの影響に注意してください
+- 並行実行テストはJobの実行時間を要するため、実行頻度には注意してください
+
 ## 参考資料
 
 - プロジェクト仕様書: [docs/spec/shogi_kifu_rag_spec.md](spec/shogi_kifu_rag_spec.md)

@@ -11,6 +11,12 @@ resources:
           spec:
             environment_version: "4"
             dependencies: ${var.wheel_dependencies}
+
+      # 同時実行 OFF
+      queue:
+        enabled: false
+      max_concurrent_runs: 1
+
       tasks:
         - task_key: silver_pipeline
           pipeline_task:
