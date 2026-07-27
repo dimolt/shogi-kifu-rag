@@ -315,6 +315,21 @@ Databricks Jobの並行実行挙動は、Jobの設定に依存します：
 - **デフォルト設定**: 同一Jobの並行実行が許可されます
 - **キューイング設定**: Job設定で並行実行数を制限している場合、後続の実行はキューイングされます
 
+本プロジェクトのJob設定（`dbx_bundle/resources/workflows/jobs.yml`）では、以下の設定により並行実行を制限しています：
+
+```yaml
+# 同時実行 OFF
+queue:
+  enabled: false
+max_concurrent_runs: 1
+```
+
+この設定により：
+- キューイングが無効化され（`queue.enabled: false`）
+- 同時実行数が1に制限されます（`max_concurrent_runs: 1`）
+- 同一Jobの並行起動時、後発の実行は `MAXIMUM_CONCURRENT_RUNS_REACHED` で失敗します
+- データ整合性を確保するため、パイプラインタスクの競合を防止します
+
 ### テストによる挙動確認
 並行実行の挙動は `tests/integration_exec/test_abnormal_resource.py` のテストで確認できます：
 
