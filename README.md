@@ -40,20 +40,33 @@ shogi-kif-rag/
 │     │  ├─ generator.py
 │     │  ├─ secrets.py
 │     │  └─ rag.py
+│     ├─ kif/          # KIFファイルパース・局面解析
+│     │  ├─ parser/
+│     │  ├─ engine/
+│     │  ├─ schemas/
+│     │  └─ local_analyze.py
+│     ├─ transforms/   # Transformロジック
+│     │  ├─ silver.py
+│     │  └─ gold.py
 │     └─ vector/       # ChromaDBサービス
 │        └─ chromadb_service.py
-├─ databricks/
+├─ dbx_bundle/
 │  ├─ pipelines/          # PySpark Pipelines
-│  │  ├─ silver_table.py
-│  │  ├─ silver_transforms.py
-│  │  ├─ gold_table.py
-│  │  └─ gold_transforms.py
+│  │  ├─ positions_table.py
+│  │  ├─ csv_to_positions.py
+│  │  ├─ gold_tables.py
+│  │  └─ positions_to_gold.py
 │  ├─ notebooks/          # Databricks Notebooks
 │  │  └─ ntb_ui_demo.py
-│  └─ resources/
-│     └─ workflows/
-│        ├─ jobs.yml
-│        └─ shogi_kif_pipeline.yml
+│  ├─ resources/
+│  │  └─ workflows/
+│  │     ├─ jobs.yml
+│  │     └─ shogi_kif_pipeline.yml
+│  ├─ setup/
+│  │  ├─ 10_create.sql
+│  │  ├─ 20_grant.sql
+│  │  └─ ntb_setup_environment.py
+│  └─ utils/
 ├─ tests/
 ├─ docs/
 ```
@@ -141,9 +154,10 @@ Databricks Notebookで `ntb_ui_demo.py` を開いて実行します。
 ### アーキテクチャ
 
 パイプライン定義とtransformロジックを分離し、whlパッケージ依存を回避しています。
+※パイプライン定義からwhlパッケージ参照はエラーになる
 
 - **パイプライン定義** (`*_table.py`): Lakeflowパイプラインのテーブル定義
-- **Transformロジック** (`*_transforms.py`): 純粋関数によるデータ変換処理
+- **Transformロジック** : 純粋関数によるデータ変換処理
 
 ### Silver Pipeline
 
@@ -166,7 +180,7 @@ Databricks Notebookで `ntb_ui_demo.py` を開いて実行します。
 databricks bundle deploy
 ```
 
-Pipeline設定（`shogi_kif_pipeline.yml`）にtransformファイルを含めることで、whl依存なしでデプロイ可能です。
+Pipeline設定（`dbx_bundle/resources/workflows/shogi_kif_pipeline.yml`）にtransformファイルを含めることで、whl依存なしでデプロイ可能です。
 
 ## 残課題
 
