@@ -1,11 +1,11 @@
-"""silver_transforms.pyのユニットテスト。"""
+"""csv_to_positions.pyのユニットテスト。"""
 
 from pathlib import Path
 
 from pyspark.sql import SparkSession
 from pyspark.sql import functions as F  # noqa: N812
 
-from dbx_bundle.pipelines.silver_transforms import (
+from dbx_bundle.pipelines.csv_to_positions import (
     build_positions,
     get_analysis_schema,
 )

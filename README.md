@@ -147,15 +147,15 @@ Databricks Notebookで `ntb_ui_demo.py` を開いて実行します。
 
 ### Silver Pipeline
 
-- **silver_table.py**: パイプライン定義
-- **silver_transforms.py**: Transformロジック
+- **positions_table.py**: パイプライン定義
+- **csv_to_positions.py**: Transformロジック
   - CSVファイルから棋譜データを読み込み
   - Silverテーブル（positions）を作成
 
 ### Gold Pipeline
 
-- **gold_table.py**: パイプライン定義
-- **gold_transforms.py**: Transformロジック
+- **gold_tables.py**: パイプライン定義
+- **positions_to_gold.py**: Transformロジック
   - Silverテーブルからデータを読み込み
   - 特徴量計算（局面特徴量、ゲームサマリー）
   - Goldテーブル（position_features, game_summary）を作成
@@ -222,7 +222,7 @@ tests/
 ## Layer 1: 単体テスト（unit）
 
 - ローカルPySpark（`local[1]`）で完結し、Databricksへの接続は行わない
-- CSVパースロジックや`silver_transforms.py` / `gold_transforms.py`の純粋関数を検証
+- CSVパースロジックや`csv_to_positions.py` / `positions_to_gold.py`の純粋関数を検証
 - `tests/` は `src/` / `databricks/pipelines/` の構成をミラーリングする
 - **CIで毎回実行**する
 

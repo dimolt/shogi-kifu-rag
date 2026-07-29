@@ -26,9 +26,9 @@ resources:
         bundle.silver_schema: "${var.silver_schema}"
       libraries:
         - glob:
-            include: ../../pipelines/gold_table.py
+            include: ../../pipelines/gold_tables.py
         - glob:
-            include: ../../pipelines/gold_transforms.py
+            include: ../../pipelines/positions_to_gold.py
       photon: true
       catalog: "${var.catalog}"
       schema: "${var.gold_schema}"

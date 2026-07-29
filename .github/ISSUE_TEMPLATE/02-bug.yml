@@ -11,7 +11,7 @@ body:
       description: 何が起きているかを簡潔に記載してください。
       placeholder: |
         例:
-        Databricks Job実行時に silver_table.py でエラーになり、ジョブが失敗する
+        Databricks Job実行時に positions_table.py でエラーになり、ジョブが失敗する
     validations:
       required: true
 

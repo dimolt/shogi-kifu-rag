@@ -1,8 +1,8 @@
-"""gold_transforms.pyのユニットテスト。"""
+"""positions_to_gold.pyのユニットテスト。"""
 
 import json
 
-from dbx_bundle.pipelines.gold_transforms import (
+from dbx_bundle.pipelines.positions_to_gold import (
     _add_turn_score_columns,
     build_game_summary,
     build_position_features,

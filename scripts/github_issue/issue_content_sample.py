@@ -31,7 +31,7 @@ ISSUES: list[IssueDefinition] = [
 ヘッダーのみ・本文0行のCSVを `build_positions()` に渡した際の挙動を確認する。
 
 ## Layer
-unit（`tests/unit/dbx_bundle/pipelines/test_silver_transforms.py` に追加）
+unit（`tests/unit/dbx_bundle/pipelines/test_csv_to_positions.py` に追加）
 
 ## 検証方法
 `write_analysis_csv()` でヘッダーのみ・本文0行のCSVを生成し `build_positions()` に渡す。
@@ -48,7 +48,7 @@ unit（`tests/unit/dbx_bundle/pipelines/test_silver_transforms.py` に追加）
 渡した際の挙動を確認し、期待値として固定する。
 
 ## Layer
-unit（`tests/unit/dbx_bundle/pipelines/test_silver_transforms.py` に追加）
+unit（`tests/unit/dbx_bundle/pipelines/test_csv_to_positions.py` に追加）
 
 ## 検証方法
 カラム数不足の行、引用符崩れの行を含むCSVを生成し `build_positions()` に渡す。
