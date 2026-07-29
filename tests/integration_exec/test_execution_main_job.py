@@ -59,14 +59,13 @@ def test_jobに期待される全タスクが含まれている(
     Act:
         タスクキーの集合を取得する。
     Assert:
-        期待されるタスクキー（silver_pipeline, gold_pipeline, floodgate, wikipedia）
+        期待されるタスクキー（shogi_kif_pipeline, floodgate, wikipedia）
         が全て含まれていること。
     """
     # Act
     actual_task_keys = {task.task_key for task in job_run_result.tasks}
     expected_task_keys = {
-        "silver_pipeline",
-        "gold_pipeline",
+        "shogi_kif_pipeline",
         "floodgate",
         "wikipedia",
     }

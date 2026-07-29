@@ -1,0 +1,20 @@
+resources:
+  pipelines:
+    shogi_kif_pipeline:
+      name: shogi_kif_pipeline
+      root_path: ../../..
+      configuration:
+        bundle.catalog: "${var.catalog}"
+        bundle.landing_schema: "${var.landing_schema}"
+        bundle.silver_schema: "${var.silver_schema}"
+      libraries:
+        - glob:
+            include: ../../pipelines/*.py
+        - glob:
+            include: ../../utils/*.py
+      photon: true
+      catalog: "${var.catalog}"
+      schema: "${var.silver_schema}"
+      serverless: true
+      continuous: false
+      development: true

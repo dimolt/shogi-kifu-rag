@@ -110,8 +110,8 @@ def _bundle_resources(bundle_target: str) -> dict:
 
 
 @pytest.fixture(scope="session")
-def silver_pipeline_id(_bundle_resources: dict) -> str:
-    """デプロイ済みsilver_pipelineのpipeline_idを取得する。
+def shogi_kif_pipeline_id(_bundle_resources: dict) -> str:
+    """デプロイ済みshogi_kif_pipelineのpipeline_idを取得する。
 
     前提:
         本fixtureはパイプラインを起動しない。integration層では、event_log()の
@@ -119,24 +119,9 @@ def silver_pipeline_id(_bundle_resources: dict) -> str:
         いることを前提とする。e2e層では呼び出し元がこのIDを使って自ら起動する。
 
     Returns:
-        str: databricks.yml で定義されたsilver_pipelineのID。
+        str: databricks.yml で定義されたshogi_kif_pipelineのID。
     """
-    return _bundle_resources["resources"]["pipelines"]["silver_pipeline"]["id"]
-
-
-@pytest.fixture(scope="session")
-def gold_pipeline_id(_bundle_resources: dict) -> str:
-    """デプロイ済みgold_pipelineのpipeline_idを取得する。
-
-    前提:
-        本fixtureはパイプラインを起動しない。integration層では、event_log()の
-        検証対象となる実行結果がCIの定期実行や手動実行によって事前に生成されて
-        いることを前提とする。e2e層では呼び出し元がこのIDを使って自ら起動する。
-
-    Returns:
-        str: databricks.yml で定義されたgold_pipelineのID。
-    """
-    return _bundle_resources["resources"]["pipelines"]["gold_pipeline"]["id"]
+    return _bundle_resources["resources"]["pipelines"]["shogi_kif_pipeline"]["id"]
 
 
 @pytest.fixture(scope="session")

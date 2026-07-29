@@ -21,6 +21,9 @@ from tests.helpers.monitoring.expectations import (
     assert_expectations_pass,
 )
 
+# Unified expectations for the single shogi_kif_pipeline
+UNIFIED_EXPECTATIONS = {**SILVER_EXPECTATIONS, **GOLD_EXPECTATIONS}
+
 pytestmark = pytest.mark.e2e
 
 
@@ -32,15 +35,10 @@ class TestE2EPipeline:
     ) -> None:
         assert main_job_run_result.result_state == "SUCCESS"
 
-    def test_assert_expectations_pass_Silver実行後_全expectationsのfailed_recordsが0(
-        self, spark: SparkSession, silver_pipeline_id: str
+    def test_assert_expectations_pass_パイプライン実行後_全expectationsのfailed_recordsが0(
+        self, spark: SparkSession, shogi_kif_pipeline_id: str
     ) -> None:
-        assert_expectations_pass(spark, silver_pipeline_id, SILVER_EXPECTATIONS)
-
-    def test_assert_expectations_pass_Gold実行後_全expectationsのfailed_recordsが0(
-        self, spark: SparkSession, gold_pipeline_id: str
-    ) -> None:
-        assert_expectations_pass(spark, gold_pipeline_id, GOLD_EXPECTATIONS)
+        assert_expectations_pass(spark, shogi_kif_pipeline_id, UNIFIED_EXPECTATIONS)
 
     def test_positions_テーブル_パイプライン完了後_存在してデータがある(
         self,

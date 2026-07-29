@@ -3,7 +3,7 @@
 DABs devターゲットへの実デプロイ（CD workflowで実施済み）を前提に、
 Silver/GoldスキーマのクリーンアップとJob起動・完了待機を行う。
 
-spark, silver_pipeline_id, gold_pipeline_id, main_job_id は `tests/conftest.py`（ルート）で
+spark, shogi_kif_pipeline_id, main_job_id は `tests/conftest.py`（ルート）で
 定義されたものをそのまま利用する（本ファイルでの再定義は不要）。
 """
 
