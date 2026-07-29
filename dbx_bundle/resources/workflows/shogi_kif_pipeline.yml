@@ -7,6 +7,7 @@ resources:
         bundle.catalog: "${var.catalog}"
         bundle.landing_schema: "${var.landing_schema}"
         bundle.silver_schema: "${var.silver_schema}"
+        bundle.gold_schema: "${var.gold_schema}"
       libraries:
         - glob:
             include: ../../pipelines/*.py
