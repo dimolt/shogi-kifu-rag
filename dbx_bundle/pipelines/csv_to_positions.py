@@ -1,4 +1,4 @@
-"""Silver層のテーブル定義に関する純粋関数群。"""
+"""CSVから局面テーブルへの変換に関する純粋関数群。"""
 
 
 from pyspark.sql import DataFrame, SparkSession

@@ -1,4 +1,4 @@
-"""Gold層のテーブル定義に関する純粋関数群。"""
+"""局面テーブルからGoldテーブルへの変換に関する純粋関数群。"""
 
 from pyspark.sql import DataFrame
 from pyspark.sql.functions import abs as abs_
