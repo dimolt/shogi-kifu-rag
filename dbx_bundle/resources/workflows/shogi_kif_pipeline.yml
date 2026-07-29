@@ -12,6 +12,8 @@ resources:
         - glob:
             include: ../../pipelines/**
         - glob:
+            include: ../../transforms/**
+        - glob:
             include: ../../utils/**
       photon: true
       catalog: "${var.catalog}"
