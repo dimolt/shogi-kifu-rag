@@ -16,6 +16,9 @@ import pytest
 
 from tests.helpers.monitoring.expectations import GOLD_EXPECTATIONS, SILVER_EXPECTATIONS
 
+# Unified expectations for the single shogi_kif_pipeline
+UNIFIED_EXPECTATIONS = {**SILVER_EXPECTATIONS, **GOLD_EXPECTATIONS}
+
 pytestmark = pytest.mark.integration
 
 FRESHNESS_THRESHOLD_HOURS = 24
@@ -111,33 +114,17 @@ def _assert_expectations_pass(
             )
 
 
-def test_silver_pipelineの全expectationがfailed_records_0_品質ゲートが機能している(
-    spark, silver_pipeline_id
+def test_shogi_kif_pipelineの全expectationがfailed_records_0_品質ゲートが機能している(
+    spark, shogi_kif_pipeline_id
 ):
-    """silver_pipeline（positionsテーブル）の3件のexpectationsを確認する。
+    """shogi_kif_pipeline（positions/position_features/game_summaryテーブル）のexpectationsを確認する。
 
     Arrange:
-        silver_pipeline_id fixtureで対象パイプラインのIDを取得する
+        shogi_kif_pipeline_id fixtureで対象パイプラインのIDを取得する
         （パイプライン自体は事前実行済みである前提、モジュールdocstring参照）。
     Act:
         event_log()から最新update_idのexpectationsメトリクスを取得する。
     Assert:
-        SILVER_EXPECTATIONS全件が存在し、failed_records=0かつpassed_records>0であること。
+        UNIFIED_EXPECTATIONS全件が存在し、failed_records=0かつpassed_records>0であること。
     """
-    _assert_expectations_pass(spark, silver_pipeline_id, SILVER_EXPECTATIONS)
-
-
-def test_gold_pipelineの全expectationがfailed_records_0_品質ゲートが機能している(
-    spark, gold_pipeline_id
-):
-    """gold_pipeline（position_features/game_summaryテーブル）の3件のexpectationsを確認する。
-
-    Arrange:
-        gold_pipeline_id fixtureで対象パイプラインのIDを取得する
-        （パイプライン自体は事前実行済みである前提、モジュールdocstring参照）。
-    Act:
-        event_log()から最新update_idのexpectationsメトリクスを取得する。
-    Assert:
-        GOLD_EXPECTATIONS全件が存在し、failed_records=0かつpassed_records>0であること。
-    """
-    _assert_expectations_pass(spark, gold_pipeline_id, GOLD_EXPECTATIONS)
+    _assert_expectations_pass(spark, shogi_kif_pipeline_id, UNIFIED_EXPECTATIONS)

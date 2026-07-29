@@ -9,9 +9,10 @@ from dbx_bundle.pipelines.positions_to_gold import (
 
 catalog = spark.conf.get("bundle.catalog")
 silver_schema = spark.conf.get("bundle.silver_schema")
+gold_schema = spark.conf.get("bundle.gold_schema")
 
 
-@dp.table
+@dp.table(name=f"{catalog}.{gold_schema}.position_features")
 @dp.expect("valid_move_quality", "move_quality IN ('start', 'best', 'blunder', 'normal')")  #noqa: E501
 def position_features():
     """Gold Table: 局面特徴量"""
@@ -19,7 +20,7 @@ def position_features():
     return build_position_features(silver_df)
 
 
-@dp.table
+@dp.table(name=f"{catalog}.{gold_schema}.game_summary")
 @dp.expect("final_score_not_null", "final_score_cp IS NOT NULL")
 @dp.expect("valid_players", "black_player IS NOT NULL AND white_player IS NOT NULL")
 def game_summary():

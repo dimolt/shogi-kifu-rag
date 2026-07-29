@@ -53,7 +53,7 @@ shogi-kif-rag/
 │  └─ resources/
 │     └─ workflows/
 │        ├─ jobs.yml
-│        └─ sdp_pipeline.yml
+│        └─ shogi_kif_pipeline.yml
 ├─ tests/
 ├─ docs/
 ```
@@ -166,7 +166,7 @@ Databricks Notebookで `ntb_ui_demo.py` を開いて実行します。
 databricks bundle deploy
 ```
 
-Pipeline設定（`sdp_pipeline.yml`）にtransformファイルを含めることで、whl依存なしでデプロイ可能です。
+Pipeline設定（`shogi_kif_pipeline.yml`）にtransformファイルを含めることで、whl依存なしでデプロイ可能です。
 
 ## 残課題
 

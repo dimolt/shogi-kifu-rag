@@ -9,7 +9,7 @@
 設計上の前提:
     - integration_exec層なのでJob実行が必要（数分〜十数分待機）
     - #203-#205は並列実行可能
-    - silver_pipeline_id, gold_pipeline_idはtests/conftest.pyから継承
+    - shogi_kif_pipeline_idはtests/conftest.pyから継承
     - #206は各失敗シナリオ内でget_event_log_errors()を呼び出してエラーメッセージを検証
 """
 from __future__ import annotations
@@ -42,10 +42,15 @@ def test_silver_pipeline_failure_prevents_gold_execution(
     job_id: int,
     workspace_client: WorkspaceClient,
     catalog: str,
-    silver_pipeline_id: str,
+    shogi_kif_pipeline_id: str,
     empty_landing_volume,
 ) -> None:
-    """Silver入力を意図的に破壊した状態でJobを実行し、gold_pipelineが実行されないことを確認する。
+    """Silver入力を意図的に破壊した状態でJobを実行し、パイプラインが失敗することを確認する。
+
+    Note: Issue #203はパイプライン統合（Issue #245）により廃止された。
+    元のテストはsilver_pipelineとgold_pipelineの依存関係を検証していたが、
+    統合後は単一のshogi_kif_pipelineとなり、この依存関係は存在しない。
+    本テストはパイプライン失敗時のエラーメッセージ検証に縮小して残している。
 
     Arrange:
         empty_landing_volume fixtureを使用してlanding volumeのCSVファイルを一時的に削除し、
@@ -55,7 +60,7 @@ def test_silver_pipeline_failure_prevents_gold_execution(
     Act:
         Jobを実行し、完了まで待機。
     Assert:
-        gold_pipelineタスクのresult_stateがUPSTREAM_FAILED（または相当）であり実行されないこと。
+        shogi_kif_pipelineタスクのresult_stateがFAILEDであること。
         失敗時に原因特定に足るエラーメッセージが取得できること（#206統合）。
     """
     # Arrange: empty_landing_volume fixtureがCSVをバックアップし、空の状態にする
@@ -70,28 +75,17 @@ def test_silver_pipeline_failure_prevents_gold_execution(
     # Assert: タスク状態を詳細確認
     run = workspace_client.jobs.get_run(run_id)
 
-    # silver_pipelineが失敗していること
-    silver_task = next((t for t in run.tasks if t.task_key == "silver_pipeline"), None)
-    assert silver_task is not None, "silver_pipeline task not found"
-    assert silver_task.state.result_state == RunResultState.FAILED, (
-        f"silver_pipeline should be FAILED, but got {silver_task.state.result_state}"
-    )
-
-    # gold_pipelineがUPSTREAM_FAILEDまたはSKIPPEDであること（実行されない）
-    gold_task = next((t for t in run.tasks if t.task_key == "gold_pipeline"), None)
-    assert gold_task is not None, "gold_pipeline task not found"
-    assert gold_task.state.result_state in (
-        RunResultState.FAILED,
-        RunResultState.UPSTREAM_FAILED,
-        None,  # 実行されなかった場合
-    ), (
-        f"gold_pipeline should be UPSTREAM_FAILED/SKIPPED, but got {gold_task.state.result_state}"
+    # shogi_kif_pipelineが失敗していること
+    pipeline_task = next((t for t in run.tasks if t.task_key == "shogi_kif_pipeline"), None)
+    assert pipeline_task is not None, "shogi_kif_pipeline task not found"
+    assert pipeline_task.state.result_state == RunResultState.FAILED, (
+        f"shogi_kif_pipeline should be FAILED, but got {pipeline_task.state.result_state}"
     )
 
     # #206: エラーメッセージ取得・検証
     error_message = str(exc_info.value)
-    assert "silver_pipeline" in error_message, (
-        f"Error message should reference silver_pipeline:\n{error_message}"
+    assert "shogi_kif_pipeline" in error_message, (
+        f"Error message should reference shogi_kif_pipeline:\n{error_message}"
     )
 
 
@@ -105,33 +99,18 @@ def test_gold_pipeline_failure_doesnt_affect_silver_output(
     job_id: int,
     workspace_client: WorkspaceClient,
     catalog: str,
-    silver_pipeline_id: str,
+    shogi_kif_pipeline_id: str,
 ) -> None:
     """Gold側のexpectation違反を誘発し、Silver出力が変更されていないことを確認する。
 
-    Arrange:
-        正常なSilverデータを配置し、Gold入力を不正化する方法を検討・実装。
-        注: Gold入力の不正化方法はSilverテーブルを直接操作する必要があるため、
-        ここではSilverテーブルの行数を事前に取得し、Job失敗後に比較するアプローチを採用。
-    Act:
-        Jobを実行し、完了まで待機。
-    Assert:
-        silver_pipelineのテーブル・event_logが正常完了のまま保持されること。
-        失敗時に原因特定に足るエラーメッセージが取得できること（#206統合）。
-
-    注: #204の実装課題
-        - Gold入力の不正化方法が不明確
-        - Silverテーブルを直接操作してGoldのexpectation違反を誘発する方法が必要
-        - 可能なアプローチ:
-            1. Silverテーブルに不正データを直接INSERTしてGold pipelineを実行
-            2. Gold pipelineのexpectation定義を確認し、違反するデータパターンを特定
-            3. Job実行前にSilverテーブルの状態をスナップショットし、失敗後に比較
-        - 現時点では実装方法が確定していないためスキップ
+    Note: Issue #204はパイプライン統合（Issue #245）により廃止された。
+    元のテストはsilver_pipelineとgold_pipelineの分離を検証していたが、
+    統合後は単一のshogi_kif_pipelineとなり、この分離は存在しない。
     """
     pytest.skip(
-        "Issue #204: Gold入力の不正化方法を検討中。"
-        "Silverテーブルを直接操作してGoldのexpectation違反を誘発する方法が必要。"
-        "別Issueで実装方法を確定した後に対応すること。"
+        "Issue #204: パイプライン統合（Issue #245）により廃止された。"
+        "silver_pipelineとgold_pipelineは単一のshogi_kif_pipelineに統合されたため、"
+        "このテストは不要になった。"
     )
 
 
@@ -151,7 +130,7 @@ def test_partial_failure_recovery(
     Act:
         Jobを実行し、完了まで待機。
     Assert:
-        失敗タスク以外（silver_pipeline, gold_pipeline）が正常完了すること。
+        失敗タスク以外（shogi_kif_pipeline）が正常完了すること。
         失敗時に原因特定に足るエラーメッセージが取得できること（#206統合）。
     """
     # Arrange & Act
@@ -175,13 +154,12 @@ def test_partial_failure_recovery(
             f"{task_key} should be FAILED, but got {task.state.result_state}"
         )
 
-    # silver_pipeline/gold_pipelineは成功していること
-    for task_key in ["silver_pipeline", "gold_pipeline"]:
-        task = next((t for t in run.tasks if t.task_key == task_key), None)
-        assert task is not None, f"{task_key} task not found"
-        assert task.state.result_state == RunResultState.SUCCESS, (
-            f"{task_key} should be SUCCESS, but got {task.state.result_state}"
-        )
+    # shogi_kif_pipelineは成功していること
+    pipeline_task = next((t for t in run.tasks if t.task_key == "shogi_kif_pipeline"), None)
+    assert pipeline_task is not None, "shogi_kif_pipeline task not found"
+    assert pipeline_task.state.result_state == RunResultState.SUCCESS, (
+        f"shogi_kif_pipeline should be SUCCESS, but got {pipeline_task.state.result_state}"
+    )
 
     # #206: エラーメッセージ取得・検証
     error_message = str(exc_info.value)

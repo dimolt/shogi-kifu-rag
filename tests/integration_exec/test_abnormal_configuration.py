@@ -18,7 +18,7 @@
         `dev`のデプロイ状態には一切変更を加えないため、他のintegration_execテストと
         同一CI実行内で安全に共存できる。
         この方式で上書きできるのはJobレベルパラメータを参照するタスク
-        （floodgate, wikipedia）のみ。silver_pipeline/gold_pipeline（DLTパイプライン）は
+        （floodgate, wikipedia）のみ。shogi_kif_pipeline（DLTパイプライン）は
         catalogがパイプラインリソース自体の定義に紐づき、実行時上書きの対象外のため、
         本テストのスコープからは意図的に除外している（Issueコメントで経緯を記録）。
     #211は`bundle validate --output json`の`variables.<name>.value`から

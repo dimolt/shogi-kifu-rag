@@ -50,13 +50,13 @@ def _assert_expectation_failed(
     )
 
 
-def test_missing_game_id_column_expectation_fires(spark, silver_pipeline_id, catalog):
+def test_missing_game_id_column_expectation_fires(spark, shogi_kif_pipeline_id, catalog):
     """Issue #200: game_id列を欠いたCSVでvalid_game_id expectationが発火すること。
 
     Arrange:
         game_id列を欠いた不正CSVを作成し、landing volumeに配置する。
     Act:
-        Silver pipelineを実行し、完了まで待機する。
+        shogi_kif_pipelineを実行し、完了まで待機する。
     Assert:
         valid_game_id expectationがfailed_records > 0で発火していること。
     """
@@ -79,21 +79,21 @@ def test_missing_game_id_column_expectation_fires(spark, silver_pipeline_id, cat
         volume_path = get_landing_volume_path(catalog)
         upload_csv_to_volume(csv_path, volume_path, "missing_game_id.csv")
 
-        # Act: Silver pipeline実行
-        update_id = start_pipeline_update(silver_pipeline_id)
-        wait_for_update(spark, silver_pipeline_id, update_id)
+        # Act: shogi_kif_pipeline実行
+        update_id = start_pipeline_update(shogi_kif_pipeline_id)
+        wait_for_update(spark, shogi_kif_pipeline_id, update_id)
 
         # Assert: valid_game_id expectationがfailed_records > 0で発火
-        _assert_expectation_failed(spark, silver_pipeline_id, "positions", "valid_game_id")
+        _assert_expectation_failed(spark, shogi_kif_pipeline_id, "positions", "valid_game_id")
 
 
-def test_invalid_move_number_data_type_expectation_fires(spark, silver_pipeline_id, catalog):
+def test_invalid_move_number_data_type_expectation_fires(spark, shogi_kif_pipeline_id, catalog):
     """Issue #202: move_numberに文字列を混入させたCSVでvalid_move_number expectationが発火すること。
 
     Arrange:
         move_numberに文字列を混入させた不正CSVを作成し、landing volumeに配置する。
     Act:
-        Silver pipelineを実行し、完了まで待機する。
+        shogi_kif_pipelineを実行し、完了まで待機する。
     Assert:
         valid_move_number expectationがfailed_records > 0で発火していること。
     """
@@ -112,9 +112,9 @@ def test_invalid_move_number_data_type_expectation_fires(spark, silver_pipeline_
         volume_path = get_landing_volume_path(catalog)
         upload_csv_to_volume(csv_path, volume_path, "invalid_move_number.csv")
 
-        # Act: Silver pipeline実行
-        update_id = start_pipeline_update(silver_pipeline_id)
-        wait_for_update(spark, silver_pipeline_id, update_id)
+        # Act: shogi_kif_pipeline実行
+        update_id = start_pipeline_update(shogi_kif_pipeline_id)
+        wait_for_update(spark, shogi_kif_pipeline_id, update_id)
 
         # Assert: valid_move_number expectationがfailed_records > 0で発火
-        _assert_expectation_failed(spark, silver_pipeline_id, "positions", "valid_move_number")
+        _assert_expectation_failed(spark, shogi_kif_pipeline_id, "positions", "valid_move_number")
