@@ -18,4 +18,3 @@ resources:
       schema: "${var.silver_schema}"
       serverless: true
       continuous: false
-      development: true
