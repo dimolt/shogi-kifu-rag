@@ -10,9 +10,9 @@ resources:
         bundle.gold_schema: "${var.gold_schema}"
       libraries:
         - glob:
-            include: ../../pipelines/*.py
+            include: ../../pipelines/**
         - glob:
-            include: ../../utils/*.py
+            include: ../../utils/**
       photon: true
       catalog: "${var.catalog}"
       schema: "${var.silver_schema}"
