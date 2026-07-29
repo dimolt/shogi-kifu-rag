@@ -2,7 +2,7 @@
 
 from pyspark import pipelines as dp
 
-from dbx_bundle.pipelines.positions_to_gold import (
+from dbx_bundle.transforms.positions_to_gold import (
     build_game_summary,
     build_position_features,
 )

@@ -1,8 +1,8 @@
-"""gold.pyのユニットテスト。"""
+"""positions_to_gold.pyのユニットテスト。"""
 
 import json
 
-from shogi_kif_rag.transforms.gold import (
+from dbx_bundle.transforms.positions_to_gold import (
     _add_turn_score_columns,
     build_game_summary,
     build_position_features,

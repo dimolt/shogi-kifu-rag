@@ -2,7 +2,7 @@
 
 from pyspark import pipelines as dp
 
-from dbx_bundle.pipelines.csv_to_positions import build_positions
+from dbx_bundle.transforms.csv_to_positions import build_positions
 
 CATALOG = spark.conf.get("bundle.catalog")
 LANDING_SCHEMA = spark.conf.get("bundle.landing_schema")
