@@ -65,7 +65,8 @@ def cleanup_volume_files(volume_path: str, pattern: str) -> None:
     """
     w = _get_workspace_client()
     try:
-        files = w.files.list_directory_contents(volume_path)
+        # ページングされたイテレータを先にリスト化して削除中のオフセットずれを防ぐ
+        files = list(w.files.list_directory_contents(volume_path))
     except NotFound:
         # Volumeが存在しない場合は何もしない
         return
