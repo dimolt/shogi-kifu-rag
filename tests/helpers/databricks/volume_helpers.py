@@ -103,11 +103,10 @@ def backup_csv_files(volume_path: str) -> dict[str, bytes]:
     return backup
 
 
-def restore_csv_files(volume_path: str, backup: dict[str, bytes]) -> None:
+def restore_csv_files(backup: dict[str, bytes]) -> None:
     """バックアップしたCSVファイルを復元する。
 
     Args:
-        volume_path: Volumeディレクトリパス。
         backup: ファイルパスと内容のマッピング。
     """
     w = _get_workspace_client()
