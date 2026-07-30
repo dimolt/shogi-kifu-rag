@@ -93,3 +93,4 @@ Prioritize:
 3. Performance
 4. Maintainability
 5. Readability
+6. コメントは日本語で
