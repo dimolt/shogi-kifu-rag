@@ -91,7 +91,8 @@ def backup_csv_files(volume_path: str) -> dict[str, bytes]:
     w = _get_workspace_client()
     backup: dict[str, bytes] = {}
     try:
-        files = w.files.list_directory_contents(volume_path)
+        # ページングされたイテレータを先にリスト化してオフセットずれを防ぐ
+        files = list(w.files.list_directory_contents(volume_path))
         for file_info in files:
             if file_info.path.endswith(".csv"):
                 content = w.files.download(file_info.path).contents.read()
