@@ -13,6 +13,13 @@ from pathlib import Path
 import pytest
 from dotenv import load_dotenv
 
+from tests.fixtures.tables import (
+    floodgate_positions_df,  # noqa: I001 F401
+    game_summary_df,  # noqa: I001 F401
+    joseki_knowledge_df,  # noqa: I001 F401
+    position_features_df,  # noqa: I001 F401
+    positions_df,  # noqa: I001 F401
+)
 from tests.helpers.databricks.cli import databricks_cli_base_args
 
 # Driverが使っているPython実行ファイルをWorkerにも強制させる
