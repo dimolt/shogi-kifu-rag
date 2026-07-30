@@ -5,6 +5,7 @@ import os
 from pathlib import Path
 
 from databricks.sdk import WorkspaceClient
+from databricks.sdk.errors.platform import NotFound
 
 
 def _get_workspace_client() -> WorkspaceClient:
@@ -58,17 +59,20 @@ def cleanup_volume_files(volume_path: str, pattern: str) -> None:
     Args:
         volume_path: Volumeディレクトリパス。
         pattern: 削除対象のファイルパターン。
+
+    Raises:
+        Exception: Volumeが存在しない場合以外の例外は再送出する。
     """
     w = _get_workspace_client()
     try:
         files = w.files.list_directory_contents(volume_path)
-        for file_info in files:
-            if pattern in file_info.path:
-                w.files.delete(file_info.path)
-    except Exception as e:
-        # Volumeが存在しない場合は空のバックアップを返す
-        print(e)
-        pass
+    except NotFound:
+        # Volumeが存在しない場合は何もしない
+        return
+
+    for file_info in files:
+        if pattern in file_info.path:
+            w.files.delete(file_info.path)
 
 
 def backup_csv_files(volume_path: str) -> dict[str, bytes]:
@@ -79,6 +83,9 @@ def backup_csv_files(volume_path: str) -> dict[str, bytes]:
 
     Returns:
         ファイルパスと内容のマッピング。
+
+    Raises:
+        Exception: Volumeが存在しない場合以外の例外は再送出する。
     """
     w = _get_workspace_client()
     backup: dict[str, bytes] = {}
@@ -88,9 +95,8 @@ def backup_csv_files(volume_path: str) -> dict[str, bytes]:
             if file_info.path.endswith(".csv"):
                 content = w.files.download(file_info.path).contents.read()
                 backup[file_info.path] = content
-    except Exception as e:
+    except NotFound:
         # Volumeが存在しない場合は空のバックアップを返す
-        print(e)
         pass
     return backup
 

@@ -13,13 +13,6 @@ from pathlib import Path
 import pytest
 from dotenv import load_dotenv
 
-from tests.fixtures.tables import (  # noqa: F401
-    floodgate_positions_df,
-    game_summary_df,
-    joseki_knowledge_df,
-    position_features_df,
-    positions_df,
-)
 from tests.helpers.databricks.cli import databricks_cli_base_args
 
 # Driverが使っているPython実行ファイルをWorkerにも強制させる
@@ -164,6 +157,7 @@ def empty_landing_volume(catalog: str):
     backup = backup_csv_files(volume_path)
 
     try:
+        # バックアップが正常に完了した場合のみ削除を実行
         cleanup_volume_files(volume_path, ".csv")
         yield
     finally:
