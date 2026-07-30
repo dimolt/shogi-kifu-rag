@@ -155,11 +155,17 @@ def empty_landing_volume(catalog: str):
     # import を関数内で行う
     from tests.helpers.databricks.volume_helpers import (
         backup_csv_files,
+        cleanup_volume_files,
         get_landing_volume_path,
         restore_csv_files,
     )
 
     volume_path = get_landing_volume_path(catalog)
     backup = backup_csv_files(volume_path)
-    yield
-    restore_csv_files(volume_path, backup)
+
+    try:
+        # バックアップが正常に完了した場合のみ削除を実行
+        cleanup_volume_files(volume_path, ".csv")
+        yield
+    finally:
+        restore_csv_files(volume_path, backup)
