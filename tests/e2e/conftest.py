@@ -18,6 +18,7 @@ from tests.helpers.config.constants import (
     TEST_GOLD_SCHEMA,
     TEST_SILVER_SCHEMA,
 )
+from tests.helpers.databricks.spark_fixture import spark  # noqa: F401
 from tests.helpers.models import JobRunResult
 from tests.helpers.monitoring.job_monitoring import JobMonitor, start_job_run
 from tests.helpers.operations.schema_helpers import drop_tables_in_schema
@@ -28,7 +29,7 @@ os.environ["TEST_CATALOG"] = "shogi_test"
 
 
 @pytest.fixture(scope="session", autouse=True)
-def clean_tables(spark: SparkSession, catalog: str) -> None:
+def clean_tables(spark: SparkSession, catalog: str) -> None:    #noqa: F811
     """E2Eテスト実行前にSilver/Goldスキーマ内のテーブル・MVを削除する。
 
     スキーマは事前に作成済みとし、テーブル・MVのみを削除してクリーンな状態にする。
