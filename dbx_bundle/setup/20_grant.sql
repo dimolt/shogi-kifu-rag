@@ -29,7 +29,19 @@ GRANT USE SCHEMA ON SCHEMA IDENTIFIER('{catalog_name}.shogi_gold')
 GRANT CREATE TABLE ON SCHEMA IDENTIFIER('{catalog_name}.shogi_silver')
   TO `{service_principal_id}`;
 
+GRANT CREATE MATERIALIZED VIEW ON SCHEMA IDENTIFIER('{catalog_name}.shogi_silver')
+  TO `{service_principal_id}`;
+
+GRANT MANAGE ON SCHEMA IDENTIFIER('{catalog_name}.shogi_silver')
+  TO `{service_principal_id}`;
+
 GRANT CREATE TABLE ON SCHEMA IDENTIFIER('{catalog_name}.shogi_gold')
+  TO `{service_principal_id}`;
+
+GRANT CREATE MATERIALIZED VIEW ON SCHEMA IDENTIFIER('{catalog_name}.shogi_gold')
+  TO `{service_principal_id}`;
+
+GRANT MANAGE ON SCHEMA IDENTIFIER('{catalog_name}.shogi_gold')
   TO `{service_principal_id}`;
 
 -- Volumeへの読み書き権限
