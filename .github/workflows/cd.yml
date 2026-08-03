@@ -44,13 +44,13 @@ jobs:
         timeout-minutes: 15
         env:
           TEST_CATALOG: shogi_test
-        run: uv run pytest tests/e2e/ -v
+        run: uv run pytest tests/e2e/ -v --bundle-target=test --catalog=shogi_test
 
       - name: Run integration tests
         timeout-minutes: 15
         env:
           TEST_CATALOG: shogi_test
-        run: uv run pytest tests/integration -v
+        run: uv run pytest tests/integration -v --bundle-target=test --catalog=shogi_test
 
   deploy-prod:
     name: Deploy to prod
