@@ -2,41 +2,28 @@
 
 E2Eテストでのスキーマクリーンアップ処理を集約する。
 """
-import subprocess
 
-from tests.helpers.databricks.cli import databricks_cli_base_args
+from pyspark.sql import SparkSession
 
 
-def drop_recreate_schema(catalog: str, schema: str) -> None:
-    """Unity Catalogスキーマを削除・再作成する。
+def drop_tables_in_schema(spark: SparkSession, catalog: str, schema: str) -> None:
+    """指定スキーマ内の全テーブル・Materialized Viewを削除する。
 
-    MVを含むテーブルはLakeflowパイプライン実行時にタスクとして自動作成されるため、
-    ここではスキーマの器のみを用意する。
+    LakeflowパイプラインのテーブルはMaterialized Viewとして実装されるため、
+    DROP MATERIALIZED VIEWを使用して削除する。
 
     Args:
-        catalog: 対象カタログ名。
-        schema: 対象スキーマ名。
+        spark: SparkSession
+        catalog: カタログ名
+        schema: スキーマ名
     """
-    delete_result = subprocess.run(
-        ["databricks", "schemas", "delete", f"{catalog}.{schema}", *databricks_cli_base_args(), "--force"],
-        capture_output=True,
-        text=True,
-        encoding="utf-8",
-        check=False,
-    )
-    if delete_result.returncode != 0:
-        # 「スキーマが存在しない」場合のみ許容し、それ以外は原因不明の失敗として扱う
-        stderr = delete_result.stderr or ""
-        if "does not exist" not in stderr and "NOT_FOUND" not in stderr:
-            raise RuntimeError(
-                f"schema delete failed unexpectedly for {catalog}.{schema}: "
-                f"stdout={delete_result.stdout!r} stderr={stderr!r}"
-            )
+    tables = spark.sql(f"SHOW TABLES IN {catalog}.{schema}")
+    for row in tables.collect():
+        table_name = row.tableName
+        is_temp_view = row.isTemporary
 
-    subprocess.run(
-        ["databricks", "schemas", "create", schema, catalog, *databricks_cli_base_args()],
-        capture_output=True,
-        text=True,
-        encoding="utf-8",
-        check=True,
-    )
+        if not is_temp_view:
+            # LakeflowパイプラインのテーブルはMaterialized Viewとして実装される
+            spark.sql(f"DROP MATERIALIZED VIEW IF EXISTS {catalog}.{schema}.{table_name}")
+        else:
+            spark.sql(f"DROP TABLE IF EXISTS {catalog}.{schema}.{table_name}")

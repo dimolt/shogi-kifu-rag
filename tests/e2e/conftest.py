@@ -12,15 +12,15 @@ import os
 
 import pytest
 from databricks.sdk import WorkspaceClient
+from pyspark.sql import SparkSession
 
 from tests.helpers.config.constants import (
     TEST_GOLD_SCHEMA,
     TEST_SILVER_SCHEMA,
 )
-from tests.helpers.databricks.spark_fixture import spark  # noqa: F401
 from tests.helpers.models import JobRunResult
 from tests.helpers.monitoring.job_monitoring import JobMonitor, start_job_run
-from tests.helpers.operations.schema_helpers import drop_recreate_schema
+from tests.helpers.operations.schema_helpers import drop_tables_in_schema
 
 # e2e層向けに環境変数を設定
 os.environ["DATABRICKS_BUNDLE_TARGET"] = "test"
@@ -28,26 +28,26 @@ os.environ["TEST_CATALOG"] = "shogi_test"
 
 
 @pytest.fixture(scope="session", autouse=True)
-def clean_schemas(catalog: str) -> None:
-    """E2Eテスト実行前にSilver/Goldスキーマをdrop & recreateする。
+def clean_tables(spark: SparkSession, catalog: str) -> None:
+    """E2Eテスト実行前にSilver/Goldスキーマ内のテーブル・MVを削除する。
 
-    テーブル・MVはLakeflowパイプライン実行時に自動作成されるため、
-    ここではスキーマの器のみをクリーンな状態にする。
+    スキーマは事前に作成済みとし、テーブル・MVのみを削除してクリーンな状態にする。
+    Lakeflowパイプライン実行時にテーブル・MVは自動作成される。
     """
-    drop_recreate_schema(catalog, TEST_SILVER_SCHEMA)
-    drop_recreate_schema(catalog, TEST_GOLD_SCHEMA)
+    drop_tables_in_schema(spark, catalog, TEST_SILVER_SCHEMA)
+    drop_tables_in_schema(spark, catalog, TEST_GOLD_SCHEMA)
 
 
 @pytest.fixture(scope="session")
 def main_job_run_result(
-    clean_schemas: None,
+    clean_tables: None,
     main_job_id: str,
     databricks_profile: str | None,
 ) -> JobRunResult:
     """shogi_kif_rag_main_jobを起動し、SUCCESSになるまで待機した結果を提供する。
 
     Args:
-        clean_schemas: スキーマクリーンアップ（自動実行）。
+        clean_tables: テーブル・MVクリーンアップ（自動実行）。
         main_job_id: 対象JobのID。
         databricks_profile: Databricks CLIのプロファイル名。
 
