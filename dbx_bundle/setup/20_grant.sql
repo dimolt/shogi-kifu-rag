@@ -19,9 +19,26 @@ GRANT USE CATALOG ON CATALOG IDENTIFIER('{catalog_name}')
 GRANT USE SCHEMA ON CATALOG IDENTIFIER('{catalog_name}')
   TO `{service_principal_id}`;
 
+-- テスト用スキーマへの個別権限（テーブル・MVの削除用）
+GRANT USE SCHEMA ON SCHEMA IDENTIFIER('{catalog_name}.shogi_silver')
+  TO `{service_principal_id}`;
+
+GRANT USE SCHEMA ON SCHEMA IDENTIFIER('{catalog_name}.shogi_gold')
+  TO `{service_principal_id}`;
+
+GRANT CREATE TABLE ON SCHEMA IDENTIFIER('{catalog_name}.shogi_silver')
+  TO `{service_principal_id}`;
+
+GRANT CREATE TABLE ON SCHEMA IDENTIFIER('{catalog_name}.shogi_gold')
+  TO `{service_principal_id}`;
+
 -- Volumeへの読み書き権限
 GRANT READ VOLUME, WRITE VOLUME ON VOLUME IDENTIFIER('{catalog_name}.landing.analyzed')
   TO `{service_principal_id}`;
 
 GRANT READ VOLUME, WRITE VOLUME ON VOLUME IDENTIFIER('{catalog_name}.artifacts.whl')
+  TO `{service_principal_id}`;
+
+-- テスト用Volumeへの読み書き権限
+GRANT READ VOLUME, WRITE VOLUME ON VOLUME IDENTIFIER('{catalog_name}.test.data')
   TO `{service_principal_id}`;
