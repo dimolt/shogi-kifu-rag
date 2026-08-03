@@ -10,6 +10,7 @@ from __future__ import annotations
 
 import os
 import time
+from collections.abc import Callable
 
 from databricks.sdk import WorkspaceClient
 from databricks.sdk.service.jobs import Run, RunLifeCycleState, RunResultState
@@ -71,18 +72,25 @@ class JobMonitor:
         self._poll_interval_sec = poll_interval_sec
         self._timeout_sec = timeout_sec
 
-    def wait_for_completion(self, run_id: int) -> JobRunResult:
+
+    def wait_for_completion(
+        self,
+        run_id: int,
+        on_poll: Callable[[], None] | None = None,
+    ) -> JobRunResult:
         """Job実行が終了状態になるまでポーリングし、結果を返す。
 
         Args:
             run_id: 待機対象のJob実行ID。
+            on_poll: 各ポーリング周期ごとに呼び出すコールバック（省略可）。
+                長時間のポーリング中にSparkセッション等がアイドルタイムアウトしないよう、
+                keep-alive目的で呼び出すことを想定している。例外は無視する。
 
         Returns:
             SUCCESSで終了した場合のJobRunResult。
 
         Raises:
             JobRunFailedError: result_stateがSUCCESS以外で終了した場合。
-                失敗したタスクの詳細をメッセージに含める。
             TimeoutError: タイムアウト時間内に終了状態に到達しなかった場合。
         """
         elapsed_sec = 0
@@ -95,12 +103,20 @@ class JobMonitor:
             ):
                 return self._parse_result(run)
 
+            if on_poll is not None:
+                try:
+                    on_poll()
+                except Exception:
+                    # keep-alive自体の失敗でJob監視を止めない
+                    pass
+
             time.sleep(self._poll_interval_sec)
             elapsed_sec += self._poll_interval_sec
 
         raise TimeoutError(
             f"Job run {run_id} did not finish within {self._timeout_sec}s"
         )
+
 
     def _parse_result(self, run: Run) -> JobRunResult:
         """終了状態のRunをJobRunResultに変換する。

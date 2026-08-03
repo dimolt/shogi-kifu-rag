@@ -44,23 +44,30 @@ def main_job_run_result(
     clean_tables: None,
     main_job_id: str,
     databricks_profile: str | None,
+    spark: SparkSession,  # noqa: F811
 ) -> JobRunResult:
     """shogi_kif_rag_main_jobを起動し、SUCCESSになるまで待機した結果を提供する。
+
+    Job完了待ちは数分〜十数分かかることがあり、その間Sparkセッションに
+    クエリが飛ばないとサーバーレスコンピュートのアイドルタイムアウトで
+    セッションが失効する（INACTIVITY_TIMEOUT）。ポーリング周期ごとに
+    軽量なkeep-aliveクエリを送ることでセッションを維持する。
 
     Args:
         clean_tables: テーブル・MVクリーンアップ（自動実行）。
         main_job_id: 対象JobのID。
         databricks_profile: Databricks CLIのプロファイル名。
+        spark: keep-alive送出に使用するSparkSession。
 
     Returns:
         JobRunResult: Job実行の完了結果。
     """
-    # Job実行を起動
     run_id = start_job_run(main_job_id)
 
-    # WorkspaceClientを初期化してJobMonitorを作成
     client = WorkspaceClient(profile=databricks_profile) if databricks_profile else WorkspaceClient()
     monitor = JobMonitor(client)
 
-    # Job実行完了を待機
-    return monitor.wait_for_completion(run_id)
+    def _keep_spark_alive() -> None:
+        spark.sql("SELECT 1").collect()
+
+    return monitor.wait_for_completion(run_id, on_poll=_keep_spark_alive)
