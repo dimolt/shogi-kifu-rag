@@ -80,7 +80,7 @@ jobs:
         uses: ./.github/actions/setup-databricks-cli
 
       - name: Validate bundle (prod)
-        run: databricks bundle validate -t prod
+        run: databricks bundle validate
 
       - name: Deploy to prod
-        run: databricks bundle deploy -t prod
+        run: databricks bundle deploy
