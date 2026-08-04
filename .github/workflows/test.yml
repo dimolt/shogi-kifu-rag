@@ -11,8 +11,8 @@ jobs:
     timeout-minutes: 10
     env:
       DATABRICKS_HOST: ${{ secrets.DATABRICKS_HOST }}
-      DATABRICKS_CLIENT_ID: ${{ secrets.DATABRICKS_CLIENT_ID }}
-      DATABRICKS_CLIENT_SECRET: ${{ secrets.DATABRICKS_CLIENT_SECRET }}
+      DATABRICKS_CLIENT_ID: ${{ secrets.TEST_CLIENT_ID }}
+      DATABRICKS_CLIENT_SECRET: ${{ secrets.TEST_CLIENT_SECRET }}
 
     steps:
       - name: Checkout code
