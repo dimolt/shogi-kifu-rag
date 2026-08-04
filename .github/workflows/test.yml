@@ -23,16 +23,7 @@ jobs:
       - name: Setup Databricks CLI
         uses: ./.github/actions/setup-databricks-cli
 
-      - name: Show databrickscfg
-        run: |
-          ls -la ~
-          test -f ~/.databrickscfg && cat ~/.databrickscfg || echo "No config"
-
-      - name: Show auth env
-        run: |
-          databricks auth env
-
       - name: Run Databricks bundle validate
         run: |
           export DATABRICKS_DEBUG_TRACES=1
-          databricks bundle validate -t dev
+          databricks bundle validate -t dev --debug
