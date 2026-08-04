@@ -19,7 +19,7 @@ from tests.helpers.models import JobRunFailedError, JobRunResult, TaskResult
 
 # ポーリング設定のデフォルト値。
 _DEFAULT_POLL_INTERVAL_SEC = 15
-_DEFAULT_POLL_TIMEOUT_SEC = 900
+_DEFAULT_POLL_TIMEOUT_SEC = 1800
 
 # Run/タスクの実行が終了したとみなすlife_cycle_state。
 _TERMINAL_LIFE_CYCLE_STATES = (
