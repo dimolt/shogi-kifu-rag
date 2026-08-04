@@ -28,6 +28,8 @@ jobs:
 
       - name: Setup Databricks CLI
         uses: ./.github/actions/setup-databricks-cli
-
+        with:
+          version: v1.4.0
+    
       - name: Run integration tests
         run: uv run pytest tests/integration -v
