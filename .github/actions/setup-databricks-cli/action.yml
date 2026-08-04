@@ -2,17 +2,11 @@ name: Setup Databricks CLI
 
 description: Install Databricks CLI for bundle validation and deployment
 
-inputs:
-  version:
-    description: Databricks CLI version to install
-    required: false
-    default: v1.4.0
-
 runs:
   using: composite
   steps:
     - name: Install Databricks CLI
       shell: bash
       run: |
-        curl -fsSL https://raw.githubusercontent.com/databricks/setup-cli/main/install.sh | sh -s -- --version ${{ inputs.version }}
+        curl -fsSL https://raw.githubusercontent.com/databricks/setup-cli/main/install.sh | sh
         echo "$HOME/.databricks/bin" >> "$GITHUB_PATH"
