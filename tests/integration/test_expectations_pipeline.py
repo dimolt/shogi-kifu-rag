@@ -28,16 +28,18 @@ pytestmark = pytest.mark.integration
 FRESHNESS_THRESHOLD_HOURS = 24
 
 
-def _assert_latest_run_is_recent(df) -> None:
+def _assert_latest_run_is_recent(rows: list) -> None:
     """event_logの最新実行が鮮度閾値内かを確認し、古い場合はskipする。
 
     Args:
-        df: get_latest_expectations_df()で取得したDataFrame。
+        rows: get_latest_expectations_df()をcollect()した行リスト。
+            呼び出し元で1度だけcollect()した結果を渡すことで、
+            event_log()の再スキャンを避ける。
     """
-    if df.count() == 0:
-        pytest.skip("event_logにdata_quality付きイベントがない。事前にパイプラインを実行してください。")
+    if not rows:
+        pytest.skip("event_logにflow_progressイベントが存在しない。事前にパイプラインを実行してください。")
 
-    latest_ts = df.agg({"timestamp": "max"}).collect()[0][0]
+    latest_ts = max(row["timestamp"] for row in rows)
     # Databricks Connect経由で取得したtimestamp列はtz-naiveなdatetimeとして
     # 返ってくる場合があるため、UTCとして明示的にtz付与してから比較する。
     if latest_ts.tzinfo is None:
@@ -63,11 +65,15 @@ def _assert_expectations_pass(
             `GOLD_EXPECTATIONS` を渡す想定。
     """
     df = get_latest_expectations_df(spark, pipeline_id)
-    _assert_latest_run_is_recent(df)
+    # collect()を1回だけ実行し、以降はPython側のリストで件数・最大timestamp・
+    # 照合を行う。df.count() / df.agg(max).collect() / df.collect() を個別に
+    # 呼ぶとevent_log()のスキャン・JOIN・explode・ウィンドウ処理が
+    # それぞれ再実行され非効率なため。
+    rows = df.collect()
 
-    # get_latest_expectations_df()側でdatasetはテーブル名まで分解済みのため
-    # そのまま照合できる。
-    results = {(r.dataset, r.name): r for r in df.collect()}
+    _assert_latest_run_is_recent(rows)
+
+    results = {(r.dataset, r.name): r for r in rows}
 
     for table, expectation_names in expected_expectations.items():
         for expectation in expectation_names:
