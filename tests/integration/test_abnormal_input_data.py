@@ -16,7 +16,7 @@ from tests.helpers.databricks.volume_helpers import (
     get_landing_volume_path,
     upload_csv_to_volume,
 )
-from tests.helpers.monitoring.expectations import _get_latest_expectations_df
+from tests.helpers.monitoring.expectations import get_latest_expectations_df
 from tests.helpers.monitoring.pipeline_helpers import (
     start_pipeline_update,
     wait_for_update,
@@ -41,7 +41,7 @@ def _assert_expectation_failed(
     Raises:
         AssertionError: expectationが発火していない、またはfailed_recordsが0の場合。
     """
-    df = _get_latest_expectations_df(spark, pipeline_id)
+    df = get_latest_expectations_df(spark, pipeline_id)
     results = {(r.dataset, r.name): r for r in df.collect()}
     key = (table, expectation)
     assert key in results, f"expectation未発火: {table}.{expectation}"

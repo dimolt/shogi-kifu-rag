@@ -14,7 +14,11 @@ import datetime as dt
 
 import pytest
 
-from tests.helpers.monitoring.expectations import GOLD_EXPECTATIONS, SILVER_EXPECTATIONS
+from tests.helpers.monitoring.expectations import (
+  GOLD_EXPECTATIONS,
+  SILVER_EXPECTATIONS,
+  get_latest_expectations_df,
+)
 
 # Unified expectations for the single shogi_kif_pipeline
 UNIFIED_EXPECTATIONS = {**SILVER_EXPECTATIONS, **GOLD_EXPECTATIONS}
@@ -22,43 +26,6 @@ UNIFIED_EXPECTATIONS = {**SILVER_EXPECTATIONS, **GOLD_EXPECTATIONS}
 pytestmark = pytest.mark.integration
 
 FRESHNESS_THRESHOLD_HOURS = 24
-
-
-def _get_latest_expectations_df(spark, pipeline_id: str):
-    """最新update_idのexpectationsメトリクスを取得する。
-
-    Args:
-        spark: SparkSession（Databricks Connect経由）。
-        pipeline_id: 対象パイプラインのID。
-
-    Returns:
-        DataFrame: dataset, name, passed_records, failed_records, timestamp列を持つDataFrame。
-    """
-    return spark.sql(f"""
-        WITH latest_update AS (
-            SELECT origin.update_id AS update_id
-            FROM event_log('{pipeline_id}')
-            WHERE event_type = 'update_progress'
-              AND details:update_progress.state = 'COMPLETED'
-            ORDER BY timestamp DESC
-            LIMIT 1
-        )
-        SELECT
-            exp.dataset,
-            exp.name,
-            exp.passed_records,
-            exp.failed_records,
-            e.timestamp
-        FROM event_log('{pipeline_id}') e
-        JOIN latest_update lu ON e.origin.update_id = lu.update_id
-        LATERAL VIEW explode(
-            from_json(
-                e.details:flow_progress.data_quality.expectations,
-                'array<struct<name:string,dataset:string,passed_records:long,failed_records:long>>'
-            )
-        ) t AS exp
-        WHERE e.event_type = 'flow_progress'
-    """)
 
 
 def _assert_latest_run_is_recent(df) -> None:
@@ -95,12 +62,12 @@ def _assert_expectations_pass(
             `tests.helpers.expectations` の `SILVER_EXPECTATIONS` または
             `GOLD_EXPECTATIONS` を渡す想定。
     """
-    df = _get_latest_expectations_df(spark, pipeline_id)
+    df = get_latest_expectations_df(spark, pipeline_id)
     _assert_latest_run_is_recent(df)
 
-    # event_log()のdatasetは`catalog.schema.table`形式のFQNで返るため、
-    # catalog/schemaに依存せずテーブル名部分だけで照合する。
-    results = {(r.dataset.split(".")[-1], r.name): r for r in df.collect()}
+    # get_latest_expectations_df()側でdatasetはテーブル名まで分解済みのため
+    # そのまま照合できる。
+    results = {(r.dataset, r.name): r for r in df.collect()}
 
     for table, expectation_names in expected_expectations.items():
         for expectation in expectation_names:

@@ -20,13 +20,22 @@ GOLD_EXPECTATIONS: dict[str, set[str]] = {
 }
 
 
-def _get_latest_expectations_df(spark: SparkSession, pipeline_id: str) -> DataFrame:
-    """指定パイプラインの最新updateにおけるexpectations結果を取得する。
+def get_latest_expectations_df(spark: SparkSession, pipeline_id: str) -> DataFrame:
+    """指定パイプラインの最新update（COMPLETED）におけるexpectations結果を取得する。
 
     `event_log()` の `details` 列はSTRING型でJSON文字列を保持しているため、
     `details:path` のコロン記法だけではARRAY型にならず `explode()` に直接渡せない
     （`DATATYPE_MISMATCH.UNEXPECTED_INPUT_TYPE` になる）。そのため
     `from_json()` で明示的にスキーマを指定して配列型へキャストしてから展開する。
+
+    最新の`update_id`に明示的にスコープすることで、過去の失敗実行のevent_logが
+    残存していても現在の実行結果のみを正しく参照する
+    （`(dataset, name)`単位でtimestamp最新の1件を拾うだけの実装は、
+    並列フロー実行時のタイムスタンプ順序の乱れにより過去の失敗イベントを
+    誤って拾う場合があったため、update_idベースのスコープに変更した）。
+
+    integration層（鮮度チェックが必要）とe2e/integration_exec層（Job完了直後の
+    ため鮮度チェック不要）の両方から共通利用するため、`timestamp`列も含めて返す。
 
     実機検証済み（2026-07-07、pipeline_id=f3a193ea-...）:
         `expectations` 配列の各要素は `name` / `dataset` / `passed_records` /
@@ -41,29 +50,36 @@ def _get_latest_expectations_df(spark: SparkSession, pipeline_id: str) -> DataFr
         pipeline_id: 対象パイプラインのID。
 
     Returns:
-        `dataset`（テーブル名のみ）, `name`, `passed_records`, `failed_records`
-        列を持つDataFrame。
+        `dataset`（テーブル名のみ）, `name`, `passed_records`, `failed_records`,
+        `timestamp` 列を持つDataFrame。
     """
     expectation_schema = (
         "array<struct<name:string,dataset:string,passed_records:long,failed_records:long>>"
     )
     return spark.sql(f"""
+        WITH latest_update AS (
+            SELECT origin.update_id AS update_id
+            FROM event_log('{pipeline_id}')
+            WHERE event_type = 'update_progress'
+              AND details:update_progress.state = 'COMPLETED'
+            ORDER BY timestamp DESC
+            LIMIT 1
+        )
         SELECT
             split(expectation.dataset, '\\\\.')[
                 size(split(expectation.dataset, '\\\\.')) - 1
             ] AS dataset,
             expectation.name AS name,
             expectation.passed_records AS passed_records,
-            expectation.failed_records AS failed_records
-        FROM event_log('{pipeline_id}')
+            expectation.failed_records AS failed_records,
+            e.timestamp AS timestamp
+        FROM event_log('{pipeline_id}') e
+        JOIN latest_update lu ON e.origin.update_id = lu.update_id
         LATERAL VIEW explode(
-            from_json(details:flow_progress.data_quality.expectations, '{expectation_schema}')
+            from_json(e.details:flow_progress.data_quality.expectations, '{expectation_schema}')
         ) t AS expectation
-        WHERE event_type = 'flow_progress'
-          AND details:flow_progress.data_quality IS NOT NULL
-        QUALIFY ROW_NUMBER() OVER (
-            PARTITION BY dataset, name ORDER BY timestamp DESC
-        ) = 1
+        WHERE e.event_type = 'flow_progress'
+          AND e.details:flow_progress.data_quality IS NOT NULL
     """)
 
 
@@ -109,7 +125,7 @@ def assert_expectations_pass(
     Raises:
         AssertionError: 1件でもfailed_recordsが0でないexpectationがある場合。
     """
-    actual_df = _get_latest_expectations_df(spark, pipeline_id)
+    actual_df = get_latest_expectations_df(spark, pipeline_id)
     actual_rows = {(row["dataset"], row["name"]): row for row in actual_df.collect()}
 
     failures: list[str] = []
