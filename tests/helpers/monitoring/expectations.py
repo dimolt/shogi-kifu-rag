@@ -36,19 +36,6 @@ def get_latest_expectations_df(
     並列フロー実行時のタイムスタンプ順序の乱れにより過去の失敗イベントを
     誤って拾う場合があったため、updateベースのスコープに変更した）。
 
-    Args:
-        spark: SparkSession。
-        pipeline_id: 対象パイプラインのID。
-        update_id: 検証対象のupdate ID。呼び出し側が自らパイプラインを起動し
-            update_idを既に確定させている場合（例: 異常系テストでの
-            `start_pipeline_update()` / `wait_for_update()` 後）は、これを渡す
-            ことで検証対象を確実にその実行に固定できる。
-            省略時（デフォルト`None`）は、event_log上で最新の`COMPLETED`な
-            updateを推定して使用する。ただしこの場合、呼び出し側が把握して
-            いない別プロセス（CIの定期実行等）によるupdateが並行して先に
-            完了していると、意図しない実行結果を拾う可能性がある点に注意。
-            呼び出し側でupdate_idを保持している場合は必ず渡すこと。
-
     さらに、対象update内でも(dataset, name)ごとに`flow_progress`イベントが
     複数回記録される場合がある（マイクロバッチ単位の進捗報告、フローの
     リトライ等）ため、QUALIFYでtimestamp最新の1件に絞り込む。これがないと
@@ -66,6 +53,19 @@ def get_latest_expectations_df(
         `dataset` は `catalog.schema.table` 形式のFQNで返る
         （例: `shogi.shogi_silver.positions`）ため、末尾のテーブル名部分のみを
         抽出するsplit処理は引き続き必要。
+
+    Args:
+        spark: SparkSession。
+        pipeline_id: 対象パイプラインのID。
+        update_id: 検証対象のupdate ID。呼び出し側が自らパイプラインを起動し
+            update_idを既に確定させている場合（例: 異常系テストでの
+            `start_pipeline_update()` / `wait_for_update()` 後）は、これを渡す
+            ことで検証対象を確実にその実行に固定できる。
+            省略時（デフォルト`None`）は、event_log上で最新の`COMPLETED`な
+            updateを推定して使用する。ただしこの場合、呼び出し側が把握して
+            いない別プロセス（CIの定期実行等）によるupdateが並行して先に
+            完了していると、意図しない実行結果を拾う可能性がある点に注意。
+            呼び出し側でupdate_idを保持している場合は必ず渡すこと。
 
     Returns:
         `dataset`（テーブル名のみ）, `name`, `passed_records`, `failed_records`,
