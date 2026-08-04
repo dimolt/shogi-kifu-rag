@@ -1,0 +1,33 @@
+name: Bundle Validate
+
+on:
+  workflow_dispatch:
+
+concurrency:
+  group: bundle-validate-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  bundle-validate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    env:
+      DATABRICKS_HOST: ${{ secrets.DATABRICKS_HOST }}
+      DATABRICKS_CLIENT_ID: ${{ secrets.DATABRICKS_CLIENT_ID }}
+      DATABRICKS_CLIENT_SECRET: ${{ secrets.DATABRICKS_CLIENT_SECRET }}
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Databricks CLI
+        uses: ./.github/actions/setup-databricks-cli
+
+      - name: Show auth env
+        run: |
+          databricks auth env
+
+      - name: Run Databricks bundle validate
+        run: |
+          export DATABRICKS_DEBUG_TRACES=1
+          databricks bundle validate -t dev
