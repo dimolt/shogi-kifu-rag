@@ -59,7 +59,7 @@ def test_jobに期待される全タスクが含まれている(
     Act:
         タスクキーの集合を取得する。
     Assert:
-        期待されるタスクキー（shogi_kif_pipeline, floodgate, wikipedia）
+        期待されるタスクキー（shogi_kif_pipeline, floodgate, wikipedia_raw, joseki_knowledge）
         が全て含まれていること。
     """
     # Act
@@ -67,7 +67,8 @@ def test_jobに期待される全タスクが含まれている(
     expected_task_keys = {
         "shogi_kif_pipeline",
         "floodgate",
-        "wikipedia",
+        "wikipedia_raw",
+        "joseki_knowledge",
     }
 
     # Assert

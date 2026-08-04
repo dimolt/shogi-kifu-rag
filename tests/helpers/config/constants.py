@@ -6,5 +6,6 @@
 """
 
 
+TEST_BRONZE_SCHEMA = "shogi_bronze"
 TEST_SILVER_SCHEMA = "shogi_silver"
 TEST_GOLD_SCHEMA = "shogi_gold"

@@ -18,7 +18,7 @@
         `dev`のデプロイ状態には一切変更を加えないため、他のintegration_execテストと
         同一CI実行内で安全に共存できる。
         この方式で上書きできるのはJobレベルパラメータを参照するタスク
-        （floodgate, wikipedia）のみ。shogi_kif_pipeline（DLTパイプライン）は
+        （floodgate, wikipedia_raw, joseki_knowledge）のみ。shogi_kif_pipeline（DLTパイプライン）は
         catalogがパイプラインリソース自体の定義に紐づき、実行時上書きの対象外のため、
         本テストのスコープからは意図的に除外している（Issueコメントで経緯を記録）。
     #211は`bundle validate --output json`の`variables.<name>.value`から
@@ -43,7 +43,7 @@ _NONEXISTENT_CATALOG = "shogi_nonexistent_catalog_for_test_209"
 
 # Issue #209でJobレベルパラメータの実行時上書きが効くタスク
 # （catalogを`{{job.parameters.catalog}}`経由で参照しているタスクのみ）。
-_TASKS_AFFECTED_BY_CATALOG_OVERRIDE = {"floodgate", "wikipedia"}
+_TASKS_AFFECTED_BY_CATALOG_OVERRIDE = {"floodgate", "wikipedia_raw", "joseki_knowledge"}
 
 # Issue #211で検証する、target別に期待されるcatalog変数の解決値。
 # databricks.yml のtargets.<target>.variables.catalog と対応させている。

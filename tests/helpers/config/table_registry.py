@@ -15,11 +15,16 @@ scopeによるキャッシュを必要とするリソースではないため、
 普通の関数としてimportする方が呼び出し側もシンプルになる。
 """
 from tests.helpers.config.constants import (
+    TEST_BRONZE_SCHEMA,
     TEST_GOLD_SCHEMA,
     TEST_SILVER_SCHEMA,
 )
 
 # テーブル名 -> スキーマ
+BRONZE_TABLES: dict[str, str] = {
+    "wikipedia_raw": TEST_BRONZE_SCHEMA,
+}
+
 SILVER_TABLES: dict[str, str] = {
     "positions": TEST_SILVER_SCHEMA,
     "floodgate_positions": TEST_SILVER_SCHEMA,
@@ -32,7 +37,7 @@ GOLD_TABLES: dict[str, str] = {
 }
 
 # {table_name}_df fixtureの自動生成対象、およびfqn()の参照先。
-ALL_TABLES: dict[str, str] = {**SILVER_TABLES, **GOLD_TABLES}
+ALL_TABLES: dict[str, str] = {**BRONZE_TABLES, **SILVER_TABLES, **GOLD_TABLES}
 
 
 def fqn(catalog_name: str, table_name: str) -> str:
