@@ -34,6 +34,13 @@ def get_latest_expectations_df(spark: SparkSession, pipeline_id: str) -> DataFra
     並列フロー実行時のタイムスタンプ順序の乱れにより過去の失敗イベントを
     誤って拾う場合があったため、update_idベースのスコープに変更した）。
 
+    さらに、同一update内でも(dataset, name)ごとに`flow_progress`イベントが
+    複数回記録される場合がある（マイクロバッチ単位の進捗報告、フローの
+    リトライ等）ため、QUALIFYでtimestamp最新の1件に絞り込む。これがないと
+    呼び出し側のdict化（`{(dataset, name): row}`）でどの行が採用されるかが
+    `collect()`の返却順に依存して不定になり、実行途中の中間集計値を
+    誤って判定に使ってしまう恐れがある。
+
     integration層（鮮度チェックが必要）とe2e/integration_exec層（Job完了直後の
     ため鮮度チェック不要）の両方から共通利用するため、`timestamp`列も含めて返す。
 
@@ -51,7 +58,7 @@ def get_latest_expectations_df(spark: SparkSession, pipeline_id: str) -> DataFra
 
     Returns:
         `dataset`（テーブル名のみ）, `name`, `passed_records`, `failed_records`,
-        `timestamp` 列を持つDataFrame。
+        `timestamp` 列を持つDataFrame。(dataset, name)ごとに1行のみ。
     """
     expectation_schema = (
         "array<struct<name:string,dataset:string,passed_records:long,failed_records:long>>"
@@ -80,6 +87,9 @@ def get_latest_expectations_df(spark: SparkSession, pipeline_id: str) -> DataFra
         ) t AS expectation
         WHERE e.event_type = 'flow_progress'
           AND e.details:flow_progress.data_quality IS NOT NULL
+        QUALIFY ROW_NUMBER() OVER (
+            PARTITION BY dataset, name ORDER BY timestamp DESC
+        ) = 1
     """)
 
 

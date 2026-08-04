@@ -32,10 +32,10 @@ def _assert_latest_run_is_recent(df) -> None:
     """event_logの最新実行が鮮度閾値内かを確認し、古い場合はskipする。
 
     Args:
-        df: _get_latest_expectations_df()で取得したDataFrame。
+        df: get_latest_expectations_df()で取得したDataFrame。
     """
     if df.count() == 0:
-        pytest.skip("event_logにflow_progressイベントが存在しない。事前にパイプラインを実行してください。")
+        pytest.skip("event_logにdata_quality付きイベントがない。事前にパイプラインを実行してください。")
 
     latest_ts = df.agg({"timestamp": "max"}).collect()[0][0]
     # Databricks Connect経由で取得したtimestamp列はtz-naiveなdatetimeとして
