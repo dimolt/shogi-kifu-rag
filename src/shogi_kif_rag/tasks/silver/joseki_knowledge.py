@@ -9,23 +9,6 @@ logging.basicConfig(level=logging.INFO, format="%(asctime)s %(levelname)s %(mess
 logger = logging.getLogger(__name__)
 
 
-def extract_strategy_info(content: str, strategy: str) -> dict:
-    """戦法情報を抽出する（BronzeからSilverへの変換用）。
-
-    Args:
-        content: Wikipedia記事内容。
-        strategy: 戦法名。
-
-    Returns:
-        戦法情報。
-    """
-    return {
-        "strategy": strategy,
-        "content": content,
-        "source": f"ja.wikipedia.org/wiki/{strategy}",
-    }
-
-
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("--catalog", required=True)
