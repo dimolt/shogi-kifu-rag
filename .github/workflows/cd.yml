@@ -35,10 +35,10 @@ jobs:
         uses: ./.github/actions/setup-databricks-cli
 
       - name: Validate bundle (test)
-        run: databricks bundle validate -t test
+        run: databricks bundle validate -t test -p shogi
 
       - name: Deploy to test
-        run: databricks bundle deploy -t test
+        run: databricks bundle deploy -t test -p shogi
 
       - name: Run E2E tests
         timeout-minutes: 30
