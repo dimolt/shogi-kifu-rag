@@ -25,23 +25,22 @@ from tests.helpers.monitoring.pipeline_helpers import (
 pytestmark = pytest.mark.integration
 
 
-
-
 def _assert_expectation_failed(
-    spark: SparkSession, pipeline_id: str, table: str, expectation: str
+    spark: SparkSession, pipeline_id: str, update_id: str, table: str, expectation: str
 ) -> None:
     """指定expectationがfailed_records > 0で発火したことを確認する。
 
     Args:
         spark: SparkSession。
         pipeline_id: 対象パイプラインのID。
+        update_id: 検証対象のupdate ID（呼び出し元が起動・待機済みのもの）。
         table: テーブル名。
         expectation: expectation名。
 
     Raises:
         AssertionError: expectationが発火していない、またはfailed_recordsが0の場合。
     """
-    df = get_latest_expectations_df(spark, pipeline_id)
+    df = get_latest_expectations_df(spark, pipeline_id, update_id=update_id)
     results = {(r.dataset, r.name): r for r in df.collect()}
     key = (table, expectation)
     assert key in results, f"expectation未発火: {table}.{expectation}"
@@ -84,7 +83,7 @@ def test_missing_game_id_column_expectation_fires(spark, shogi_kif_pipeline_id, 
         wait_for_update(spark, shogi_kif_pipeline_id, update_id)
 
         # Assert: valid_game_id expectationがfailed_records > 0で発火
-        _assert_expectation_failed(spark, shogi_kif_pipeline_id, "positions", "valid_game_id")
+        _assert_expectation_failed(spark, shogi_kif_pipeline_id, update_id, "positions", "valid_game_id")
 
 
 def test_invalid_move_number_data_type_expectation_fires(spark, shogi_kif_pipeline_id, catalog):
@@ -117,4 +116,4 @@ def test_invalid_move_number_data_type_expectation_fires(spark, shogi_kif_pipeli
         wait_for_update(spark, shogi_kif_pipeline_id, update_id)
 
         # Assert: valid_move_number expectationがfailed_records > 0で発火
-        _assert_expectation_failed(spark, shogi_kif_pipeline_id, "positions", "valid_move_number")
+        _assert_expectation_failed(spark, shogi_kif_pipeline_id, update_id, "positions", "valid_move_number")
