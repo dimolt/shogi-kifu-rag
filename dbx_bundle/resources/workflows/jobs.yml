@@ -35,14 +35,28 @@ resources:
               silver_schema: ${var.silver_schema}
           depends_on: []
 
-        - task_key: wikipedia
+        - task_key: wikipedia_raw
           environment_key: default
           max_retries: 0
           disable_auto_optimization: true
           python_wheel_task:
             package_name: shogi-kif-rag
-            entry_point: wikipedia
+            entry_point: wikipedia_raw
             named_parameters:
               catalog: "{{job.parameters.catalog}}"
-              silver_schema: ${var.silver_schema}
+              bronze_schema: ${var.bronze_schema}
           depends_on: []
+
+        - task_key: joseki_knowledge
+          environment_key: default
+          max_retries: 0
+          disable_auto_optimization: true
+          python_wheel_task:
+            package_name: shogi-kif-rag
+            entry_point: joseki_knowledge
+            named_parameters:
+              catalog: "{{job.parameters.catalog}}"
+              bronze_schema: ${var.bronze_schema}
+              silver_schema: ${var.silver_schema}
+          depends_on:
+            - task_key: wikipedia_raw

@@ -1,8 +1,9 @@
-"""Wikipediaから将棋の戦法解説を取得し、Silverテーブルへ書き込むジョブ。"""
+"""Wikipediaから将棋の戦法解説を取得し、Bronzeテーブルへ書き込むジョブ。"""
 
 import argparse
 import logging
 import time
+from datetime import datetime
 
 import requests
 from pyspark.sql import SparkSession
@@ -10,6 +11,7 @@ from pyspark.sql.types import (
     StringType,
     StructField,
     StructType,
+    TimestampType,
 )
 
 logging.basicConfig(level=logging.INFO, format="%(asctime)s %(levelname)s %(message)s")
@@ -37,10 +39,6 @@ STRATEGIES = [
     # 戦法概念
     "将棋の戦法", "手筋 (将棋)", "定跡", "終盤 (将棋)",
 ]
-
-
-class WikipediaFetchError(Exception):
-    """Wikipedia記事の取得失敗。"""
 
 
 def fetch_wikipedia_content(title: str) -> str:
@@ -85,27 +83,10 @@ def fetch_wikipedia_content(title: str) -> str:
     return ""
 
 
-def extract_strategy_info(content: str, strategy: str) -> dict:
-    """戦法情報を抽出する。
-
-    Args:
-        content: Wikipedia記事内容。
-        strategy: 戦法名。
-
-    Returns:
-        戦法情報。
-    """
-    return {
-        "strategy": strategy,
-        "content": content,
-        "source": f"ja.wikipedia.org/wiki/{strategy}",
-    }
-
-
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("--catalog", required=True)
-    parser.add_argument("--silver_schema", required=True)
+    parser.add_argument("--bronze_schema", required=True)
     args = parser.parse_args()
 
     spark = SparkSession.getActiveSession()
@@ -119,7 +100,12 @@ def main():
         content = fetch_wikipedia_content(strategy)
 
         if content:
-            strategy_data.append(extract_strategy_info(content, strategy))
+            strategy_data.append({
+                "strategy": strategy,
+                "raw_content": content,
+                "fetched_at": datetime.now(),
+                "source": f"ja.wikipedia.org/wiki/{strategy}",
+            })
             logger.info("✅ %s: %d文字", strategy, len(content))
         else:
             logger.warning("❌ %s: 取得失敗", strategy)
@@ -131,7 +117,8 @@ def main():
     # DataFrameの作成
     schema = StructType([
         StructField("strategy", StringType(), True),
-        StructField("content", StringType(), True),
+        StructField("raw_content", StringType(), True),
+        StructField("fetched_at", TimestampType(), True),
         StructField("source", StringType(), True),
     ])
     df = spark.createDataFrame(
@@ -142,9 +129,9 @@ def main():
     (
         df.write
         .format("delta")
-        .mode("overwrite")
+        .mode("append")
         .saveAsTable(
-            f"{args.catalog}.{args.silver_schema}.joseki_knowledge"
+            f"{args.catalog}.{args.bronze_schema}.wikipedia_raw"
         )
     )
 
