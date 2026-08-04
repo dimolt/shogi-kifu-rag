@@ -29,7 +29,7 @@ _NONEXISTENT_CATALOG = "shogi_nonexistent_catalog_for_test_205"
 
 # Issue #205でJobレベルパラメータの実行時上書きが効くタスク
 # （catalogを`{{job.parameters.catalog}}`経由で参照しているタスクのみ）。
-_TASKS_AFFECTED_BY_CATALOG_OVERRIDE = {"floodgate", "wikipedia"}
+_TASKS_AFFECTED_BY_CATALOG_OVERRIDE = {"floodgate", "wikipedia_raw", "joseki_knowledge"}
 
 
 # ---------------------------------------------------------------------------
@@ -123,7 +123,7 @@ def test_partial_failure_recovery(
     job_id: int,
     workspace_client: WorkspaceClient,
 ) -> None:
-    """floodgateまたはwikipediaのみを意図的に失敗させ、他タスクが正常完了することを確認する。
+    """floodgate/wikipedia_raw/joseki_knowledgeのみを意図的に失敗させ、他タスクが正常完了することを確認する。
 
     Arrange:
         不正なcatalog名をjob_parametersで指定。
