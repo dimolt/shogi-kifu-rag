@@ -1,16 +1,16 @@
 resources:
   pipelines:
-    shogi_kif_pipeline:
-      name: shogi_kif_pipeline
+    joseki_pipeline:
+      name: joseki_pipeline
       root_path: ../../..
       configuration:
         bundle.catalog: "${var.catalog}"
-        bundle.landing_schema: "${var.landing_schema}"
+        bundle.bronze_schema: "${var.bronze_schema}"
         bundle.silver_schema: "${var.silver_schema}"
         bundle.gold_schema: "${var.gold_schema}"
       libraries:
         - glob:
-            include: ../../pipelines/shogi_kif_tables.py
+            include: ../../pipelines/joseki_tables.py
         - glob:
             include: ../../transforms/**
         - glob:

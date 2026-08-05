@@ -29,3 +29,28 @@ def build_joseki_knowledge(bronze_df: DataFrame) -> DataFrame:
             "source",
         )
     )
+
+
+def build_joseki_features(silver_df: DataFrame) -> DataFrame:
+    """Silverテーブルから定跡特徴量（Gold: joseki_features）を生成する。
+
+    Silverのstrategy/content/sourceをそのまま横流しし、search_text列を追加する。
+    search_textは既存の_rebuild_josekiと同様、contentをそのまま使う。
+
+    Args:
+        silver_df: Silverテーブルのjoseki_knowledgeデータ。
+
+    Returns:
+        strategy, content, source, search_text列を持つGold DataFrame。
+    """
+    featured_df = silver_df.withColumn(
+        "search_text",
+        F.col("content"),
+    )
+
+    return featured_df.select(
+        "strategy",
+        "content",
+        "source",
+        "search_text",
+    )
