@@ -54,6 +54,7 @@ dependencies = [
 
 # ローカル開発用
 pyspark = [
+    "pyarrow==15.0.2",
     "pyspark",
 ]
 

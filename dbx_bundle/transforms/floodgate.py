@@ -1,5 +1,8 @@
 """Bronze層のfloodgate_rawからSilver層のfloodgate_positionsへ変換する純粋関数群。"""
 
+from collections.abc import Iterator
+
+import pandas as pd
 from pyspark.sql import DataFrame, SparkSession
 from pyspark.sql.types import (
     IntegerType,
@@ -81,6 +84,16 @@ def _analyze_game(game_id: str, csa_text: str) -> list[dict]:
     return positions
 
 
+def _build_positions(pdf_iter: Iterator[pd.DataFrame]) -> Iterator[pd.DataFrame]:
+    for pdf in pdf_iter:
+        rows = []
+
+        for _, row in pdf.iterrows():
+            rows.extend(_analyze_game(row.game_id, row.csa))
+
+        yield pd.DataFrame(rows)
+
+
 def build_floodgate_positions(spark: SparkSession, bronze_df: DataFrame) -> DataFrame:
     """Bronzeテーブル(floodgate_raw)からSilverテーブル(floodgate_positions)を生成する。
 
@@ -91,13 +104,10 @@ def build_floodgate_positions(spark: SparkSession, bronze_df: DataFrame) -> Data
     Returns:
         局面ごとのレコードを持つSilver DataFrame。
     """
-    rows = bronze_df.select("game_id", "csa").collect()
-
-    all_positions: list[dict] = []
-    for row in rows:
-        all_positions.extend(_analyze_game(row["game_id"], row["csa"]))
-
-    if not all_positions:
-        return spark.createDataFrame([], schema=FLOODGATE_POSITIONS_SCHEMA)
-
-    return spark.createDataFrame(all_positions, schema=FLOODGATE_POSITIONS_SCHEMA)
+    return bronze_df.select(
+        "game_id",
+        "csa",
+    ).mapInPandas(
+        _build_positions,
+        schema=FLOODGATE_POSITIONS_SCHEMA,
+    )
