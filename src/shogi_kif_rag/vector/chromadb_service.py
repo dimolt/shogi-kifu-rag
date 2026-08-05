@@ -284,28 +284,28 @@ class ChromadbService:
         """joseki_knowledge コレクションを再構築する。
 
         既存コレクションを削除後、
-        Silver Table の joseki_knowledge を読み込み、再作成する。
+        Gold Table の joseki_features を読み込み、再作成する。
         テーブルが存在しない・空の場合はスキップする。
 
         Args:
             spark: SparkSession。
         """
         try:
-            df = spark.table('shogi.shogi_silver.joseki_knowledge').toPandas()
+            df = spark.table('shogi.shogi_gold.joseki_features').toPandas()
         except Exception as e:
-            print(f'joseki_knowledge テーブル読み込みスキップ: {e}')
+            print(f'joseki_features テーブル読み込みスキップ: {e}')
             return
 
         if len(df) == 0:
-            print('joseki_knowledge: データが空のためスキップします。')
+            print('joseki_features: データが空のためスキップします。')
             return
 
         collection = self._drop_and_create('joseki_knowledge')
 
-        contents = df['content'].tolist()  # type: ignore[index]
+        search_texts = df['search_text'].tolist()  # type: ignore[index]
         collection.add(
-            embeddings=self._encode(contents),
-            documents=contents,
+            embeddings=self._encode(search_texts),
+            documents=search_texts,
             metadatas=[{
                 'strategy': str(row['strategy']),
                 'source': str(row['source']),

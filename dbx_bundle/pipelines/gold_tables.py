@@ -4,6 +4,7 @@ from pyspark import pipelines as dp
 
 from dbx_bundle.transforms.positions_to_gold import (
     build_game_summary,
+    build_joseki_features,
     build_position_features,
 )
 
@@ -27,3 +28,10 @@ def game_summary():
     """Gold Table: ゲームサマリー"""
     silver_df = spark.read.table(f"{catalog}.{silver_schema}.positions")
     return build_game_summary(silver_df)
+
+
+@dp.table(name=f"{catalog}.{gold_schema}.joseki_features")
+def joseki_features():
+    """Gold Table: 定跡特徴量"""
+    silver_df = spark.read.table(f"{catalog}.{silver_schema}.joseki_knowledge")
+    return build_joseki_features(silver_df)
