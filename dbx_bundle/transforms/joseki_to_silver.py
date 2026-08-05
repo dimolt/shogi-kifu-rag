@@ -1,6 +1,8 @@
 """Bronze層のwikipedia_rawからSilver層のjoseki_knowledgeへ変換する純粋関数。"""
 
 from pyspark.sql import DataFrame
+from pyspark.sql import functions as F  #noqa: N812
+from pyspark.sql.window import Window
 
 
 def build_joseki_knowledge(bronze_df: DataFrame) -> DataFrame:
@@ -14,16 +16,16 @@ def build_joseki_knowledge(bronze_df: DataFrame) -> DataFrame:
     Returns:
         strategy, content, source列を持つSilver DataFrame。
     """
-    bronze_df.createOrReplaceTempView("wikipedia_raw_temp")
 
-    result_df = bronze_df.sqlCtx.sql("""
-        WITH ranked AS (
-            SELECT *,
-                ROW_NUMBER() OVER (PARTITION BY strategy ORDER BY fetched_at DESC) as rn
-            FROM wikipedia_raw_temp
+    window = Window.partitionBy("strategy").orderBy(F.col("fetched_at").desc())
+
+    return (
+        bronze_df
+        .withColumn("rn", F.row_number().over(window))
+        .filter(F.col("rn") == 1)
+        .select(
+            "strategy",
+            F.col("raw_content").alias("content"),
+            "source",
         )
-        SELECT strategy, raw_content as content, source
-        FROM ranked WHERE rn = 1
-    """)
-
-    return result_df
+    )
