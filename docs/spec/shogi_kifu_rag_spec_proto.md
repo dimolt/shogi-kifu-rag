@@ -70,7 +70,7 @@
   Vector Store（ChromaDB / /tmp/shogi/chromadb）
     positions           ← shogi_gold.position_features
     floodgate_positions ← shogi_gold.floodgate_positions
-    joseki_knowledge    ← Wikipedia戦法解説（20戦法・374チャンク）
+    joseki_knowledge    ← shogi_gold.joseki_features（Wikipedia戦法解説・20戦法）
 
   RAGチェーン
     build_combined_context()
@@ -315,8 +315,8 @@ Silver Tableと共通カラムに加えて以下を追加・変更:
 | レート制限対応 | 戦法ごとに0.5秒スリープ |
 | チャンク | 段落単位・最大500文字・見出し行除外 |
 | 取得失敗 | 一手損角換わり・定跡・終盤（将棋）は404/空のため対象外 |
-| 戦法リスト管理 | コード内定数（`JOSEKI_LIST`）で管理 |
-| セッション再構築 | Gold Table非対応のため毎セッションWikipedia APIから再取得 |
+| 戦法リスト管理 | コード内定数（`STRATEGIES`）で管理 |
+| セッション再構築 | Gold Table（joseki_features）から再構築 |
 
 ### 5-3. Gemini API
 
@@ -448,7 +448,7 @@ ChromaDBは`/tmp`に保存されているため毎セッション再構築が必
 |---|---|---|
 | positions再構築（Gold Table → ChromaDB） | 約2〜3分 | 自動（セル3内） |
 | floodgate_positions再構築 | 約10〜15分 | 自動（セル3内） |
-| joseki_knowledge再取得・再構築 | 約3〜5分 | 自動（セル3内） |
+| joseki_knowledge再構築（Gold Table → ChromaDB） | 約1〜2分 | 自動（セル3内） |
 
 ### 8-3. 新規棋譜追加手順
 

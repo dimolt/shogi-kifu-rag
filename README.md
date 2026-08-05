@@ -165,14 +165,19 @@ Databricks Notebookで `ntb_ui_demo.py` を開いて実行します。
 - **csv_to_positions.py**: Transformロジック
   - CSVファイルから棋譜データを読み込み
   - Silverテーブル（positions）を作成
+- **joseki_tables.py**: パイプライン定義
+- **joseki_to_silver.py**: Transformロジック
+  - Bronzeテーブル（wikipedia_raw）からデータを読み込み
+  - 重複排除・変換
+  - Silverテーブル（joseki_knowledge）を作成
 
 ### Gold Pipeline
 
 - **gold_tables.py**: パイプライン定義
 - **positions_to_gold.py**: Transformロジック
   - Silverテーブルからデータを読み込み
-  - 特徴量計算（局面特徴量、ゲームサマリー）
-  - Goldテーブル（position_features, game_summary）を作成
+  - 特徴量計算（局面特徴量、ゲームサマリー、定跡特徴量）
+  - Goldテーブル（position_features, game_summary, joseki_features）を作成
 
 ## デプロイ
 
@@ -204,7 +209,7 @@ Pipeline設定（`dbx_bundle/resources/workflows/shogi_kif_pipeline.yml`）にtr
 ### wikipedia.py
 
 - Wikipediaから戦法解説を取得
-- joseki_knowledgeテーブルに書き込み
+- wikipedia_rawテーブル（Bronze層）に書き込み
 
 ---
 
