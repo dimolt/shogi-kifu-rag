@@ -5,7 +5,6 @@ import json
 from dbx_bundle.transforms.positions import (
     _add_turn_score_columns,
     build_game_summary,
-    build_joseki_features,
     build_position_features,
 )
 
@@ -396,63 +395,3 @@ def test_build_game_summary_複数game_idが存在するとき_game_idごとに�
     # Assert
     assert result_df.count() == 2
     assert set(row["game_id"] for row in result_df.collect()) == {"G1", "G2"}
-
-
-# --- build_joseki_features --------------------------------------------------
-
-
-def test_build_joseki_features_Silverの列がそのままGoldに引き継がれる(spark) -> None:
-    # Arrange
-    data = [("四間飛車", "content1", "source1")]
-    schema = "strategy STRING, content STRING, source STRING"
-    df = spark.createDataFrame(data, schema=schema)
-
-    # Act
-    result_df = build_joseki_features(df)
-
-    # Assert
-    row = result_df.first()
-    assert row["strategy"] == "四間飛車"
-    assert row["content"] == "content1"
-    assert row["source"] == "source1"
-
-
-def test_build_joseki_features_search_textはcontentと同じ内容になる(spark) -> None:
-    # Arrange
-    data = [("四間飛車", "test_content", "source1")]
-    schema = "strategy STRING, content STRING, source STRING"
-    df = spark.createDataFrame(data, schema=schema)
-
-    # Act
-    result_df = build_joseki_features(df)
-
-    # Assert
-    assert result_df.first()["search_text"] == "test_content"
-
-
-def test_build_joseki_features_出力列が仕様通りの4列になる(spark) -> None:
-    # Arrange
-    data = [("四間飛車", "content1", "source1")]
-    schema = "strategy STRING, content STRING, source STRING"
-    df = spark.createDataFrame(data, schema=schema)
-
-    # Act
-    result_df = build_joseki_features(df)
-
-    # Assert
-    expected_columns = {"strategy", "content", "source", "search_text"}
-    assert set(result_df.columns) == expected_columns
-
-
-def test_build_joseki_features_空データ時でもエラーにならない(spark) -> None:
-    # Arrange: 空のDataFrame
-    data = []
-    schema = "strategy STRING, content STRING, source STRING"
-    df = spark.createDataFrame(data, schema=schema)
-
-    # Act
-    result_df = build_joseki_features(df)
-
-    # Assert
-    assert result_df.count() == 0
-    assert set(result_df.columns) == {"strategy", "content", "source", "search_text"}
