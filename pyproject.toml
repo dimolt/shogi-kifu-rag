@@ -137,7 +137,7 @@ where = ["src"]
 #   uv run wikipedia
 # =========================================
 [project.scripts]
-floodgate = "shogi_kif_rag.tasks.floodgate:main"
+floodgate_raw = "shogi_kif_rag.tasks.bronze.floodgate_raw:main"
 wikipedia_raw = "shogi_kif_rag.tasks.bronze.wikipedia_raw:main"
 joseki_knowledge = "shogi_kif_rag.tasks.silver.joseki_knowledge:main"
 

@@ -1,0 +1,103 @@
+"""Bronze層のfloodgate_rawからSilver層のfloodgate_positionsへ変換する純粋関数群。"""
+
+from pyspark.sql import DataFrame, SparkSession
+from pyspark.sql.types import (
+    IntegerType,
+    StringType,
+    StructField,
+    StructType,
+)
+
+FLOODGATE_POSITIONS_SCHEMA = StructType([
+    StructField("game_id", StringType(), True),
+    StructField("move_number", IntegerType(), True),
+    StructField("sfen", StringType(), True),
+    StructField("move_usi", StringType(), True),
+    StructField("player", StringType(), True),
+    StructField("black_player", StringType(), True),
+    StructField("white_player", StringType(), True),
+])
+
+# NOTE: SFENは初期局面固定。move_usiを盤面に適用しないためチェーンが繋がっていない
+# （既知の既存バグ・別Issue管理）。旧 floodgate.py の挙動をそのまま踏襲する。
+_INITIAL_SFEN = "lnsgkgsnl/1r5b1/ppppppppp/9/9/9/PPPPPPPPP/1B5R1/LNSGKGSNL b - 1"
+
+
+def parse_csa(csa_text: str) -> dict:
+    """CSA形式の棋譜をパースする。
+
+    Args:
+        csa_text: CSA形式の棋譜テキスト。
+
+    Returns:
+        指し手リストと対局者名を持つ辞書。
+    """
+    lines = csa_text.split("\n")
+    moves: list[dict] = []
+    current_player = "black"
+    black_player = ""
+    white_player = ""
+
+    for line in lines:
+        if line.startswith("'"):
+            continue
+        elif line.startswith("N+"):
+            black_player = line[2:]
+        elif line.startswith("N-"):
+            white_player = line[2:]
+        elif line.startswith("+") or line.startswith("-"):
+            if len(line) > 1:
+                moves.append({"move_usi": line[1:], "player": current_player})
+                current_player = "white" if current_player == "black" else "black"
+
+    return {"moves": moves, "black_player": black_player, "white_player": white_player}
+
+
+def _analyze_game(game_id: str, csa_text: str) -> list[dict]:
+    """1局分のCSAをパースして局面レコードのリストを生成する。
+
+    Args:
+        game_id: 対局ID。
+        csa_text: CSA形式の棋譜テキスト。
+
+    Returns:
+        局面レコードのリスト。
+    """
+    parsed = parse_csa(csa_text)
+    black_player = parsed["black_player"]
+    white_player = parsed["white_player"]
+
+    positions = []
+    for i, move in enumerate(parsed["moves"]):
+        positions.append({
+            "game_id": game_id,
+            "move_number": i,
+            "sfen": _INITIAL_SFEN,
+            "move_usi": move["move_usi"],
+            "player": move["player"],
+            "black_player": black_player,
+            "white_player": white_player,
+        })
+    return positions
+
+
+def build_floodgate_positions(spark: SparkSession, bronze_df: DataFrame) -> DataFrame:
+    """Bronzeテーブル(floodgate_raw)からSilverテーブル(floodgate_positions)を生成する。
+
+    Args:
+        spark: DataFrame生成に使用するSparkSession。
+        bronze_df: Bronzeテーブルのfloodgate_rawデータ（game_id, csa列を使用）。
+
+    Returns:
+        局面ごとのレコードを持つSilver DataFrame。
+    """
+    rows = bronze_df.select("game_id", "csa").collect()
+
+    all_positions: list[dict] = []
+    for row in rows:
+        all_positions.extend(_analyze_game(row["game_id"], row["csa"]))
+
+    if not all_positions:
+        return spark.createDataFrame([], schema=FLOODGATE_POSITIONS_SCHEMA)
+
+    return spark.createDataFrame(all_positions, schema=FLOODGATE_POSITIONS_SCHEMA)

@@ -23,6 +23,7 @@ from tests.helpers.config.constants import (
 # テーブル名 -> スキーマ
 BRONZE_TABLES: dict[str, str] = {
     "wikipedia_raw": TEST_BRONZE_SCHEMA,
+    "floodgate_raw": TEST_BRONZE_SCHEMA,
 }
 
 SILVER_TABLES: dict[str, str] = {

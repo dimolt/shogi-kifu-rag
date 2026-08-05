@@ -32,13 +32,21 @@ resources:
         enabled: false
       max_concurrent_runs: 1
       tasks:
-        - task_key: floodgate
+        - task_key: floodgate_raw
           environment_key: default
           max_retries: 0
           disable_auto_optimization: true
           python_wheel_task:
             package_name: shogi-kif-rag
-            entry_point: floodgate
+            entry_point: floodgate_raw
+            named_parameters:
+              catalog: "{{job.parameters.catalog}}"
+              bronze_schema: ${var.bronze_schema}
+        - task_key: floodgate_pipeline
+          pipeline_task:
+            pipeline_id: ${resources.pipelines.floodgate_pipeline.id}
+          depends_on:
+            - task_key: floodgate_raw
 
     joseki_job:
       name: joseki_job
