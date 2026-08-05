@@ -1,5 +1,7 @@
 """transforms/floodgate.py のユニットテスト。"""
 
+from datetime import datetime
+
 from pyspark.sql import SparkSession
 
 from dbx_bundle.transforms.floodgate import (
@@ -72,8 +74,10 @@ def test_build_floodgate_positions_1局分のCSAから局面レコードを生�
 ) -> None:
     # Arrange
     bronze_df = spark.createDataFrame(
-        [("game-1", "N+先手\nN-後手\n+7776FU\n-3334FU\n")],
-        schema=["game_id", "csa"],
+        [("game-1",
+          "N+先手\nN-後手\n+7776FU\n-3334FU\n",
+          datetime(2026, 1, 1, 12, 0, 0))],
+        schema=["game_id", "csa", "fetched_at"],
     )
 
     # Act
@@ -99,10 +103,10 @@ def test_build_floodgate_positions_複数局が含まれると_game_idごとに�
     # Arrange
     bronze_df = spark.createDataFrame(
         [
-            ("game-1", "N+Alice\nN-Bob\n+7776FU\n"),
-            ("game-2", "N+Carol\nN-Dave\n+2726FU\n-8384FU\n"),
+            ("game-1", "N+Alice\nN-Bob\n+7776FU\n", datetime(2026, 1, 1, 12, 0, 0)),
+            ("game-2", "N+Carol\nN-Dave\n+2726FU\n-8384FU\n", datetime(2026, 1, 1, 12, 0, 0)),
         ],
-        schema=["game_id", "csa"],
+        schema=["game_id", "csa", "fetched_at"],
     )
 
     # Act
@@ -121,8 +125,8 @@ def test_build_floodgate_positions_指し手がない棋譜は局面レコード
 ) -> None:
     # Arrange
     bronze_df = spark.createDataFrame(
-        [("game-1", "N+先手\nN-後手\n")],
-        schema=["game_id", "csa"],
+        [("game-1", "N+先手\nN-後手\n", datetime(2026, 1, 1, 12, 0, 0))],
+        schema=["game_id", "csa", "fetched_at"],
     )
 
     # Act
@@ -136,7 +140,7 @@ def test_build_floodgate_positions_Bronzeが空の場合_空のDataFrameを返�
     spark: SparkSession,
 ) -> None:
     # Arrange
-    bronze_df = spark.createDataFrame([], schema="game_id STRING, csa STRING")
+    bronze_df = spark.createDataFrame([], schema="game_id STRING, csa STRING, fetched_at TIMESTAMP")
 
     # Act
     result_df = build_floodgate_positions(spark, bronze_df)
@@ -151,8 +155,8 @@ def test_build_floodgate_positions_出力スキーマがFLOODGATE_POSITIONS_SCHE
 ) -> None:
     # Arrange
     bronze_df = spark.createDataFrame(
-        [("game-1", "N+先手\nN-後手\n+7776FU\n")],
-        schema=["game_id", "csa"],
+        [("game-1", "N+先手\nN-後手\n+7776FU\n", datetime(2026, 1, 1, 12, 0, 0))],
+        schema=["game_id", "csa", "fetched_at"],
     )
 
     # Act
@@ -160,3 +164,26 @@ def test_build_floodgate_positions_出力スキーマがFLOODGATE_POSITIONS_SCHE
 
     # Assert
     assert result_df.schema == FLOODGATE_POSITIONS_SCHEMA
+
+
+def test_build_floodgate_positions_game_idごとに最新の局面が生成される(
+    spark: SparkSession,
+) -> None:
+    # Arrange
+    bronze_df = spark.createDataFrame(
+        [
+            ("game-1", "N+Alice\nN-Bob\n+7776FU\n", datetime(2026, 1, 1, 12, 0, 0)),
+            ("game-1", "N+Carol\nN-Dave\n+2726FU\n-8384FU\n", datetime(2026, 1, 1, 13, 0, 0)),
+        ],
+        schema=["game_id", "csa", "fetched_at"],
+    )
+
+    # Act
+    result_df = build_floodgate_positions(spark, bronze_df)
+
+    # Assert
+    assert result_df.count() == 2
+    black_player = {
+        row["black_player"] for row in result_df.select("black_player").distinct().collect()
+    }
+    assert black_player == {"Carol"}

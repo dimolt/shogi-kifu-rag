@@ -4,12 +4,14 @@ from collections.abc import Iterator
 
 import pandas as pd
 from pyspark.sql import DataFrame, SparkSession
+from pyspark.sql import functions as F  #noqa: N812
 from pyspark.sql.types import (
     IntegerType,
     StringType,
     StructField,
     StructType,
 )
+from pyspark.sql.window import Window
 
 FLOODGATE_POSITIONS_SCHEMA = StructType([
     StructField("game_id", StringType(), True),
@@ -96,15 +98,25 @@ def _build_positions(pdf_iter: Iterator[pd.DataFrame]) -> Iterator[pd.DataFrame]
 
 def build_floodgate_positions(spark: SparkSession, bronze_df: DataFrame) -> DataFrame:
     """Bronzeテーブル(floodgate_raw)からSilverテーブル(floodgate_positions)を生成する。
+    game_id単位でfetched_atが最新のレコードのみを抽出する。
 
     Args:
         spark: DataFrame生成に使用するSparkSession。
-        bronze_df: Bronzeテーブルのfloodgate_rawデータ（game_id, csa列を使用）。
+        bronze_df: Bronzeテーブルのfloodgate_rawデータ
+            （game_id, csa, fetched_at列を使用）
 
     Returns:
         局面ごとのレコードを持つSilver DataFrame。
     """
-    return bronze_df.select(
+    window = Window.partitionBy("game_id").orderBy(F.col("fetched_at").desc())
+
+    dedup_df = (
+        bronze_df
+        .withColumn("rn", F.row_number().over(window))
+        .filter(F.col("rn") == 1)
+    )
+
+    return dedup_df.select(
         "game_id",
         "csa",
     ).mapInPandas(
