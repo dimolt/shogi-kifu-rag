@@ -2,7 +2,7 @@
 
 from datetime import datetime
 
-from dbx_bundle.transforms.joseki_to_silver import build_joseki_knowledge
+from dbx_bundle.transforms.joseki import build_joseki_knowledge
 
 
 def test_build_joseki_knowledge_fetched_at最大の1行のみ抽出される(spark) -> None:

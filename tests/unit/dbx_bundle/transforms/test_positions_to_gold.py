@@ -2,7 +2,7 @@
 
 import json
 
-from dbx_bundle.transforms.positions_to_gold import (
+from dbx_bundle.transforms.positions import (
     _add_turn_score_columns,
     build_game_summary,
     build_joseki_features,
