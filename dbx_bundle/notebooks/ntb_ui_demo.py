@@ -18,7 +18,7 @@
 # COMMAND ----------
 
 # MAGIC 
-# MAGIC %pip install /Workspace/Users/realnowhereman@icloud.com/.bundle/shogi-kifu-rag/dev/artifacts/.internal/shogiapp-0.1.0-py3-none-any.whl
+# MAGIC %pip install /Volumes/shogi_dev/artifacts/whl/realnowhereman/.internal/shogi_kif_rag-0.1.0-py3-none-any.whl
 # MAGIC 
 
 # COMMAND ----------
