@@ -5,6 +5,7 @@ from collections.abc import Iterator
 import pandas as pd
 from pyspark.sql import DataFrame, SparkSession
 from pyspark.sql import functions as F  #noqa: N812
+from pyspark.sql.functions import concat, lit
 from pyspark.sql.types import (
     IntegerType,
     StringType,
@@ -122,4 +123,38 @@ def build_floodgate_positions(spark: SparkSession, bronze_df: DataFrame) -> Data
     ).mapInPandas(
         _build_positions,
         schema=FLOODGATE_POSITIONS_SCHEMA,
+    )
+
+
+def build_floodgate_features(silver_df: DataFrame) -> DataFrame:
+    """Silverテーブルから局面特徴量（Gold: floodgate_position_features）を生成する。
+
+    Silverの列をそのまま横流しし、search_text列のみ追加する「薄いGold」とする。
+    search_textの書式は既存の_rebuild_floodgateが使っている書式を踏襲する。
+
+    Args:
+        silver_df: Silverテーブルのfloodgate_positionsデータ。
+
+    Returns:
+        局面ごとの特徴量列を持つGold DataFrame。
+    """
+    featured_df = silver_df.withColumn(
+        "search_text",
+        concat(
+            lit("局面: "),
+            F.col("sfen"),
+            lit(" 指し手: "),
+            F.col("move_usi"),
+        ),
+    )
+
+    return featured_df.select(
+        "game_id",
+        "move_number",
+        "sfen",
+        "move_usi",
+        "player",
+        "black_player",
+        "white_player",
+        "search_text",
     )
