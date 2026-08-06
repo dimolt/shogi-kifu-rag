@@ -7,6 +7,7 @@ resources:
         bundle.catalog: "${var.catalog}"
         bundle.bronze_schema: "${var.bronze_schema}"
         bundle.silver_schema: "${var.silver_schema}"
+        bundle.gold_schema: "${var.gold_schema}"
       libraries:
         - glob:
             include: ../../pipelines/floodgate_tables.py
