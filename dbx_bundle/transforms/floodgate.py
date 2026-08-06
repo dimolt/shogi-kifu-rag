@@ -1,10 +1,9 @@
 """Bronze層のfloodgate_rawからSilver層のfloodgate_positionsへ変換する純粋関数群。"""
 
-from collections.abc import Iterator
 
-import pandas as pd
 from pyspark.sql import DataFrame, SparkSession
 from pyspark.sql import functions as F  #noqa: N812
+from pyspark.sql.functions import concat, lit
 from pyspark.sql.types import (
     IntegerType,
     StringType,
@@ -86,16 +85,6 @@ def _analyze_game(game_id: str, csa_text: str) -> list[dict]:
     return positions
 
 
-def _build_positions(pdf_iter: Iterator[pd.DataFrame]) -> Iterator[pd.DataFrame]:
-    for pdf in pdf_iter:
-        rows = []
-
-        for _, row in pdf.iterrows():
-            rows.extend(_analyze_game(row.game_id, row.csa))
-
-        yield pd.DataFrame(rows)
-
-
 def build_floodgate_positions(spark: SparkSession, bronze_df: DataFrame) -> DataFrame:
     """Bronzeテーブル(floodgate_raw)からSilverテーブル(floodgate_positions)を生成する。
     game_id単位でfetched_atが最新のレコードのみを抽出する。
@@ -114,12 +103,56 @@ def build_floodgate_positions(spark: SparkSession, bronze_df: DataFrame) -> Data
         bronze_df
         .withColumn("rn", F.row_number().over(window))
         .filter(F.col("rn") == 1)
+        .select("game_id", "csa")
     )
 
-    return dedup_df.select(
-        "game_id",
-        "csa",
-    ).mapInPandas(
-        _build_positions,
+    # NOTE:
+    # mapInPandas による Python Worker 実行では Databricks Pipeline の既知の問題
+    # (ModuleNotFoundError / name 'kdf' is not defined) に遭遇するため、
+    # 最新ゲームのみを Driver に collect() して Python で局面展開を行う。
+    # データ量は限定的であることを前提としている。
+    # カラムも game_id, csa のみ
+    games = dedup_df.collect()
+
+    rows = []
+    for game in games:
+        rows.extend(_analyze_game(game.game_id, game.csa))
+
+    return spark.createDataFrame(
+        rows,
         schema=FLOODGATE_POSITIONS_SCHEMA,
+    )
+
+
+def build_floodgate_features(silver_df: DataFrame) -> DataFrame:
+    """Silverテーブルから局面特徴量（Gold: floodgate_position_features）を生成する。
+
+    Silverの列をそのまま横流しし、search_text列のみ追加する「薄いGold」とする。
+    search_textの書式は既存の_rebuild_floodgateが使っている書式を踏襲する。
+
+    Args:
+        silver_df: Silverテーブルのfloodgate_positionsデータ。
+
+    Returns:
+        局面ごとの特徴量列を持つGold DataFrame。
+    """
+    featured_df = silver_df.withColumn(
+        "search_text",
+        concat(
+            lit("局面: "),
+            F.col("sfen"),
+            lit(" 指し手: "),
+            F.col("move_usi"),
+        ),
+    )
+
+    return featured_df.select(
+        "game_id",
+        "move_number",
+        "sfen",
+        "move_usi",
+        "player",
+        "black_player",
+        "white_player",
+        "search_text",
     )
