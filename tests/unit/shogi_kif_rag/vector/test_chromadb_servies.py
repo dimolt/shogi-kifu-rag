@@ -75,7 +75,7 @@ def test_ensure_未初期化時にモデルとクライアントを初期化し�
     fake_client = object()
     fake_spark = object()
     fake_model = object()
-    rebuild_calls: list[object] = []
+    rebuild_calls: list[tuple[object, str]] = []
 
     monkeypatch.setattr(
         chromadb_service.chromadb_lib,
@@ -89,13 +89,13 @@ def test_ensure_未初期化時にモデルとクライアントを初期化し�
         staticmethod(lambda: fake_spark),
     )
     monkeypatch.setattr(service, "_collection_exists", lambda name: False)
-    monkeypatch.setattr(service, "rebuild_collections", lambda spark=None: rebuild_calls.append(spark))
+    monkeypatch.setattr(service, "rebuild_collections", lambda spark=None, catalog='shogi': rebuild_calls.append((spark, catalog)))
 
     service.ensure()
 
     assert service._client is fake_client
     assert service._model is fake_model
-    assert rebuild_calls == [fake_spark]
+    assert rebuild_calls == [(fake_spark, 'shogi')]
 
 
 def test_clean_position_features_空白_nan_空文字を除外して有効な行のみ返す() -> None:
@@ -106,3 +106,94 @@ def test_clean_position_features_空白_nan_空文字を除外して有効な行
     result = service._clean_position_features(df)
 
     assert result["search_text"].tolist() == ["foo", "bar"]
+
+
+def test_ensure_catalog引数を渡して再構築を実行する(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    """ensure にcatalog引数を渡した場合、正しいcatalogがrebuild_collectionsに渡されることを確認する。"""
+    service = chromadb_service.ChromadbService()
+    fake_client = object()
+    fake_spark = object()
+    fake_model = object()
+    rebuild_calls: list[tuple[object, str]] = []
+
+    monkeypatch.setattr(
+        chromadb_service.chromadb_lib,
+        "PersistentClient",
+        lambda path: fake_client,
+    )
+    monkeypatch.setattr(chromadb_service, "SentenceTransformer", lambda model_name: fake_model)
+    monkeypatch.setattr(
+        chromadb_service.SparkSession,
+        "getActiveSession",
+        staticmethod(lambda: fake_spark),
+    )
+    monkeypatch.setattr(service, "_collection_exists", lambda name: False)
+    monkeypatch.setattr(service, "rebuild_collections", lambda spark=None, catalog='shogi': rebuild_calls.append((spark, catalog)))
+
+    service.ensure(catalog='test_catalog')
+
+    assert service._client is fake_client
+    assert service._model is fake_model
+    assert rebuild_calls == [(fake_spark, 'test_catalog')]
+
+
+def test_rebuild_collections_相互再帰が解消されている(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    """rebuild_collections が ensure を呼ばず、_initialize のみを呼ぶことを確認する。"""
+    service = chromadb_service.ChromadbService()
+    fake_client = object()
+    fake_spark = object()
+    fake_model = object()
+    initialize_calls: list[object] = []
+    ensure_calls: list[object] = []
+
+    monkeypatch.setattr(
+        chromadb_service.chromadb_lib,
+        "PersistentClient",
+        lambda path: fake_client,
+    )
+    monkeypatch.setattr(chromadb_service, "SentenceTransformer", lambda model_name: fake_model)
+    monkeypatch.setattr(
+        chromadb_service.SparkSession,
+        "getActiveSession",
+        staticmethod(lambda: fake_spark),
+    )
+    monkeypatch.setattr(service, "_initialize", lambda: initialize_calls.append(None))
+    monkeypatch.setattr(service, "ensure", lambda catalog='shogi': ensure_calls.append(catalog))
+    monkeypatch.setattr(service, "_rebuild_positions", lambda spark, catalog: None)
+    monkeypatch.setattr(service, "_rebuild_floodgate", lambda spark, catalog: None)
+    monkeypatch.setattr(service, "_rebuild_joseki", lambda spark, catalog: None)
+
+    service.rebuild_collections(fake_spark, 'test_catalog')
+
+    assert initialize_calls == [None]
+    assert ensure_calls == []
+
+
+def test_initialize_初期化済みの場合は何もしない(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    """_initialize が初期化済みの場合は何もしないことを確認する。"""
+    service = chromadb_service.ChromadbService()
+    fake_client = object()
+    fake_model = object()
+
+    monkeypatch.setattr(
+        chromadb_service.chromadb_lib,
+        "PersistentClient",
+        lambda path: fake_client,
+    )
+    monkeypatch.setattr(chromadb_service, "SentenceTransformer", lambda model_name: fake_model)
+
+    service._initialize()
+    assert service._client is fake_client
+    assert service._model is fake_model
+
+    # 2回目は初期化されない
+    service._initialize()
+    # 同じオブジェクトであることを確認（再初期化されていない）
+    assert service._client is fake_client
+    assert service._model is fake_model

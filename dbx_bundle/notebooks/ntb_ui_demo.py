@@ -27,6 +27,21 @@ from shogi_kif_rag.vector.chromadb_service import ChromadbService
 from shogi_kif_rag.rag import rag_query
 
 # COMMAND ----------
+# -----------------------------------------------------------------------------
+# 実行パラメータ
+#
+# catalog
+#   対象カタログ（shogi_dev, shogi_test, shogi）
+# -----------------------------------------------------------------------------
+dbutils.widgets.dropdown("catalog", "shogi_dev", ["shogi_dev", "shogi_test", "shogi"])
+catalog = dbutils.widgets.get("catalog")
+
+# COMMAND ----------
+# ChromadbServiceの初期化
+chromadb = ChromadbService.get_instance()
+chromadb.ensure(catalog=catalog)
+
+# COMMAND ----------
 def query_rag(query: str, collection: str, n_results: int):
     """RAGクエリを実行
 
@@ -38,8 +53,6 @@ def query_rag(query: str, collection: str, n_results: int):
     Returns:
         回答と参照ドキュメント
     """
-
-    chromadb = ChromadbService.get_instance(),
 
     result = rag_query(
         chromadb=chromadb,
