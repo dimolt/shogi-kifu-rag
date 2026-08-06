@@ -23,14 +23,21 @@
 
 # COMMAND ----------
 import gradio as gr
-from pyspark.sql import SparkSession
 from shogi_kif_rag.vector.chromadb_service import ChromadbService
 from shogi_kif_rag.rag import rag_query
 
 # COMMAND ----------
+# -----------------------------------------------------------------------------
+# 実行パラメータ
+#
+# catalog
+#   対象カタログ（shogi_dev, shogi_test, shogi）
+# -----------------------------------------------------------------------------
+dbutils.widgets.dropdown("catalog", "shogi_dev", ["shogi_dev", "shogi_test", "shogi"])
+catalog = dbutils.widgets.get("catalog")
+
+# COMMAND ----------
 # ChromadbServiceの初期化
-spark = SparkSession.getActiveSession()
-catalog = spark.conf.get("bundle.catalog", "shogi")
 chromadb_service = ChromadbService.get_instance()
 chromadb_service.ensure(catalog=catalog)
 
