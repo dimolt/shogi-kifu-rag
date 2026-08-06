@@ -23,8 +23,16 @@
 
 # COMMAND ----------
 import gradio as gr
+from pyspark.sql import SparkSession
 from shogi_kif_rag.vector.chromadb_service import ChromadbService
 from shogi_kif_rag.rag import rag_query
+
+# COMMAND ----------
+# ChromadbServiceの初期化
+spark = SparkSession.getActiveSession()
+catalog = spark.conf.get("bundle.catalog", "shogi")
+chromadb_service = ChromadbService.get_instance()
+chromadb_service.ensure(catalog=catalog)
 
 # COMMAND ----------
 def query_rag(query: str, collection: str, n_results: int):
