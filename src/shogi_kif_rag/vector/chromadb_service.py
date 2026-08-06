@@ -50,6 +50,18 @@ class ChromadbService:
     # Public メソッド
     # ------------------------------------------------------------------
 
+    def _initialize(self) -> None:
+        """クライアントとモデルを初期化する。
+
+        既に初期化済みの場合は何もしない。
+        """
+        if self._is_ready():
+            return
+
+        self._model = SentenceTransformer(EMBEDDING_MODEL_NAME)
+        self._client = chromadb_lib.PersistentClient(path=CHROMA_PATH)
+
+
     def ensure(self, catalog: str = 'shogi') -> None:
         """ChromaDB が使用可能な状態にする。
 
@@ -60,14 +72,10 @@ class ChromadbService:
         Args:
             catalog: カタログ名。デフォルトは 'shogi'。
         """
-        if self._is_ready():
-            return
-
-        spark = SparkSession.getActiveSession()
-        self._model = SentenceTransformer(EMBEDDING_MODEL_NAME)
-        self._client = chromadb_lib.PersistentClient(path=CHROMA_PATH)
+        self._initialize()
 
         if not self._collection_exists('positions'):
+            spark = SparkSession.getActiveSession()
             self.rebuild_collections(spark, catalog)
 
     def rebuild_collections(
@@ -77,13 +85,13 @@ class ChromadbService:
     ) -> None:
         """すべてのコレクションを再構築する。
 
-        クライアント・モデルが未初期化の場合は先に ensure() を呼び出す。
+        クライアント・モデルが未初期化の場合は先に初期化する。
 
         Args:
             spark: SparkSession。省略時は getActiveSession() から取得する。
             catalog: カタログ名。デフォルトは 'shogi'。
         """
-        self.ensure(catalog)
+        self._initialize()
         if spark is None:
             spark = SparkSession.getActiveSession()
         if spark is None:
