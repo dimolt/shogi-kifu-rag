@@ -38,8 +38,8 @@ catalog = dbutils.widgets.get("catalog")
 
 # COMMAND ----------
 # ChromadbServiceの初期化
-chromadb_service = ChromadbService.get_instance()
-chromadb_service.ensure(catalog=catalog)
+chromadb = ChromadbService.get_instance()
+chromadb.ensure(catalog=catalog)
 
 # COMMAND ----------
 def query_rag(query: str, collection: str, n_results: int):
@@ -53,8 +53,6 @@ def query_rag(query: str, collection: str, n_results: int):
     Returns:
         回答と参照ドキュメント
     """
-
-    chromadb = ChromadbService.get_instance(),
 
     result = rag_query(
         chromadb=chromadb,
