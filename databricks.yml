@@ -57,8 +57,6 @@ variables:
     type: complex
     default:
       - "${workspace.artifact_path}/.internal/shogi_kif_rag-${var.wheel_version}-py3-none-any.whl"
-      - chromadb
-      - sentence_transformers
 targets:
   dev:
     mode: development
