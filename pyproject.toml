@@ -40,7 +40,7 @@ dependencies = [
     "chardet>=7.4.3",
 
     # データ加工
-    #"pandas>=2.3.3",  # serverless クラスタと競合するため 削除
+    #"pandas>=2.3.3",  # serverless クラスタと競合するため dependency-groups.pyspark 移動
 ]
 
 
@@ -56,6 +56,7 @@ dependencies = [
 pyspark = [
     "pyarrow==15.0.2",
     "pyspark",
+    "pandas>=2.3.3",
 ]
 
 # Databricks 接続・デプロイ関連
@@ -68,6 +69,9 @@ dbx = [
 rag = [
     "chromadb",
     "sentence-transformers",
+    "torch==2.8.0",
+    "torchaudio==2.8.0",
+    "torchvision==0.23.0",
 ]
 
 # Web スクレイピング・HTTP アクセス関連
