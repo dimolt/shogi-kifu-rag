@@ -20,3 +20,5 @@ resources:
       schema: "${var.silver_schema}"
       serverless: true
       continuous: false
+      environment:
+        dependencies: ${var.wheel_dependencies}

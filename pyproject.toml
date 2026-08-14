@@ -40,7 +40,7 @@ dependencies = [
     "chardet>=7.4.3",
 
     # データ加工
-    "pandas>=2.3.3",
+    #"pandas>=2.3.3",  # serverless クラスタと競合するため 削除
 ]
 
 
