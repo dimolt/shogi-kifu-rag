@@ -2,7 +2,7 @@
 
 import json
 
-from dbx_bundle.transforms.positions import (
+from shogi_kif_rag.transforms.positions import (
     _add_turn_score_columns,
     build_game_summary,
     build_position_features,

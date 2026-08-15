@@ -15,7 +15,10 @@ import pytest
 from pyspark.sql import DataFrame, SparkSession, Window
 from pyspark.sql import functions as F  # noqa: N812
 
-from dbx_bundle.transforms.csv_to_positions import build_positions, get_analysis_schema
+from shogi_kif_rag.transforms.csv_to_positions import (
+    build_positions,
+    get_analysis_schema,
+)
 from tests.helpers.csv_helpers import write_analysis_csv
 from tests.helpers.databricks.volume_helpers import (
     cleanup_volume_files,
