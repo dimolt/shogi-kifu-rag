@@ -38,9 +38,6 @@ dependencies = [
 
     # 文字コード判定
     "chardet>=7.4.3",
-
-    # データ加工
-    #"pandas>=2.3.3",  # serverless クラスタと競合するため dependency-groups.pyspark 移動
 ]
 
 
@@ -54,9 +51,11 @@ dependencies = [
 
 # ローカル開発用
 pyspark = [
-    "pyarrow==15.0.2",
+    # serverless v4 に合わせる
+    # wheelに組み込まず、Databricks上ではserverlessクラスタのライブラリを使用する
     "pyspark",
-    "pandas>=2.3.3",
+    "pandas==2.2.3",
+    "pyarrow==19.0.1",
 ]
 
 # Databricks 接続・デプロイ関連

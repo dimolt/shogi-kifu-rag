@@ -22,3 +22,5 @@ resources:
       continuous: false
       environment:
         dependencies: ${var.wheel_dependencies}
+        # バージョン指定が推奨だが、パイプライン実行でエラー発生(NO_PREVIOUS_FINGERPRINT)のため保留
+        # environment_version: "4"
