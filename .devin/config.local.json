@@ -1,0 +1,18 @@
+{
+  "permissions": {
+    "allow": [
+      "Exec(mkdir)",
+      "Exec(mv)",
+      "Exec(rmdir)",
+      "Exec(Remove-Item)",
+      "Exec(uv run pytest)",
+      "Exec(uv run ruff)",
+      "Exec(git diff)",
+      "Exec(git log)",
+      "Exec(git add)",
+      "Exec(git commit)",
+      "Exec(git push)",
+      "Exec(gh pr)"
+    ]
+  }
+}
