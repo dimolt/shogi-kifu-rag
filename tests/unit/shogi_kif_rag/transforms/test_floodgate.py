@@ -4,7 +4,7 @@ from datetime import datetime
 
 from pyspark.sql import SparkSession
 
-from dbx_bundle.transforms.floodgate import (
+from shogi_kif_rag.transforms.floodgate import (
     FLOODGATE_POSITIONS_SCHEMA,
     build_floodgate_features,
     build_floodgate_positions,

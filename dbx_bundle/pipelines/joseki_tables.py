@@ -2,7 +2,7 @@
 
 from pyspark import pipelines as dp
 
-from dbx_bundle.transforms.joseki import (
+from shogi_kif_rag.transforms.joseki import (
     build_joseki_features,
     build_joseki_knowledge,
 )

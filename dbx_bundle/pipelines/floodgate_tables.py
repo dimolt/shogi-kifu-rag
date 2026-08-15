@@ -2,7 +2,7 @@
 
 from pyspark import pipelines as dp
 
-from dbx_bundle.transforms.floodgate import (
+from shogi_kif_rag.transforms.floodgate import (
     build_floodgate_features,
     build_floodgate_positions,
 )

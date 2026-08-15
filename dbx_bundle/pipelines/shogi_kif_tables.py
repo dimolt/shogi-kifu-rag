@@ -2,8 +2,8 @@
 
 from pyspark import pipelines as dp
 
-from dbx_bundle.transforms.csv_to_positions import build_positions
-from dbx_bundle.transforms.positions import (
+from shogi_kif_rag.transforms.csv_to_positions import build_positions
+from shogi_kif_rag.transforms.positions import (
     build_game_summary,
     build_position_features,
 )

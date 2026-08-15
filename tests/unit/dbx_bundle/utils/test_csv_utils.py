@@ -4,7 +4,7 @@ from pathlib import Path
 
 import pytest
 
-from dbx_bundle.utils.csv_utils import resolve_csv_paths
+from shogi_kif_rag.utils.csv_utils import resolve_csv_paths
 
 
 def test_resolve_csv_paths_ワイルドカードなしの単一ファイルパスをそのまま返す(tmp_path: Path) -> None:

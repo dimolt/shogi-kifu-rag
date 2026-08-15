@@ -5,7 +5,10 @@ from pathlib import Path
 from pyspark.sql import SparkSession
 from pyspark.sql import functions as F  # noqa: N812
 
-from dbx_bundle.transforms.csv_to_positions import build_positions, get_analysis_schema
+from shogi_kif_rag.transforms.csv_to_positions import (
+    build_positions,
+    get_analysis_schema,
+)
 from tests.helpers.csv_helpers import write_analysis_csv
 
 

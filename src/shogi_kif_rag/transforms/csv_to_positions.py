@@ -9,7 +9,7 @@ from pyspark.sql.types import (
     StructType,
 )
 
-from dbx_bundle.utils.csv_utils import resolve_csv_paths
+from shogi_kif_rag.utils.csv_utils import resolve_csv_paths
 
 
 def get_analysis_schema():

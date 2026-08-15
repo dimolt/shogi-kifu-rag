@@ -4,7 +4,7 @@
 import pytest
 from pyspark.sql import DataFrame, SparkSession
 
-from dbx_bundle.transforms.csv_to_positions import get_analysis_schema
+from shogi_kif_rag.transforms.csv_to_positions import get_analysis_schema
 
 
 @pytest.fixture(scope="session")

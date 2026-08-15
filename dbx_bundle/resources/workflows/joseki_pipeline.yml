@@ -11,10 +11,6 @@ resources:
       libraries:
         - glob:
             include: ../../pipelines/joseki_tables.py
-        - glob:
-            include: ../../transforms/**
-        - glob:
-            include: ../../utils/**
       photon: true
       catalog: "${var.catalog}"
       schema: "${var.silver_schema}"
