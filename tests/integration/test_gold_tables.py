@@ -28,10 +28,15 @@ _EXPECTED_GAME_SUMMARY_COLUMNS = {
     "black_blunders", "white_blunders", "score_series_json",
 }
 
+_EXPECTED_FLOODGATE_POSITION_FEATURES_COLUMNS = {
+    "game_id", "move_number", "sfen", "move_usi", "player",
+    "black_player", "white_player", "search_text",
+}
+
 _ALLOWED_MOVE_QUALITIES = {"start", "best", "blunder", "normal"}
 
 
-#TODO: fooldgate, wikipediaテーブルの検証も追加したい
+#TODO: wikipediaテーブルの検証も追加したい
 
 # --- position_features -------------------------------------------------------
 
@@ -58,6 +63,35 @@ def test_position_featuresテーブルの行数がpositionsテーブルと一致
     positions_count = positions_df.count()
     position_features_count = position_features_df.count()
     assert position_features_count == positions_count
+
+
+# --- floodgate_position_features ----------------------------------------------
+
+
+def test_floodgate_position_featuresテーブルのスキーマが仕様通りの列集合と一致する(
+    floodgate_position_features_df: DataFrame,
+) -> None:
+    """スキーマ整合性を検証する。"""
+    actual_columns = set(floodgate_position_features_df.columns)
+    assert actual_columns == _EXPECTED_FLOODGATE_POSITION_FEATURES_COLUMNS
+
+
+def test_floodgate_position_featuresテーブルにデータが存在する(
+    floodgate_position_features_df: DataFrame,
+) -> None:
+    """データ存在確認。"""
+    assert floodgate_position_features_df.count() > 0
+
+
+def test_floodgate_position_featuresテーブルの行数がfloodgate_positionsテーブルと一致する(
+    floodgate_position_features_df: DataFrame, floodgate_positions_df: DataFrame
+) -> None:
+    """floodgate_position_featuresはfloodgate_positionsの全行にsearch_text列を付与したものであるため、
+    行数が完全に一致するはずである。
+    """
+    floodgate_positions_count = floodgate_positions_df.count()
+    floodgate_position_features_count = floodgate_position_features_df.count()
+    assert floodgate_position_features_count == floodgate_positions_count
 
 
 # --- game_summary --------------------------------------------------------------
@@ -99,6 +133,74 @@ def test_game_summaryテーブルのscore_series_jsonはmove_number昇順でソ�
 
 
 # --- データ品質検証 ---------------------------------------------------------
+
+
+def test_floodgate_position_featuresテーブルのデータ品質(
+    floodgate_position_features_df: DataFrame,
+) -> None:
+    """Goldテーブルfloodgate_position_featuresのデータ品質を検証する。
+
+    検証項目:
+        - game_idにNULLが存在しない
+        - move_numberにNULLが存在しない
+        - move_numberが0以上である
+        - playerが許容セット内にある
+        - black_playerにNULLが存在しない
+        - white_playerにNULLが存在しない
+        - search_textにNULLが存在しない
+        - search_textが空文字でない
+    """
+    # game_id NULLチェック
+    null_game_id_count = floodgate_position_features_df.filter(
+        F.col("game_id").isNull()
+    ).count()
+    assert null_game_id_count == 0, f"game_idにNULLが存在する: {null_game_id_count}件"
+
+    # move_number NULLチェック
+    null_move_number_count = floodgate_position_features_df.filter(
+        F.col("move_number").isNull()
+    ).count()
+    assert null_move_number_count == 0, f"move_numberにNULLが存在する: {null_move_number_count}件"
+
+    # move_number範囲チェック（0以上）
+    invalid_move_number_count = floodgate_position_features_df.filter(
+        F.col("move_number") < 0
+    ).count()
+    assert invalid_move_number_count == 0, f"move_numberが負の値: {invalid_move_number_count}件"
+
+    # player値チェック
+    invalid_player_count = floodgate_position_features_df.filter(
+        ~F.col("player").isin("black", "white")
+    ).count()
+    assert invalid_player_count == 0, f"playerが許容セット外の値: {invalid_player_count}件"
+
+    # black_player NULLチェック
+    null_black_player_count = floodgate_position_features_df.filter(
+        F.col("black_player").isNull()
+    ).count()
+    assert null_black_player_count == 0, (
+        f"black_playerにNULLが存在する: {null_black_player_count}件"
+    )
+
+    # white_player NULLチェック
+    null_white_player_count = floodgate_position_features_df.filter(
+        F.col("white_player").isNull()
+    ).count()
+    assert null_white_player_count == 0, (
+        f"white_playerにNULLが存在する: {null_white_player_count}件"
+    )
+
+    # search_text NULLチェック
+    null_search_text_count = floodgate_position_features_df.filter(
+        F.col("search_text").isNull()
+    ).count()
+    assert null_search_text_count == 0, f"search_textにNULLが存在する: {null_search_text_count}件"
+
+    # search_text空文字チェック
+    empty_search_text_count = floodgate_position_features_df.filter(
+        F.col("search_text") == ""
+    ).count()
+    assert empty_search_text_count == 0, f"search_textが空文字: {empty_search_text_count}件"
 
 
 def test_position_featuresテーブルのデータ品質(position_features_df: DataFrame) -> None:
