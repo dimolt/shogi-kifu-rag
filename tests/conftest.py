@@ -14,6 +14,7 @@ import pytest
 from dotenv import load_dotenv
 
 from tests.fixtures.tables import (  # noqa: F401
+    floodgate_position_features_df,
     floodgate_positions_df,
     game_summary_df,
     joseki_knowledge_df,
