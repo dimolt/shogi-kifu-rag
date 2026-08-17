@@ -14,6 +14,9 @@ gold_schema = spark.conf.get("bundle.gold_schema")
 
 
 @dp.table
+@dp.expect("strategy_not_null", "strategy IS NOT NULL")
+@dp.expect("content_not_null", "content IS NOT NULL")
+@dp.expect("source_not_null", "source IS NOT NULL")
 def joseki_knowledge():
     """Silver Table: wikipedia_rawから定跡知識を登録"""
     bronze_df = spark.read.table(f"{catalog}.{bronze_schema}.wikipedia_raw")
@@ -21,6 +24,7 @@ def joseki_knowledge():
 
 
 @dp.table(name=f"{catalog}.{gold_schema}.joseki_features")
+@dp.expect("search_text_not_null", "search_text IS NOT NULL")
 def joseki_features():
     """Gold Table: 定跡特徴量"""
     silver_df = spark.read.table(f"{catalog}.{silver_schema}.joseki_knowledge")

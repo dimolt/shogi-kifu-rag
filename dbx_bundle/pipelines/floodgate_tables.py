@@ -14,6 +14,9 @@ gold_schema = spark.conf.get("bundle.gold_schema")
 
 
 @dp.table
+@dp.expect("valid_game_id", "game_id IS NOT NULL")
+@dp.expect("valid_move_number", "move_number >= 0")
+@dp.expect("valid_player", "player IN ('black', 'white')")
 def floodgate_positions():
     """Silver Table: floodgate_rawから棋譜局面を登録"""
     bronze_df = spark.read.table(f"{catalog}.{bronze_schema}.floodgate_raw")
@@ -21,6 +24,7 @@ def floodgate_positions():
 
 
 @dp.table(name=f"{catalog}.{gold_schema}.floodgate_position_features")
+@dp.expect("search_text_not_null", "search_text IS NOT NULL")
 def floodgate_position_features():
     """Gold Table: floodgate局面特徴量"""
     silver_df = spark.read.table(f"{catalog}.{silver_schema}.floodgate_positions")

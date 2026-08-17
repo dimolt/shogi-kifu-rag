@@ -126,6 +126,36 @@ def shogi_kif_pipeline_id(_bundle_resources: dict) -> str:
 
 
 @pytest.fixture(scope="session")
+def floodgate_pipeline_id(_bundle_resources: dict) -> str:
+    """デプロイ済みfloodgate_pipelineのpipeline_idを取得する。
+
+    前提:
+        本fixtureはパイプラインを起動しない。integration層では、event_log()の
+        検証対象となる実行結果がCIの定期実行や手動実行によって事前に生成されて
+        いることを前提とする。e2e層では呼び出し元がこのIDを使って自ら起動する。
+
+    Returns:
+        str: databricks.yml で定義されたfloodgate_pipelineのID。
+    """
+    return _bundle_resources["resources"]["pipelines"]["floodgate_pipeline"]["id"]
+
+
+@pytest.fixture(scope="session")
+def joseki_pipeline_id(_bundle_resources: dict) -> str:
+    """デプロイ済みjoseki_pipelineのpipeline_idを取得する。
+
+    前提:
+        本fixtureはパイプラインを起動しない。integration層では、event_log()の
+        検証対象となる実行結果がCIの定期実行や手動実行によって事前に生成されて
+        いることを前提とする。e2e層では呼び出し元がこのIDを使って自ら起動する。
+
+    Returns:
+        str: databricks.yml で定義されたjoseki_pipelineのID。
+    """
+    return _bundle_resources["resources"]["pipelines"]["joseki_pipeline"]["id"]
+
+
+@pytest.fixture(scope="session")
 def main_job_id(_bundle_resources: dict) -> str:
     """デプロイ済みshogi_kif_rag_main_jobのjob_idを取得する。
 

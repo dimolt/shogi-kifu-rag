@@ -11,12 +11,16 @@ from pyspark.sql import DataFrame, SparkSession
 # キー: テーブル名、値: そのテーブルに設定された expectation 名のセット。
 SILVER_EXPECTATIONS: dict[str, set[str]] = {
     "positions": {"valid_game_id", "valid_move_number", "valid_player"},
+    "floodgate_positions": {"valid_game_id", "valid_move_number", "valid_player"},
+    "joseki_knowledge": {"strategy_not_null", "content_not_null", "source_not_null"},
 }
 
 # Gold層で定義されている expectations 一覧。
 GOLD_EXPECTATIONS: dict[str, set[str]] = {
     "position_features": {"valid_move_quality"},
     "game_summary": {"final_score_not_null", "valid_players"},
+    "joseki_features": {"search_text_not_null"},
+    "floodgate_position_features": {"search_text_not_null"},
 }
 
 
