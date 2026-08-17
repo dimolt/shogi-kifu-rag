@@ -12,7 +12,10 @@
       "Exec(git add)",
       "Exec(git commit)",
       "Exec(git push)",
-      "Exec(gh pr)"
+      "Exec(gh pr)",
+      "Exec(gh issue)",
+      "Exec(grep)",
+      "Exec(git status)"
     ]
   }
 }

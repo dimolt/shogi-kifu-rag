@@ -36,6 +36,7 @@ GOLD_TABLES: dict[str, str] = {
     "position_features": TEST_GOLD_SCHEMA,
     "game_summary": TEST_GOLD_SCHEMA,
     "joseki_features": TEST_GOLD_SCHEMA,
+    "floodgate_position_features": TEST_GOLD_SCHEMA,
 }
 
 # {table_name}_df fixtureの自動生成対象、およびfqn()の参照先。
