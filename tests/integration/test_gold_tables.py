@@ -28,10 +28,11 @@ _EXPECTED_GAME_SUMMARY_COLUMNS = {
     "black_blunders", "white_blunders", "score_series_json",
 }
 
+_EXPECTED_JOSEKI_FEATURES_COLUMNS = {
+    "strategy", "content", "source", "search_text",
+}
+
 _ALLOWED_MOVE_QUALITIES = {"start", "best", "blunder", "normal"}
-
-
-#TODO: fooldgate, wikipediaテーブルの検証も追加したい
 
 # --- position_features -------------------------------------------------------
 
@@ -98,6 +99,22 @@ def test_game_summaryテーブルのscore_series_jsonはmove_number昇順でソ�
     assert all(sorted_flags)
 
 
+# --- joseki_features ----------------------------------------------------------
+
+
+def test_joseki_featuresテーブルのスキーマが仕様通りの列集合と一致する(
+    joseki_features_df: DataFrame,
+) -> None:
+    """スキーマ整合性を検証する。"""
+    actual_columns = set(joseki_features_df.columns)
+    assert actual_columns == _EXPECTED_JOSEKI_FEATURES_COLUMNS
+
+
+def test_joseki_featuresテーブルにデータが存在する(joseki_features_df: DataFrame) -> None:
+    """データ存在確認。"""
+    assert joseki_features_df.count() > 0
+
+
 # --- データ品質検証 ---------------------------------------------------------
 
 
@@ -162,6 +179,39 @@ def test_position_featuresテーブルのデータ品質(position_features_df: D
     assert invalid_start_count == 0, (
         f"move_number=0でmove_qualityが'start'でない: {invalid_start_count}件"
     )
+
+
+def test_joseki_featuresテーブルのデータ品質(joseki_features_df: DataFrame) -> None:
+    """Goldテーブルjoseki_featuresのデータ品質を検証する。
+
+    検証項目:
+        - strategyにNULLが存在しない
+        - contentにNULLが存在しない
+        - sourceにNULLが存在しない
+        - search_textにNULLが存在しない
+        - search_textがcontentと一致する
+    """
+    # strategy NULLチェック
+    null_strategy_count = joseki_features_df.filter(F.col("strategy").isNull()).count()
+    assert null_strategy_count == 0, f"strategyにNULLが存在する: {null_strategy_count}件"
+
+    # content NULLチェック
+    null_content_count = joseki_features_df.filter(F.col("content").isNull()).count()
+    assert null_content_count == 0, f"contentにNULLが存在する: {null_content_count}件"
+
+    # source NULLチェック
+    null_source_count = joseki_features_df.filter(F.col("source").isNull()).count()
+    assert null_source_count == 0, f"sourceにNULLが存在する: {null_source_count}件"
+
+    # search_text NULLチェック
+    null_search_text_count = joseki_features_df.filter(F.col("search_text").isNull()).count()
+    assert null_search_text_count == 0, f"search_textにNULLが存在する: {null_search_text_count}件"
+
+    # search_textがcontentと一致するチェック
+    mismatch_count = joseki_features_df.filter(
+        F.col("search_text") != F.col("content")
+    ).count()
+    assert mismatch_count == 0, f"search_textとcontentが不一致: {mismatch_count}件"
 
 
 def test_game_summaryテーブルのデータ品質(game_summary_df: DataFrame) -> None:
