@@ -101,3 +101,45 @@ def test_shogi_kif_pipelineの全expectationがfailed_records_0_品質ゲート�
         UNIFIED_EXPECTATIONS全件が存在し、failed_records=0かつpassed_records>0であること。
     """
     _assert_expectations_pass(spark, shogi_kif_pipeline_id, UNIFIED_EXPECTATIONS)
+
+
+def test_floodgate_pipelineの全expectationがfailed_records_0_品質ゲートが機能している(
+    spark, floodgate_pipeline_id
+):
+    """floodgate_pipeline（floodgate_positions/floodgate_position_featuresテーブル）のexpectationsを確認する。
+
+    Arrange:
+        floodgate_pipeline_id fixtureで対象パイプラインのIDを取得する
+        （パイプライン自体は事前実行済みである前提、モジュールdocstring参照）。
+    Act:
+        event_log()から最新update_idのexpectationsメトリクスを取得する。
+    Assert:
+        floodgate_positions/floodgate_position_featuresのexpectations全件が存在し、
+        failed_records=0かつpassed_records>0であること。
+    """
+    floodgate_expectations = {
+        "floodgate_positions": SILVER_EXPECTATIONS["floodgate_positions"],
+        "floodgate_position_features": GOLD_EXPECTATIONS["floodgate_position_features"],
+    }
+    _assert_expectations_pass(spark, floodgate_pipeline_id, floodgate_expectations)
+
+
+def test_joseki_pipelineの全expectationがfailed_records_0_品質ゲートが機能している(
+    spark, joseki_pipeline_id
+):
+    """joseki_pipeline（joseki_knowledge/joseki_featuresテーブル）のexpectationsを確認する。
+
+    Arrange:
+        joseki_pipeline_id fixtureで対象パイプラインのIDを取得する
+        （パイプライン自体は事前実行済みである前提、モジュールdocstring参照）。
+    Act:
+        event_log()から最新update_idのexpectationsメトリクスを取得する。
+    Assert:
+        joseki_knowledge/joseki_featuresのexpectations全件が存在し、
+        failed_records=0かつpassed_records>0であること。
+    """
+    joseki_expectations = {
+        "joseki_knowledge": SILVER_EXPECTATIONS["joseki_knowledge"],
+        "joseki_features": GOLD_EXPECTATIONS["joseki_features"],
+    }
+    _assert_expectations_pass(spark, joseki_pipeline_id, joseki_expectations)
