@@ -14,6 +14,11 @@ from pathlib import Path
 import pytest
 from pyspark.sql import DataFrame, SparkSession, Window
 from pyspark.sql import functions as F  # noqa: N812
+from pyspark.sql.types import (
+    StringType,
+    StructField,
+    StructType,
+)
 
 from shogi_kif_rag.transforms.csv_to_positions import (
     build_positions,
@@ -26,6 +31,13 @@ from tests.helpers.databricks.volume_helpers import (
     get_test_data_volume_path,
     upload_csv_to_volume,
 )
+
+# joseki_knowledgeの期待スキーマ定義
+JOSEKI_KNOWLEDGE_SCHEMA = StructType([
+    StructField("strategy", StringType(), True),
+    StructField("content", StringType(), True),
+    StructField("source", StringType(), True),
+])
 
 pytestmark = pytest.mark.integration
 
@@ -328,6 +340,53 @@ def test_floodgate_positionsテーブルのデータ品質(
 
     # 重複行チェック（game_id, move_numberの組み合わせ）
     duplicate_count = floodgate_positions_df.groupBy("game_id", "move_number").agg(
+        F.count("*").alias("cnt")
+    ).filter(F.col("cnt") > 1).count()
+    assert duplicate_count == 0, f"重複行が存在する: {duplicate_count}件"
+
+
+# --- joseki_knowledge テスト -------------------------------------------------
+
+
+def test_joseki_knowledgeテーブルのスキーマがJOSEKI_KNOWLEDGE_SCHEMAと一致する(
+    joseki_knowledge_df: DataFrame,
+) -> None:
+    """スキーマ整合性を検証する。"""
+    assert joseki_knowledge_df.schema == JOSEKI_KNOWLEDGE_SCHEMA
+
+
+def test_joseki_knowledgeテーブルにデータが存在する(
+    joseki_knowledge_df: DataFrame,
+) -> None:
+    """データ存在確認。"""
+    assert joseki_knowledge_df.count() > 0
+
+
+def test_joseki_knowledgeテーブルのデータ品質(
+    joseki_knowledge_df: DataFrame,
+) -> None:
+    """Silverテーブルjoseki_knowledgeのデータ品質を検証する。
+
+    検証項目:
+        - strategyにNULLが存在しない
+        - contentにNULLが存在しない
+        - sourceにNULLが存在しない
+        - 重複行（strategyの組み合わせ）が存在しない
+    """
+    # strategy NULLチェック
+    null_strategy_count = joseki_knowledge_df.filter(F.col("strategy").isNull()).count()
+    assert null_strategy_count == 0, f"strategyにNULLが存在する: {null_strategy_count}件"
+
+    # content NULLチェック
+    null_content_count = joseki_knowledge_df.filter(F.col("content").isNull()).count()
+    assert null_content_count == 0, f"contentにNULLが存在する: {null_content_count}件"
+
+    # source NULLチェック
+    null_source_count = joseki_knowledge_df.filter(F.col("source").isNull()).count()
+    assert null_source_count == 0, f"sourceにNULLが存在する: {null_source_count}件"
+
+    # 重複行チェック（strategyの組み合わせ）
+    duplicate_count = joseki_knowledge_df.groupBy("strategy").agg(
         F.count("*").alias("cnt")
     ).filter(F.col("cnt") > 1).count()
     assert duplicate_count == 0, f"重複行が存在する: {duplicate_count}件"
