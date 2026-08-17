@@ -20,6 +20,7 @@ import os
 # integration層は常にshogi_devを使用
 os.environ["TEST_CATALOG"] = "shogi_dev"
 
+from tests.fixtures.tables import *  # noqa: F403
 from tests.helpers.databricks.spark_fixture import spark  # noqa: F401
 from tests.integration.fixtures.scenarios import (  # noqa: F401
     test_data_config,
