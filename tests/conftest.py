@@ -157,6 +157,45 @@ def joseki_pipeline_id(_bundle_resources: dict) -> str:
 
 
 @pytest.fixture(scope="session")
+def shogi_kif_job_id(_bundle_resources: dict) -> str:
+    """デプロイ済みshogi_kif_jobのjob_idを取得する。
+
+    前提:
+        本fixtureはJobを起動しない。e2e層では呼び出し元がこのIDを使って自ら起動する。
+
+    Returns:
+        str: jobs.yml で定義されたshogi_kif_jobのID。
+    """
+    return _bundle_resources["resources"]["jobs"]["shogi_kif_job"]["id"]
+
+
+@pytest.fixture(scope="session")
+def floodgate_job_id(_bundle_resources: dict) -> str:
+    """デプロイ済みfloodgate_jobのjob_idを取得する。
+
+    前提:
+        本fixtureはJobを起動しない。e2e層では呼び出し元がこのIDを使って自ら起動する。
+
+    Returns:
+        str: jobs.yml で定義されたfloodgate_jobのID。
+    """
+    return _bundle_resources["resources"]["jobs"]["floodgate_job"]["id"]
+
+
+@pytest.fixture(scope="session")
+def joseki_job_id(_bundle_resources: dict) -> str:
+    """デプロイ済みjoseki_jobのjob_idを取得する。
+
+    前提:
+        本fixtureはJobを起動しない。e2e層では呼び出し元がこのIDを使って自ら起動する。
+
+    Returns:
+        str: jobs.yml で定義されたjoseki_jobのID。
+    """
+    return _bundle_resources["resources"]["jobs"]["joseki_job"]["id"]
+
+
+@pytest.fixture(scope="session")
 def main_job_id(_bundle_resources: dict) -> str:
     """デプロイ済みshogi_kif_rag_main_jobのjob_idを取得する。
 
