@@ -158,12 +158,17 @@ uv run pytest tests/integration -v
 ### E2Eテスト
 - 事前にデプロイが必要
 - E2Eテストでは `shogi_test` カタログを使用します。
-- Job単位でテストを実行します（`shogi_kif_rag_main_job`を起動し、SUCCESSになるまで待機）
+- Job単位でテストを実行します（各Jobを起動し、SUCCESSになるまで待機）
+  - shogi_kif_job: positions, position_features, game_summary のテスト
+  - floodgate_job: floodgate_positions, floodgate_position_features のテスト
+  - joseki_job: joseki_knowledge, joseki_features のテスト
 
 ```bash
 # 環境変数を設定して実行（推奨）
 $env:TEST_CATALOG = "shogi_test"
-uv run pytest tests/e2e/ -v
+uv run pytest tests/e2e/test_e2e_shogi_kif_job.py -v
+uv run pytest tests/e2e/test_e2e_floodgate_job.py -v
+uv run pytest tests/e2e/test_e2e_joseki_job.py -v
 
 # または .env ファイルに TEST_CATALOG=shogi_test を設定
 ```

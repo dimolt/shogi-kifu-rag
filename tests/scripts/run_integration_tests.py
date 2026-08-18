@@ -1,6 +1,6 @@
 """Job実行と統合テスト検証の一括実行スクリプト。
 
-shogi_kif_rag_main_jobを実行し、その後に統合テストを実行を検証する。
+指定したJobを実行し、その後に統合テストを実行を検証する。
 """
 import argparse
 import subprocess
@@ -46,7 +46,7 @@ def main() -> int:
         int: 終了コード（0: 成功, 1: 失敗）。
     """
     parser = argparse.ArgumentParser(
-        description="Run shogi_kif_rag_main_job and execute integration tests"
+        description="Run Databricks job and execute integration tests"
     )
     parser.add_argument(
         "--target",
@@ -57,6 +57,12 @@ def main() -> int:
         "--profile",
         default="shogi",
         help="Databricks bundle profile (default: shogi)",
+    )
+    parser.add_argument(
+        "--job",
+        default="shogi_kif_job",
+        choices=["shogi_kif_job", "floodgate_job", "joseki_job"],
+        help="Job name to execute (default: shogi_kif_job)",
     )
 
     args = parser.parse_args()
@@ -71,10 +77,10 @@ def main() -> int:
         "jobs",
         "run-now",
         "--json",
-        f'{{"job_id": $(databricks bundle summary --output json -t {args.target} -p {args.profile} | jq -r \'.resources.jobs.shogi_kif_rag_main_job.id\')}}',
+        f'{{"job_id": $(databricks bundle summary --output json -t {args.target} -p {args.profile} | jq -r \'.resources.jobs.{args.job}.id\')}}',
     ]
 
-    if not run_command(databricks_cmd, "Execute shogi_kif_rag_main_job"):
+    if not run_command(databricks_cmd, f"Execute {args.job}"):
         return 1
 
     # Step 2: 統合テスト実行（uv run pytestを使用）
