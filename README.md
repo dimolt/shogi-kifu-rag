@@ -233,7 +233,7 @@ tests/
 │  ├─ conftest.py        # Job実行フィクスチャ
 │  ├─ test_execution_main_job.py
 │  ├─ test_execution_fooldgante_task.py
-│  └─ test_execution_wikipedia.py
+│  └─ test_execution_joseki_task.py
 └─ e2e/                  # Layer 3: E2Eテスト
    └─ ...
 ```
@@ -267,8 +267,8 @@ Layer 2がデータ検証のみであるのに対し、本レイヤーは実際�
 - **使用カタログ**: pytestオプションで自動設定（integration-exec層では `shogi_dev`）
 - 主な検証内容：
   - `test_execution_main_job.py`: Job全体の実行検証（全タスクがSUCCESSで完了すること）
-  - `test_execution_fooldgante_task.py`: floodgateタスクの実行検証
-  - `test_execution_wikipedia.py`: wikipediaタスクの実行検証
+  - `test_execution_fooldgante_task.py`: floodgateタスクの実行検証（Silver/Gold層）
+  - `test_execution_joseki_task.py`: josekiタスクの実行検証（Silver/Gold層）
 - **注意**: E2Eテスト（Layer 3）がパイプライン実行を含むため、本レイヤーは基本的に使用しない。dev環境でのJob実行検証が必要な場合にのみ手動実行する
 
 ## Layer 3: E2Eテスト（`tests/e2e/`）

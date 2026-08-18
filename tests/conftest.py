@@ -17,6 +17,7 @@ from tests.fixtures.tables import (  # noqa: F401
     floodgate_position_features_df,
     floodgate_positions_df,
     game_summary_df,
+    joseki_features_df,
     joseki_knowledge_df,
     position_features_df,
     positions_df,
