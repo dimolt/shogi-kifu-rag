@@ -1,0 +1,14 @@
+{
+  "PreToolUse": [
+    {
+      "matcher": "exec",
+      "hooks": [
+        {
+          "type": "command",
+          "command": "node -e \"const fs = require('fs'); const data = JSON.parse(fs.readFileSync(0, 'utf8')); if (data.tool_input.command && data.tool_input.command.trim().startsWith('pytest')) { const cmd = data.tool_input.command.trim(); const newCmd = 'uv run ' + cmd; console.log(JSON.stringify({ hookSpecificOutput: { hookEventName: 'PreToolUse', updatedInput: { command: newCmd } } })); } else { console.log('{}'); }\"",
+          "timeout": 5
+        }
+      ]
+    }
+  ]
+}
