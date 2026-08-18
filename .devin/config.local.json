@@ -1,6 +1,7 @@
 {
   "permissions": {
     "allow": [
+      "Exec(grep)",
       "Exec(mkdir)",
       "Exec(mv)",
       "Exec(rmdir)",
@@ -12,10 +13,10 @@
       "Exec(git add)",
       "Exec(git commit)",
       "Exec(git push)",
+      "Exec(git status)",
+      "Exec(git checkout)",
       "Exec(gh pr)",
-      "Exec(gh issue)",
-      "Exec(grep)",
-      "Exec(git status)"
+      "Exec(gh issue)"
     ]
   }
 }
