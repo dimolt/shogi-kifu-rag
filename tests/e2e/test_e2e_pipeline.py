@@ -5,7 +5,7 @@
     `databricks bundle deploy -t dev` が実行済みであること。
 
 フロー:
-    1. Silver/Goldスキーマをdrop & recreate（conftest.pyのclean_schemasで実施）
+    1. Bronze/Silver/Goldスキーマをdrop & recreate（conftest.pyのclean_tablesで実施）
     2. shogi_kif_rag_main_job起動 -> SUCCESS待機
     3. event_log()ベースのexpectations確認
     4. 最終テーブルの存在・データ件数の最小限のスモークチェック
@@ -59,4 +59,32 @@ class TestE2EPipeline:
         game_summary_df: DataFrame
     ) -> None:
         count = game_summary_df.count()
+        assert count > 0
+
+    def test_floodgate_positions_テーブル_パイプライン完了後_存在してデータがある(
+        self,
+        floodgate_positions_df: DataFrame
+    ) -> None:
+        count = floodgate_positions_df.count()
+        assert count > 0
+
+    def test_joseki_knowledge_テーブル_パイプライン完了後_存在してデータがある(
+        self,
+        joseki_knowledge_df: DataFrame
+    ) -> None:
+        count = joseki_knowledge_df.count()
+        assert count > 0
+
+    def test_floodgate_position_features_テーブル_パイプライン完了後_存在してデータがある(
+        self,
+        floodgate_position_features_df: DataFrame
+    ) -> None:
+        count = floodgate_position_features_df.count()
+        assert count > 0
+
+    def test_joseki_features_テーブル_パイプライン完了後_存在してデータがある(
+        self,
+        joseki_features_df: DataFrame
+    ) -> None:
+        count = joseki_features_df.count()
         assert count > 0

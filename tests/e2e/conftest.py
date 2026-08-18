@@ -1,7 +1,7 @@
 """Layer 3 (E2E) テスト用フィクスチャ。
 
 DABs devターゲットへの実デプロイ（CD workflowで実施済み）を前提に、
-Silver/GoldスキーマのクリーンアップとJob起動・完了待機を行う。
+Bronze/Silver/GoldスキーマのクリーンアップとJob起動・完了待機を行う。
 
 spark, shogi_kif_pipeline_id, main_job_id は `tests/conftest.py`（ルート）で
 定義されたものをそのまま利用する（本ファイルでの再定義は不要）。
@@ -15,6 +15,7 @@ from databricks.sdk import WorkspaceClient
 from pyspark.sql import SparkSession
 
 from tests.helpers.config.constants import (
+    TEST_BRONZE_SCHEMA,
     TEST_GOLD_SCHEMA,
     TEST_SILVER_SCHEMA,
 )
@@ -30,11 +31,12 @@ os.environ["TEST_CATALOG"] = "shogi_test"
 
 @pytest.fixture(scope="session", autouse=True)
 def clean_tables(spark: SparkSession, catalog: str) -> None:    #noqa: F811
-    """E2Eテスト実行前にSilver/Goldスキーマ内のテーブル・MVを削除する。
+    """E2Eテスト実行前にBronze/Silver/Goldスキーマ内のテーブル・MVを削除する。
 
     スキーマは事前に作成済みとし、テーブル・MVのみを削除してクリーンな状態にする。
     Lakeflowパイプライン実行時にテーブル・MVは自動作成される。
     """
+    drop_tables_in_schema(spark, catalog, TEST_BRONZE_SCHEMA)
     drop_tables_in_schema(spark, catalog, TEST_SILVER_SCHEMA)
     drop_tables_in_schema(spark, catalog, TEST_GOLD_SCHEMA)
 
