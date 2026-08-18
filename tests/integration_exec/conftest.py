@@ -5,7 +5,11 @@ spark, workspace_client は tests/conftest.py から継承。
 """
 from tests.helpers.databricks.spark_fixture import spark  # noqa: F401
 from tests.integration_exec.fixtures.job_execution import (  # noqa: F401
+    floodgate_job_id,
+    floodgate_job_run_result,
     job_id,
     job_run_result,
+    joseki_job_id,
+    joseki_job_run_result,
     workspace_client,
 )
