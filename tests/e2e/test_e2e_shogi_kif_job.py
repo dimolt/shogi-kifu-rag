@@ -23,7 +23,10 @@ from tests.helpers.monitoring.expectations import (
 
 # shogi_kif_pipelineのexpectations（positions, position_features, game_summary）
 SHOGI_KIF_EXPECTATIONS = {
-    **SILVER_EXPECTATIONS,
+    **{
+        k: v for k, v in SILVER_EXPECTATIONS.items()
+        if k in {"positions"}
+    },
     **{
         k: v for k, v in GOLD_EXPECTATIONS.items()
         if k in {"position_features", "game_summary"}
