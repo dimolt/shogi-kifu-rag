@@ -273,8 +273,8 @@ Layer 2がデータ検証のみであるのに対し、本レイヤーは実際�
 
 ## Layer 3: E2Eテスト（`tests/e2e/`）
 
-DABs testターゲットへの実デプロイ後、`shogi_kif_rag_main_job`を実際に起動し、
-完了まで待機したうえでデータ品質・データ存在を検証する。
+DABs testターゲットへの実デプロイ後、各Job（shogi_kif_job, floodgate_job, joseki_job）を
+実際に起動し、完了まで待機したうえでデータ品質・データ存在を検証する。
 
 **前提条件:**
 
@@ -291,10 +291,11 @@ DABs testターゲットへの実デプロイ後、`shogi_kif_rag_main_job`を�
      ここではスキーマの器のみをクリーンにする
    - Bronze層の取り込みはフルスキャン方式（チェックポイントなし）のため、
      チェックポイントの個別クリーンアップは不要
-2. `shogi_kif_rag_main_job`を起動し、`SUCCESS` になるまでポーリング待機
+2. 各Jobを起動し、`SUCCESS` になるまでポーリング待機
    （interval 15秒、timeout 900秒）
-   - Job内部のTask依存関係（silver_pipeline → gold_pipeline → floodgate → wikipedia）
-     はDatabricks Jobが自動的に管理
+   - shogi_kif_job: positions, position_features, game_summary のテスト
+   - floodgate_job: floodgate_positions, floodgate_position_features のテスト
+   - joseki_job: joseki_knowledge, joseki_features のテスト
 3. `event_log()` TVFベースの `assert_expectations_pass()` で
    Silver/Gold双方のexpectations（failed_records=0）を確認
 4. Silver/Goldの主要テーブルにデータが存在することを最小限確認

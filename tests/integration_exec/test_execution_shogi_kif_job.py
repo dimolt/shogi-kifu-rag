@@ -1,6 +1,6 @@
 """Job全体の統合テスト。
 
-shogi_kif_rag_main_jobの実行を検証し、全タスクが正常に完了することを確認する。
+shogi_kif_jobの実行を検証し、全タスクが正常に完了することを確認する。
 タスク間の依存関係、エラーハンドリング、タイムアウト処理を含む。
 
 前提:
@@ -14,35 +14,35 @@ from tests.helpers.models import JobRunResult
 pytestmark = pytest.mark.integration_exec
 
 
-def test_job全体が正常に完了する(job_run_result: JobRunResult) -> None:
+def test_job全体が正常に完了する(shogi_kif_job_run_result: JobRunResult) -> None:
     """Job全体がSUCCESS状態で完了することを検証する。
 
     Arrange:
-        job_run_resultフィクスチャからJob実行結果を取得する。
+        shogi_kif_job_run_resultフィクスチャからJob実行結果を取得する。
     Act:
         result_stateを検証する。
     Assert:
         result_stateがSUCCESSであること。
     """
     # Assert
-    assert job_run_result.result_state == "SUCCESS", (
-        f"Job ended with result_state={job_run_result.result_state}, "
-        f"message={job_run_result.state_message}"
+    assert shogi_kif_job_run_result.result_state == "SUCCESS", (
+        f"Job ended with result_state={shogi_kif_job_run_result.result_state}, "
+        f"message={shogi_kif_job_run_result.state_message}"
     )
 
 
-def test_jobの全タスクが正常に完了する(job_run_result: JobRunResult) -> None:
+def test_jobの全タスクが正常に完了する(shogi_kif_job_run_result: JobRunResult) -> None:
     """Job内の全タスクがSUCCESS状態で完了することを検証する。
 
     Arrange:
-        job_run_resultフィクスチャからJob実行結果を取得する。
+        shogi_kif_job_run_resultフィクスチャからJob実行結果を取得する。
     Act:
         各タスクのresult_stateを検証する。
     Assert:
         全タスクのresult_stateがSUCCESSであること。
     """
     # Act & Assert
-    for task in job_run_result.tasks:
+    for task in shogi_kif_job_run_result.tasks:
         assert task.result_state == "SUCCESS", (
             f"Task {task.task_key} ended with result_state={task.result_state}, "
             f"message={task.state_message}"
@@ -50,25 +50,21 @@ def test_jobの全タスクが正常に完了する(job_run_result: JobRunResult
 
 
 def test_jobに期待される全タスクが含まれている(
-    job_run_result: JobRunResult,
+    shogi_kif_job_run_result: JobRunResult,
 ) -> None:
     """Jobに期待される全タスクが含まれていることを検証する。
 
     Arrange:
-        job_run_resultフィクスチャからJob実行結果を取得する。
+        shogi_kif_job_run_resultフィクスチャからJob実行結果を取得する。
     Act:
         タスクキーの集合を取得する。
     Assert:
-        期待されるタスクキー（shogi_kif_pipeline, floodgate, wikipedia_raw, joseki_knowledge）
-        が全て含まれていること。
+        期待されるタスクキー（shogi_kif_pipeline）が含まれていること。
     """
     # Act
-    actual_task_keys = {task.task_key for task in job_run_result.tasks}
+    actual_task_keys = {task.task_key for task in shogi_kif_job_run_result.tasks}
     expected_task_keys = {
         "shogi_kif_pipeline",
-        "floodgate",
-        "wikipedia_raw",
-        "joseki_knowledge",
     }
 
     # Assert
@@ -78,34 +74,34 @@ def test_jobに期待される全タスクが含まれている(
 
 
 def test_jobのlife_cycle_stateがTERMINATEDである(
-    job_run_result: JobRunResult,
+    shogi_kif_job_run_result: JobRunResult,
 ) -> None:
     """Jobのlife_cycle_stateがTERMINATEDであることを検証する。
 
     Arrange:
-        job_run_resultフィクスチャからJob実行結果を取得する。
+        shogi_kif_job_run_resultフィクスチャからJob実行結果を取得する。
     Act:
         life_cycle_stateを検証する。
     Assert:
         life_cycle_stateがTERMINATEDであること。
     """
     # Assert
-    assert job_run_result.life_cycle_state == "TERMINATED", (
+    assert shogi_kif_job_run_result.life_cycle_state == "TERMINATED", (
         f"Job life_cycle_state should be TERMINATED, but got "
-        f"{job_run_result.life_cycle_state}"
+        f"{shogi_kif_job_run_result.life_cycle_state}"
     )
 
 
-def test_job_run_idが取得できている(job_run_result: JobRunResult) -> None:
+def test_job_run_idが取得できている(shogi_kif_job_run_result: JobRunResult) -> None:
     """Jobのrun_idが正常に取得できていることを検証する。
 
     Arrange:
-        job_run_resultフィクスチャからJob実行結果を取得する。
+        shogi_kif_job_run_resultフィクスチャからJob実行結果を取得する。
     Act:
         run_idを検証する。
     Assert:
         run_idがNoneではなく、正の整数であること。
     """
     # Assert
-    assert job_run_result.run_id is not None, "Job run_id should not be None"
-    assert job_run_result.run_id > 0, f"Job run_id should be positive, got {job_run_result.run_id}"
+    assert shogi_kif_job_run_result.run_id is not None, "Job run_id should not be None"
+    assert shogi_kif_job_run_result.run_id > 0, f"Job run_id should be positive, got {shogi_kif_job_run_result.run_id}"

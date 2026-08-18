@@ -195,19 +195,6 @@ def joseki_job_id(_bundle_resources: dict) -> str:
     return _bundle_resources["resources"]["jobs"]["joseki_job"]["id"]
 
 
-@pytest.fixture(scope="session")
-def main_job_id(_bundle_resources: dict) -> str:
-    """デプロイ済みshogi_kif_rag_main_jobのjob_idを取得する。
-
-    前提:
-        本fixtureはJobを起動しない。e2e層では呼び出し元がこのIDを使って自ら起動する。
-
-    Returns:
-        str: jobs.yml で定義されたshogi_kif_rag_main_jobのID。
-    """
-    return _bundle_resources["resources"]["jobs"]["shogi_kif_rag_main_job"]["id"]
-
-
 @pytest.fixture
 def empty_landing_volume(catalog: str):
     """CSVファイルを一時的にバックアップし、テスト後に復元するfixture。

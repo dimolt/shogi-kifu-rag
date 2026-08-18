@@ -3,8 +3,10 @@
 DABs devターゲットへの実デプロイ（CD workflowで実施済み）を前提に、
 Bronze/Silver/GoldスキーマのクリーンアップとJob起動・完了待機を行う。
 
-spark, shogi_kif_pipeline_id, main_job_id は `tests/conftest.py`（ルート）で
-定義されたものをそのまま利用する（本ファイルでの再定義は不要）。
+spark, shogi_kif_pipeline_id, floodgate_pipeline_id, joseki_pipeline_id,
+shogi_kif_job_id, floodgate_job_id, joseki_job_id は
+`tests/conftest.py`（ルート）で定義されたものをそのまま利用する
+（本ファイルでの再定義は不要）。
 """
 
 
@@ -110,13 +112,13 @@ def floodgate_job_run_result(
 
 
 @pytest.fixture(scope="session")
-def main_job_run_result(
+def joseki_job_run_result(
     clean_tables: None,
-    main_job_id: str,
+    joseki_job_id: str,
     databricks_profile: str | None,
     spark: SparkSession,  # noqa: F811
 ) -> JobRunResult:
-    """shogi_kif_rag_main_jobを起動し、SUCCESSになるまで待機した結果を提供する。
+    """joseki_jobを起動し、SUCCESSになるまで待機した結果を提供する。
 
     Job完了待ちは数分〜十数分かかることがあり、その間Sparkセッションに
     クエリが飛ばないとサーバーレスコンピュートのアイドルタイムアウトで
@@ -125,14 +127,14 @@ def main_job_run_result(
 
     Args:
         clean_tables: テーブル・MVクリーンアップ（自動実行）。
-        main_job_id: 対象JobのID。
+        joseki_job_id: 対象JobのID。
         databricks_profile: Databricks CLIのプロファイル名。
         spark: keep-alive送出に使用するSparkSession。
 
     Returns:
         JobRunResult: Job実行の完了結果。
     """
-    run_id = start_job_run(main_job_id)
+    run_id = start_job_run(joseki_job_id)
 
     client = WorkspaceClient(profile=databricks_profile) if databricks_profile else WorkspaceClient()
     monitor = JobMonitor(client)
