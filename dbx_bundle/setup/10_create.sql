@@ -52,6 +52,10 @@ CREATE SCHEMA IF NOT EXISTS IDENTIFIER('{catalog_name}.artifacts')
 CREATE SCHEMA IF NOT EXISTS IDENTIFIER('{catalog_name}.test')
   COMMENT 'integration/e2eテスト用スキーマ';
 
+-- 異常系テスト用
+CREATE SCHEMA IF NOT EXISTS IDENTIFIER('{catalog_name}.test_abnormal')
+  COMMENT '異常系テスト用スキーマ - テスト完了後に削除';
+
 -- -----------------------------------------------------------------------------
 -- 2. Volumeの作成
 -- -----------------------------------------------------------------------------
@@ -68,3 +72,7 @@ CREATE VOLUME IF NOT EXISTS IDENTIFIER('{catalog_name}.artifacts.whl')
 --  integration/e2eテストデータ格納用
 CREATE VOLUME IF NOT EXISTS IDENTIFIER('{catalog_name}.test.data')
   COMMENT 'integration/e2eテストデータ格納用';
+
+-- 異常系テスト用 landing volume
+CREATE VOLUME IF NOT EXISTS IDENTIFIER('{catalog_name}.test_abnormal.landing')
+  COMMENT '異常系テスト用 landing volume - 不正CSV配置用';

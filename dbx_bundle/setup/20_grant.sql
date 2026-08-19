@@ -54,3 +54,20 @@ GRANT READ VOLUME, WRITE VOLUME ON VOLUME IDENTIFIER('{catalog_name}.artifacts.w
 -- テスト用Volumeへの読み書き権限
 GRANT READ VOLUME, WRITE VOLUME ON VOLUME IDENTIFIER('{catalog_name}.test.data')
   TO `{service_principal_id}`;
+
+-- 異常系テスト用スキーマへの権限
+GRANT USE SCHEMA ON SCHEMA IDENTIFIER('{catalog_name}.test_abnormal')
+  TO `{service_principal_id}`;
+
+GRANT CREATE TABLE ON SCHEMA IDENTIFIER('{catalog_name}.test_abnormal')
+  TO `{service_principal_id}`;
+
+GRANT CREATE MATERIALIZED VIEW ON SCHEMA IDENTIFIER('{catalog_name}.test_abnormal')
+  TO `{service_principal_id}`;
+
+GRANT MANAGE ON SCHEMA IDENTIFIER('{catalog_name}.test_abnormal')
+  TO `{service_principal_id}`;
+
+-- 異常系テスト用Volumeへの読み書き権限
+GRANT READ VOLUME, WRITE VOLUME ON VOLUME IDENTIFIER('{catalog_name}.test_abnormal.landing')
+  TO `{service_principal_id}`;
