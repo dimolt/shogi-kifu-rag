@@ -254,9 +254,31 @@ tests/
   - `test_silver_tables.py`: Silverテーブル（`positions`）のスキーマ整合性・連番・sfenチェーン等、単体テストでは検証できないビジネス不変条件
   - `test_gold_tables.py`: Goldテーブル（`position_features` / `game_summary`）のスキーマ整合性・行数整合性・null検証
   - `test_expectations_pipeline.py`: `event_log()` TVF経由で`@dp.expect`が実際に発火し`failed_records=0`であることを確認する品質ゲート検証。`silver_pipeline` / `gold_pipeline`はresource keyが分かれているため、[silver_pipeline_id](cci:1://file:///c:/shogi-kif-rag/tests/conftest.py:91:0-103:79) / [gold_pipeline_id](cci:1://file:///c:/shogi-kif-rag/tests/conftest.py:106:0-118:77)の2fixtureで個別に検証する
+  - `test_abnormal_input_data.py`: 異常系テスト（Issue #200, #202）。専用スキーマ/Volumeを使用して不正データのexpectation発火を検証
 - **実行タイミング**:
   - test環境: CD `deploy-test` ジョブ内でe2eテスト後に自動実行
   - dev環境: 手動実行（`ci-integration.yml` ワークフロー）
+
+### 異常系テストについて
+
+`test_abnormal_input_data.py` は異常系テスト専用のモジュールで、以下の特徴があります：
+
+- **専用スキーマ/Volume**: `test_abnormal` スキーマと `test_abnormal.landing` Volumeを使用
+- **データ分離**: テスト完了時にスキーマをDROP CASCADEで削除し、他のテストへの影響を防止
+- **パラメータ動的切り替え**: 既存pipelineを再利用しつつ、異常系テスト用スキーマを指定して実行
+- **CIでの分離**: 通常テストと異常系テストは別ジョブで実行（`ci-integration.yml`）
+
+**ローカル実行**:
+```bash
+# 通常テストのみ実行
+pytest tests/integration -v -m "not abnormal"
+
+# 異常系テストのみ実行
+pytest tests/integration -v -m "abnormal"
+
+# 全integrationテスト実行
+pytest tests/integration -v
+```
 
 ## Layer 2.5: 統合テスト（integration-exec）
 

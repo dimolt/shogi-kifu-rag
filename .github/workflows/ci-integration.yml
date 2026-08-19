@@ -8,8 +8,8 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  integration:
-    name: Integration tests
+  integration-normal:
+    name: Integration tests (normal)
     runs-on: ubuntu-latest
     timeout-minutes: 15
     env:
@@ -29,5 +29,29 @@ jobs:
       - name: Setup Databricks CLI
         uses: ./.github/actions/setup-databricks-cli
 
-      - name: Run integration tests
-        run: uv run pytest tests/integration -v
+      - name: Run normal integration tests
+        run: uv run pytest tests/integration -v -m "not abnormal"
+
+  integration-abnormal:
+    name: Integration tests (abnormal)
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    env:
+      DATABRICKS_HOST: ${{ secrets.DATABRICKS_HOST }}
+      DATABRICKS_CLIENT_ID: ${{ secrets.DATABRICKS_CLIENT_ID }}
+      DATABRICKS_CLIENT_SECRET: ${{ secrets.DATABRICKS_CLIENT_SECRET }}
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup dependencies
+        uses: ./.github/actions/setup-deps
+        with:
+          groups: '--group dbx --group rag --group web --group ui --group llm --group devTools'
+
+      - name: Setup Databricks CLI
+        uses: ./.github/actions/setup-databricks-cli
+
+      - name: Run abnormal integration tests
+        run: uv run pytest tests/integration -v -m "abnormal"

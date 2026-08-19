@@ -19,7 +19,7 @@ from tests.helpers.databricks.volume_helpers import (
 from tests.helpers.monitoring.expectations import get_latest_expectations_df
 from tests.helpers.monitoring.pipeline_helpers import wait_for_update
 
-pytestmark = pytest.mark.integration
+pytestmark = [pytest.mark.integration, pytest.mark.abnormal]
 
 
 def _assert_expectation_failed(
