@@ -39,6 +39,18 @@ def get_landing_volume_path(catalog: str, schema: str = "landing") -> str:
     return f"/Volumes/{catalog}/{schema}/analyzed"
 
 
+def get_abnormal_landing_volume_path(catalog: str) -> str:
+    """異常系テスト用Landing Volumeパスを取得する。
+
+    Args:
+        catalog: カタログ名（shogi_dev/shogi_test/shogi）。
+
+    Returns:
+        異常系テスト用Landing Volumeパス（/Volumes/{catalog}/test_abnormal/landing）。
+    """
+    return f"/Volumes/{catalog}/test_abnormal/landing"
+
+
 def upload_csv_to_volume(local_path: Path, volume_path: str, filename: str) -> None:
     """CSVをUnity Catalog Volumeにアップロードする。
 

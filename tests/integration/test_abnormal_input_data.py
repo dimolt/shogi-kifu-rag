@@ -13,7 +13,7 @@ from pyspark.sql import SparkSession
 
 from tests.helpers.csv_helpers import CSV_HEADER
 from tests.helpers.databricks.volume_helpers import (
-    get_landing_volume_path,
+    get_abnormal_landing_volume_path,
     upload_csv_to_volume,
 )
 from tests.helpers.monitoring.expectations import get_latest_expectations_df
@@ -49,7 +49,7 @@ def _assert_expectation_failed(
     )
 
 
-def test_missing_game_id_column_expectation_fires(spark, shogi_kif_pipeline_id, catalog):
+def test_missing_game_id_column_expectation_fires(spark, shogi_kif_pipeline_id, catalog, abnormal_test_schema):
     """Issue #200: game_id列を欠いたCSVでvalid_game_id expectationが発火すること。
 
     Arrange:
@@ -75,7 +75,7 @@ def test_missing_game_id_column_expectation_fires(spark, shogi_kif_pipeline_id, 
         )
 
         # Volumeにアップロード
-        volume_path = get_landing_volume_path(catalog)
+        volume_path = get_abnormal_landing_volume_path(catalog)
         upload_csv_to_volume(csv_path, volume_path, "missing_game_id.csv")
 
         # Act: shogi_kif_pipeline実行
@@ -86,7 +86,7 @@ def test_missing_game_id_column_expectation_fires(spark, shogi_kif_pipeline_id, 
         _assert_expectation_failed(spark, shogi_kif_pipeline_id, update_id, "positions", "valid_game_id")
 
 
-def test_invalid_move_number_data_type_expectation_fires(spark, shogi_kif_pipeline_id, catalog):
+def test_invalid_move_number_data_type_expectation_fires(spark, shogi_kif_pipeline_id, catalog, abnormal_test_schema):
     """Issue #202: move_numberに文字列を混入させたCSVでvalid_move_number expectationが発火すること。
 
     Arrange:
@@ -108,7 +108,7 @@ def test_invalid_move_number_data_type_expectation_fires(spark, shogi_kif_pipeli
         )
 
         # Volumeにアップロード
-        volume_path = get_landing_volume_path(catalog)
+        volume_path = get_abnormal_landing_volume_path(catalog)
         upload_csv_to_volume(csv_path, volume_path, "invalid_move_number.csv")
 
         # Act: shogi_kif_pipeline実行
