@@ -28,6 +28,38 @@ def start_pipeline_update(pipeline_id: str) -> str:
     return response["update_id"]
 
 
+def start_pipeline_update_with_params(
+    pipeline_id: str,
+    catalog: str,
+    landing_schema: str,
+    silver_schema: str,
+    gold_schema: str,
+) -> str:
+    """パラメータを指定してパイプライン更新を起動する。
+
+    既存pipelineを再利用しつつ、異常系テスト用スキーマを指定して起動する。
+    Databricks CLIの--varフラグでpipeline設定を上書きする。
+
+    Args:
+        pipeline_id: 対象パイプラインのID。
+        catalog: カタログ名。
+        landing_schema: landingスキーマ名。
+        silver_schema: silverスキーマ名。
+        gold_schema: goldスキーマ名。
+
+    Returns:
+        起動したupdateのID。
+    """
+    response = run_cli([
+        "pipelines", "start-update", pipeline_id,
+        "--var", f"bundle.catalog={catalog}",
+        "--var", f"bundle.landing_schema={landing_schema}",
+        "--var", f"bundle.silver_schema={silver_schema}",
+        "--var", f"bundle.gold_schema={gold_schema}",
+    ])
+    return response["update_id"]
+
+
 def wait_for_update(
     spark: SparkSession, pipeline_id: str, update_id: str
 ) -> UpdateResult:
