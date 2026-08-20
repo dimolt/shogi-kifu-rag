@@ -44,20 +44,20 @@ _ALLOWED_MOVE_QUALITIES = {"start", "best", "blunder", "normal"}
 
 
 def test_position_featuresテーブルのスキーマが仕様通りの列集合と一致する(
-    position_features_df: DataFrame,
+    position_features_df: DataFrame, normal_test_data
 ) -> None:
     """スキーマ整合性を検証する。"""
     actual_columns = set(position_features_df.columns)
     assert actual_columns == _EXPECTED_POSITION_FEATURES_COLUMNS
 
 
-def test_position_featuresテーブルにデータが存在する(position_features_df: DataFrame) -> None:
+def test_position_featuresテーブルにデータが存在する(position_features_df: DataFrame, normal_test_data) -> None:
     """データ存在確認。"""
     assert position_features_df.count() > 0
 
 
 def test_position_featuresテーブルの行数がpositionsテーブルと一致する(
-    position_features_df: DataFrame, positions_df: DataFrame
+    position_features_df: DataFrame, positions_df: DataFrame, normal_test_data
 ) -> None:
     """position_featuresはpositionsの全行に特徴量列を付与したものであるため、
     行数が完全に一致するはずである。
@@ -71,7 +71,7 @@ def test_position_featuresテーブルの行数がpositionsテーブルと一致
 
 
 def test_floodgate_position_featuresテーブルのスキーマが仕様通りの列集合と一致する(
-    floodgate_position_features_df: DataFrame,
+    floodgate_position_features_df: DataFrame, normal_test_data
 ) -> None:
     """スキーマ整合性を検証する。"""
     actual_columns = set(floodgate_position_features_df.columns)
@@ -79,14 +79,14 @@ def test_floodgate_position_featuresテーブルのスキーマが仕様通り�
 
 
 def test_floodgate_position_featuresテーブルにデータが存在する(
-    floodgate_position_features_df: DataFrame,
+    floodgate_position_features_df: DataFrame, normal_test_data
 ) -> None:
     """データ存在確認。"""
     assert floodgate_position_features_df.count() > 0
 
 
 def test_floodgate_position_featuresテーブルの行数がfloodgate_positionsテーブルと一致する(
-    floodgate_position_features_df: DataFrame, floodgate_positions_df: DataFrame
+    floodgate_position_features_df: DataFrame, floodgate_positions_df: DataFrame, normal_test_data
 ) -> None:
     """floodgate_position_featuresはfloodgate_positionsの全行にsearch_text列を付与したものであるため、
     行数が完全に一致するはずである。
@@ -100,20 +100,20 @@ def test_floodgate_position_featuresテーブルの行数がfloodgate_positions�
 
 
 def test_game_summaryテーブルのスキーマが仕様通りの列集合と一致する(
-    game_summary_df: DataFrame,
+    game_summary_df: DataFrame, normal_test_data
 ) -> None:
     """スキーマ整合性を検証する。"""
     actual_columns = set(game_summary_df.columns)
     assert actual_columns == _EXPECTED_GAME_SUMMARY_COLUMNS
 
 
-def test_game_summaryテーブルにデータが存在する(game_summary_df: DataFrame) -> None:
+def test_game_summaryテーブルにデータが存在する(game_summary_df: DataFrame, normal_test_data) -> None:
     """データ存在確認。"""
     assert game_summary_df.count() > 0
 
 
 def test_game_summaryテーブルはgame_idごとに1行のみ存在する(
-    game_summary_df: DataFrame,
+    game_summary_df: DataFrame, normal_test_data
 ) -> None:
     """game_idごとの一意性を検証する。"""
     total_count = game_summary_df.count()
@@ -122,7 +122,7 @@ def test_game_summaryテーブルはgame_idごとに1行のみ存在する(
 
 
 def test_game_summaryテーブルのscore_series_jsonはmove_number昇順でソートされている(
-    game_summary_df: DataFrame,
+    game_summary_df: DataFrame, normal_test_data
 ) -> None:
     """score_series_json内のmove_numberが昇順でソートされていることを検証する。"""
     rows = game_summary_df.select("score_series_json").collect()
@@ -138,14 +138,14 @@ def test_game_summaryテーブルのscore_series_jsonはmove_number昇順でソ�
 
 
 def test_joseki_featuresテーブルのスキーマが仕様通りの列集合と一致する(
-    joseki_features_df: DataFrame,
+    joseki_features_df: DataFrame, normal_test_data
 ) -> None:
     """スキーマ整合性を検証する。"""
     actual_columns = set(joseki_features_df.columns)
     assert actual_columns == _EXPECTED_JOSEKI_FEATURES_COLUMNS
 
 
-def test_joseki_featuresテーブルにデータが存在する(joseki_features_df: DataFrame) -> None:
+def test_joseki_featuresテーブルにデータが存在する(joseki_features_df: DataFrame, normal_test_data) -> None:
     """データ存在確認。"""
     assert joseki_features_df.count() > 0
 
@@ -154,7 +154,7 @@ def test_joseki_featuresテーブルにデータが存在する(joseki_features_
 
 
 def test_floodgate_position_featuresテーブルのデータ品質(
-    floodgate_position_features_df: DataFrame,
+    floodgate_position_features_df: DataFrame, normal_test_data
 ) -> None:
     """Goldテーブルfloodgate_position_featuresのデータ品質を検証する。
 
@@ -221,7 +221,7 @@ def test_floodgate_position_featuresテーブルのデータ品質(
     assert empty_search_text_count == 0, f"search_textが空文字: {empty_search_text_count}件"
 
 
-def test_position_featuresテーブルのデータ品質(position_features_df: DataFrame) -> None:
+def test_position_featuresテーブルのデータ品質(position_features_df: DataFrame, normal_test_data) -> None:
     """Goldテーブルposition_featuresのデータ品質を検証する。
 
     検証項目:
@@ -284,7 +284,7 @@ def test_position_featuresテーブルのデータ品質(position_features_df: D
     )
 
 
-def test_joseki_featuresテーブルのデータ品質(joseki_features_df: DataFrame) -> None:
+def test_joseki_featuresテーブルのデータ品質(joseki_features_df: DataFrame, normal_test_data) -> None:
     """Goldテーブルjoseki_featuresのデータ品質を検証する。
 
     検証項目:
@@ -317,7 +317,7 @@ def test_joseki_featuresテーブルのデータ品質(joseki_features_df: DataF
     assert mismatch_count == 0, f"search_textとcontentが不一致: {mismatch_count}件"
 
 
-def test_game_summaryテーブルのデータ品質(game_summary_df: DataFrame) -> None:
+def test_game_summaryテーブルのデータ品質(game_summary_df: DataFrame, normal_test_data) -> None:
     """Goldテーブルgame_summaryのデータ品質を検証する。
 
     検証項目:

@@ -6,7 +6,7 @@ from pathlib import Path
 
 import pytest
 
-from tests.helpers.databricks.volume_helpers import get_test_data_volume_path
+from tests.helpers.databricks.volume_helpers import get_landing_volume_path
 from tests.helpers.models import TestDataScenarioConfig
 
 
@@ -14,9 +14,8 @@ from tests.helpers.models import TestDataScenarioConfig
 def test_data_config(catalog: str) -> dict[str, list[TestDataScenarioConfig]]:
     """Job-based integration testで使用するシナリオ別テストデータ設定を提供する。
 
-    tests/scripts/setup_test_data_volume.py の定数（VOLUME_PATH, SAMPLE_KIF_PATH,
-    LOCAL_CSV_PATH）を"small"シナリオとして集約しつつ、将来のシナリオ追加
-    （medium/large/edge_cases）に備えた辞書構造とする。
+    テストデータ原本（tests/integration/data/）を参照するように変更し、
+    Volumeへのコピーはnormal_test_data fixtureに委譲する。
 
     現時点で実データが用意されているのは"small"のみ。medium/large/edge_casesは
     対象のKIFファイルを用意した時点で追加する。
@@ -31,8 +30,8 @@ def test_data_config(catalog: str) -> dict[str, list[TestDataScenarioConfig]]:
     return {
         "small": [TestDataScenarioConfig(
             kif_path=project_root / "data" / "kif_files" / "sample.kif",
-            csv_path=project_root / "data" / "output" / "small.csv",
-            volume_path=get_test_data_volume_path(catalog),
+            csv_path=project_root / "tests" / "integration" / "data" / "normal" / "basic" / "small.csv",
+            volume_path=get_landing_volume_path(catalog),
             expected_game_count=1,
             # data/kif_files/sample.kif の手数（121手、投了を除く）に基づく暫定値。
             expected_row_count=121,
