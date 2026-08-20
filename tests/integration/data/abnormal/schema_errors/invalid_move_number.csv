@@ -1,0 +1,2 @@
+game_id,move_number,sfen,prev_sfen,move_usi,player,black_player,white_player,best_move,score_cp,pv
+test_001,invalid,lnsgkgsnl/1r5b1/ppppppppp/9/9/9/PPPPPPPPP/1B5R1/LNSGKGSNL b - 1,,black,player1,player2,7g7f,100,7g7f*
