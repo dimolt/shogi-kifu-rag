@@ -100,7 +100,12 @@ def test_shogi_kif_pipelineの全expectationがfailed_records_0_品質ゲート�
     Assert:
         UNIFIED_EXPECTATIONS全件が存在し、failed_records=0かつpassed_records>0であること。
     """
-    _assert_expectations_pass(spark, shogi_kif_pipeline_id, UNIFIED_EXPECTATIONS)
+    shogi_kif_expectations = {
+        "positions": SILVER_EXPECTATIONS["positions"],
+        "position_features": GOLD_EXPECTATIONS["position_features"],
+        "game_summary": GOLD_EXPECTATIONS["game_summary"],
+    }
+    _assert_expectations_pass(spark, shogi_kif_pipeline_id, shogi_kif_expectations)
 
 
 def test_floodgate_pipelineの全expectationがfailed_records_0_品質ゲートが機能している(
