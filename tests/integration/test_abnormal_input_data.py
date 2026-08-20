@@ -6,6 +6,8 @@
     - テスト実行前にlanding volumeに不正CSVを配置し、パイプライン実行後に
       event_log()経由でexpectation発火を確認する。
 """
+
+import tempfile
 from pathlib import Path
 
 import pytest
@@ -46,7 +48,7 @@ def _assert_expectation_failed(
     )
 
 
-def test_missing_game_id_column_expectation_fires(spark, shogi_kif_pipeline_id, catalog, abnormal_test_schema, start_abnormal_pipeline_update):
+def test_missing_game_id_column_expectation_fires(spark, shogi_kif_pipeline_id, catalog, start_abnormal_pipeline_update):
     """Issue #200: game_id列を欠いたCSVでvalid_game_id expectationが発火すること。
 
     Arrange:
@@ -56,7 +58,6 @@ def test_missing_game_id_column_expectation_fires(spark, shogi_kif_pipeline_id, 
     Assert:
         valid_game_id expectationがfailed_records > 0で発火していること。
     """
-    import tempfile
 
     # Arrange: game_id列を欠いた不正CSVを作成
     with tempfile.TemporaryDirectory() as tmpdir:
@@ -83,7 +84,7 @@ def test_missing_game_id_column_expectation_fires(spark, shogi_kif_pipeline_id, 
         _assert_expectation_failed(spark, shogi_kif_pipeline_id, update_id, "positions", "valid_game_id")
 
 
-def test_invalid_move_number_data_type_expectation_fires(spark, shogi_kif_pipeline_id, catalog, abnormal_test_schema, start_abnormal_pipeline_update):
+def test_invalid_move_number_data_type_expectation_fires(spark, shogi_kif_pipeline_id, catalog, start_abnormal_pipeline_update):
     """Issue #202: move_numberに文字列を混入させたCSVでvalid_move_number expectationが発火すること。
 
     Arrange:
@@ -93,7 +94,6 @@ def test_invalid_move_number_data_type_expectation_fires(spark, shogi_kif_pipeli
     Assert:
         valid_move_number expectationがfailed_records > 0で発火していること。
     """
-    import tempfile
 
     # Arrange: move_numberに文字列を混入させた不正CSVを作成
     with tempfile.TemporaryDirectory() as tmpdir:
