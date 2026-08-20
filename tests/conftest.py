@@ -195,35 +195,4 @@ def joseki_job_id(_bundle_resources: dict) -> str:
     return _bundle_resources["resources"]["jobs"]["joseki_job"]["id"]
 
 
-@pytest.fixture
-def empty_landing_volume(catalog: str):
-    """CSVファイルを一時的にバックアップし、テスト後に復元するfixture。
 
-    テスト実行前にlanding volumeのCSVファイルをバックアップし、
-    テスト実行後に復元する。テストが失敗しても復元は必ず実行される。
-
-    Args:
-        catalog: カタログ名。
-
-    Yields:
-        None: CSVファイルがバックアップされ、空の状態でテストが実行される。
-    """
-
-    # unit test では使用しない
-    # import を関数内で行う
-    from tests.helpers.databricks.volume_helpers import (
-        backup_csv_files,
-        cleanup_volume_files,
-        get_landing_volume_path,
-        restore_csv_files,
-    )
-
-    volume_path = get_landing_volume_path(catalog)
-    backup = backup_csv_files(volume_path)
-
-    try:
-        # バックアップが正常に完了した場合のみ削除を実行
-        cleanup_volume_files(volume_path, ".csv")
-        yield
-    finally:
-        restore_csv_files(volume_path, backup)

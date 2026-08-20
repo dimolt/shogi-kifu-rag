@@ -10,6 +10,7 @@ FQN（catalog.schema.table）はfixtureではなく tests/table_registry.py の 
 - integration/fixtures/scenarios.py    : テストシナリオ（small/medium/...）関連
 - integration/fixtures/tables.py       : Silver/Gold テーブルDataFrame関連
                                           （tests/table_registry.py の一覧から自動生成）
+- integration/fixtures/test_data.py    : テストデータ管理（原本→Volumeコピー、クリーンアップ）
 
 Note:
     integration層はパイプライン/Jobを起動しないデータ検証のみを行うため、
