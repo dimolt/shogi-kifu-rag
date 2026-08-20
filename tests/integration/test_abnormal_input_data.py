@@ -7,19 +7,14 @@
       event_log()経由でexpectation発火を確認する。
 """
 
-import tempfile
-from pathlib import Path
-
 import pytest
 from pyspark.sql import SparkSession
 
-from tests.helpers.csv_helpers import CSV_HEADER
-from tests.helpers.databricks.volume_helpers import (
-    get_abnormal_landing_volume_path,
-    upload_csv_to_volume,
-)
 from tests.helpers.monitoring.expectations import get_latest_expectations_df
-from tests.helpers.monitoring.pipeline_helpers import wait_for_update
+from tests.helpers.monitoring.pipeline_helpers import (
+    start_pipeline_update,
+    wait_for_update,
+)
 
 pytestmark = [pytest.mark.integration, pytest.mark.abnormal]
 
@@ -48,69 +43,39 @@ def _assert_expectation_failed(
     )
 
 
-def test_missing_game_id_column_expectation_fires(spark, shogi_kif_pipeline_id, catalog, start_abnormal_pipeline_update):
+def test_missing_game_id_column_expectation_fires(spark, shogi_kif_pipeline_id, catalog, abnormal_test_data, clean_volume):
     """Issue #200: game_id列を欠いたCSVでvalid_game_id expectationが発火すること。
 
     Arrange:
-        game_id列を欠いた不正CSVを作成し、landing volumeに配置する。
+        clean_volume fixtureにより前回のテストデータがクリアされ、
+        abnormal_test_data fixtureにより、game_id列を欠いた不正CSVがlanding volumeに配置される。
     Act:
         shogi_kif_pipelineを実行し、完了まで待機する。
     Assert:
         valid_game_id expectationがfailed_records > 0で発火していること。
     """
+    # Act: pipeline実行（正常系・異常系共通）
+    update_id = start_pipeline_update(shogi_kif_pipeline_id)
+    wait_for_update(spark, shogi_kif_pipeline_id, update_id)
 
-    # Arrange: game_id列を欠いた不正CSVを作成
-    with tempfile.TemporaryDirectory() as tmpdir:
-        csv_path = Path(tmpdir) / "missing_game_id.csv"
-        invalid_header = (
-            "move_number,sfen,prev_sfen,move_usi,player,black_player,"
-            "white_player,best_move,score_cp,pv\n"
-        )
-        csv_path.write_text(
-            invalid_header
-            + "1,lnsgkgsnl/1r5b1/ppppppppp/9/9/9/PPPPPPPPP/1B5R1/LNSGKGSNL b - 1,,black,player1,player2,7g7f,100,7g7f*",
-            encoding="utf-8",
-        )
-
-        # Volumeにアップロード
-        volume_path = get_abnormal_landing_volume_path(catalog)
-        upload_csv_to_volume(csv_path, volume_path, "missing_game_id.csv")
-
-        # Act: 異常系テスト用パラメータでpipeline実行
-        update_id = start_abnormal_pipeline_update(shogi_kif_pipeline_id)
-        wait_for_update(spark, shogi_kif_pipeline_id, update_id)
-
-        # Assert: valid_game_id expectationがfailed_records > 0で発火
-        _assert_expectation_failed(spark, shogi_kif_pipeline_id, update_id, "positions", "valid_game_id")
+    # Assert: valid_game_id expectationがfailed_records > 0で発火
+    _assert_expectation_failed(spark, shogi_kif_pipeline_id, update_id, "positions", "valid_game_id")
 
 
-def test_invalid_move_number_data_type_expectation_fires(spark, shogi_kif_pipeline_id, catalog, start_abnormal_pipeline_update):
+def test_invalid_move_number_data_type_expectation_fires(spark, shogi_kif_pipeline_id, catalog, abnormal_test_data, clean_volume):
     """Issue #202: move_numberに文字列を混入させたCSVでvalid_move_number expectationが発火すること。
 
     Arrange:
-        move_numberに文字列を混入させた不正CSVを作成し、landing volumeに配置する。
+        clean_volume fixtureにより前回のテストデータがクリアされ、
+        abnormal_test_data fixtureにより、move_numberに文字列を混入させた不正CSVがlanding volumeに配置される。
     Act:
         shogi_kif_pipelineを実行し、完了まで待機する。
     Assert:
         valid_move_number expectationがfailed_records > 0で発火していること。
     """
+    # Act: pipeline実行（正常系・異常系共通）
+    update_id = start_pipeline_update(shogi_kif_pipeline_id)
+    wait_for_update(spark, shogi_kif_pipeline_id, update_id)
 
-    # Arrange: move_numberに文字列を混入させた不正CSVを作成
-    with tempfile.TemporaryDirectory() as tmpdir:
-        csv_path = Path(tmpdir) / "invalid_move_number.csv"
-        csv_path.write_text(
-            CSV_HEADER
-            + "invalid,lnsgkgsnl/1r5b1/ppppppppp/9/9/9/PPPPPPPPP/1B5R1/LNSGKGSNL b - 1,,black,player1,player2,7g7f,100,7g7f*",
-            encoding="utf-8",
-        )
-
-        # Volumeにアップロード
-        volume_path = get_abnormal_landing_volume_path(catalog)
-        upload_csv_to_volume(csv_path, volume_path, "invalid_move_number.csv")
-
-        # Act: 異常系テスト用パラメータでpipeline実行
-        update_id = start_abnormal_pipeline_update(shogi_kif_pipeline_id)
-        wait_for_update(spark, shogi_kif_pipeline_id, update_id)
-
-        # Assert: valid_move_number expectationがfailed_records > 0で発火
-        _assert_expectation_failed(spark, shogi_kif_pipeline_id, update_id, "positions", "valid_move_number")
+    # Assert: valid_move_number expectationがfailed_records > 0で発火
+    _assert_expectation_failed(spark, shogi_kif_pipeline_id, update_id, "positions", "valid_move_number")
