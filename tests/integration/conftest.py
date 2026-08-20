@@ -22,10 +22,6 @@ os.environ["TEST_CATALOG"] = "shogi_dev"
 
 from tests.fixtures.tables import *  # noqa: F403
 from tests.helpers.databricks.spark_fixture import spark  # noqa: F401
-from tests.integration.fixtures.abnormal_schema import (  # noqa: F401
-    abnormal_test_schema,
-    start_abnormal_pipeline_update,
-)
 from tests.integration.fixtures.scenarios import (  # noqa: F401
     test_data_config,
     test_scenario,
