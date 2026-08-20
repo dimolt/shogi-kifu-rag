@@ -43,7 +43,8 @@ def test_silver_pipeline_failure_prevents_gold_execution(
     workspace_client: WorkspaceClient,
     catalog: str,
     shogi_kif_pipeline_id: str,
-    empty_landing_volume,
+    test_data_volume_setup,
+    clean_volume,
 ) -> None:
     """Silver入力を意図的に破壊した状態でJobを実行し、パイプラインが失敗することを確認する。
 
@@ -53,8 +54,9 @@ def test_silver_pipeline_failure_prevents_gold_execution(
     本テストはパイプライン失敗時のエラーメッセージ検証に縮小して残している。
 
     Arrange:
-        empty_landing_volume fixtureを使用してlanding volumeのCSVファイルを一時的に削除し、
-        空の状態にする。テスト後にCSVファイルは自動的に復元される。
+        test_data_volume_setup fixtureでVolumeを初期化し、
+        clean_volume fixtureを使用してlanding volumeのCSVファイルを削除し、
+        空の状態にする。
         注: CSVの列欠損や型不一致はexpectation発火のみでパイプライン失敗にはならないため、
         空のvolumeを参照させることでパイプライン失敗を誘発する。
     Act:
@@ -63,7 +65,7 @@ def test_silver_pipeline_failure_prevents_gold_execution(
         shogi_kif_pipelineタスクのresult_stateがFAILEDであること。
         失敗時に原因特定に足るエラーメッセージが取得できること（#206統合）。
     """
-    # Arrange: empty_landing_volume fixtureがCSVをバックアップし、空の状態にする
+    # Arrange: test_data_volume_setup/clean_volume fixtureがCSVを削除し、空の状態にする
 
     # Act: Job実行（失敗を期待）
     waiter = workspace_client.jobs.run_now(job_id=job_id)
