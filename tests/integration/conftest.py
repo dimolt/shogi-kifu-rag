@@ -30,3 +30,10 @@ from tests.integration.fixtures.scenarios import (  # noqa: F401
     test_data_config,
     test_scenario,
 )
+from tests.integration.fixtures.test_data import (  # noqa: F401
+    abnormal_test_data,
+    clean_volume,
+    normal_test_data,
+    volume_setup,
+    workspace_client,
+)

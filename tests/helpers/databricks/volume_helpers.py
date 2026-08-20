@@ -124,3 +124,41 @@ def restore_csv_files(backup: dict[str, bytes]) -> None:
     w = _get_workspace_client()
     for file_path, content in backup.items():
         w.files.upload(file_path, io.BytesIO(content), overwrite=True)
+
+
+def copy_directory_to_volume(local_dir: Path, volume_path: str) -> None:
+    """ローカルディレクトリの内容をVolumeにコピーする。
+
+    Args:
+        local_dir: ローカルディレクトリパス。
+        volume_path: コピー先のVolumeディレクトリパス。
+    """
+    w = _get_workspace_client()
+    for local_file in local_dir.rglob("*"):
+        if local_file.is_file():
+            # ローカルパスから相対パスを計算
+            relative_path = local_file.relative_to(local_dir)
+            remote_path = f"{volume_path}/{relative_path}"
+            # ディレクトリが存在しない場合は作成（uploadは自動でディレクトリを作成しないため）
+            w.files.upload(remote_path, local_file.open("rb"), overwrite=True)
+
+
+def cleanup_volume_directory(volume_path: str) -> None:
+    """Volumeディレクトリ内のすべてのファイルを削除する。
+
+    Args:
+        volume_path: Volumeディレクトリパス。
+
+    Raises:
+        Exception: Volumeが存在しない場合以外の例外は再送出する。
+    """
+    w = _get_workspace_client()
+    try:
+        # ページングされたイテレータを先にリスト化して削除中のオフセットずれを防ぐ
+        files = list(w.files.list_directory_contents(volume_path))
+    except NotFound:
+        # Volumeが存在しない場合は何もしない
+        return
+
+    for file_info in files:
+        w.files.delete(file_info.path)
