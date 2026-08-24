@@ -11,7 +11,7 @@ import pytest
 from pyspark.sql import DataFrame
 from pyspark.sql import functions as F  # noqa: N812
 
-pytestmark = pytest.mark.integration
+pytestmark = [pytest.mark.integration, pytest.mark.normal]
 
 _EXPECTED_WIKIPEDIA_RAW_COLUMNS = {
     "strategy", "raw_content", "fetched_at", "source",

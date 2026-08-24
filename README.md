@@ -271,7 +271,7 @@ tests/
 **ローカル実行**:
 ```bash
 # 通常テストのみ実行
-pytest tests/integration -v -m "not abnormal"
+pytest tests/integration -v -m "normal"
 
 # 異常系テストのみ実行
 pytest tests/integration -v -m "abnormal"

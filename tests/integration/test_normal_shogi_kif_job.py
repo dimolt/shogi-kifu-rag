@@ -11,7 +11,7 @@ import pytest
 
 from tests.helpers.models import JobRunResult
 
-pytestmark = pytest.mark.integration_exec
+pytestmark = [pytest.mark.integration, pytest.mark.normal]
 
 
 def test_job全体が正常に完了する(shogi_kif_job_run_result: JobRunResult) -> None:

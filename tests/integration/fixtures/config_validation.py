@@ -2,7 +2,7 @@
 
 `databricks bundle validate`を任意のtargetで実行し、解決済み変数を取得するための
 薄いラッパーを提供する。Issue #209はデプロイを伴わない設計に変更したため、
-既存の`job_id`/`workspace_client`フィクスチャ（tests/integration_exec/fixtures/job_execution.py）
+既存の`job_id`/`workspace_client`フィクスチャ（tests/integration/fixtures/job_execution.py）
 をそのまま利用し、本モジュールには依存しない。
 """
 from __future__ import annotations

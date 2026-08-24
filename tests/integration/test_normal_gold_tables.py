@@ -14,7 +14,7 @@ import pytest
 from pyspark.sql import DataFrame
 from pyspark.sql import functions as F  # noqa: N812
 
-pytestmark = pytest.mark.integration
+pytestmark = [pytest.mark.integration, pytest.mark.normal]
 
 _EXPECTED_POSITION_FEATURES_COLUMNS = {
     "game_id", "move_number", "sfen", "prev_sfen", "move_usi", "player",

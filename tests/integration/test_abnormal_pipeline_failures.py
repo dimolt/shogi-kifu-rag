@@ -7,7 +7,7 @@
     #206: Failure notification and logging（#203-#205に統合）
 
 設計上の前提:
-    - integration_exec層なのでJob実行が必要（数分〜十数分待機）
+    - integration層なのでJob実行が必要（数分〜十数分待機）
     - #203-#205は並列実行可能
     - shogi_kif_pipeline_idはtests/conftest.pyから継承
     - #206は各失敗シナリオ内でget_event_log_errors()を呼び出してエラーメッセージを検証
@@ -22,7 +22,7 @@ from pyspark.sql import SparkSession
 from tests.helpers.models import JobRunFailedError
 from tests.helpers.monitoring.job_monitoring import JobMonitor
 
-pytestmark = pytest.mark.integration_exec
+pytestmark = [pytest.mark.integration, pytest.mark.abnormal]
 
 # Issue #205で使用する、実在しないことが確実なcatalog名。
 _NONEXISTENT_CATALOG = "shogi_nonexistent_catalog_for_test_205"

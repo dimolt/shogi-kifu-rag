@@ -33,6 +33,32 @@ def shogi_kif_job_id(_bundle_resources: dict) -> int:
 
 
 @pytest.fixture(scope="session")
+def job_id(shogi_kif_job_id: int) -> int:
+    """shogi_kif_job_idのエイリアス（異常系テストで使用）。
+
+    Args:
+        shogi_kif_job_id: デプロイ済みshogi_kif_jobのID。
+
+    Returns:
+        int: shogi_kif_jobのID。
+    """
+    return shogi_kif_job_id
+
+
+@pytest.fixture(scope="session")
+def job_run_result(shogi_kif_job_run_result: JobRunResult) -> JobRunResult:
+    """shogi_kif_job_run_resultのエイリアス（異常系テストで使用）。
+
+    Args:
+        shogi_kif_job_run_result: shogi_kif_jobの実行結果。
+
+    Returns:
+        JobRunResult: shogi_kif_jobの実行結果。
+    """
+    return shogi_kif_job_run_result
+
+
+@pytest.fixture(scope="session")
 def floodgate_job_id(_bundle_resources: dict) -> int:
     """デプロイ済みfloodgate_jobのjob_idをCLI経由で取得する。
 

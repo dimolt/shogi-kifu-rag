@@ -10,12 +10,12 @@
     #209は当初「不正なcatalog名でデプロイ→Job実行」として計画していたが、
         Databricks Free Edition（ワークスペースが1つ）では複数targetを同時に
         デプロイできず（例: `test`にデプロイするには既存の`dev`を破棄する必要がある）、
-        他のintegration_execテストが前提とする`dev`のデプロイ状態と両立しないため、
+        他のintegrationテストが前提とする`dev`のデプロイ状態と両立しないため、
         **デプロイを伴わない設計に変更した**。
         `shogi_kif_rag_main_job`にJobレベルパラメータ`catalog`を追加し
         （dbx_bundle/resources/workflows/jobs.yml）、`run_now(job_parameters=...)`で
         Bundle再デプロイ無しに実行時だけcatalogを不正な値に差し替える。
-        `dev`のデプロイ状態には一切変更を加えないため、他のintegration_execテストと
+        `dev`のデプロイ状態には一切変更を加えないため、他のintegrationテストと
         同一CI実行内で安全に共存できる。
         この方式で上書きできるのはJobレベルパラメータを参照するタスク
         （floodgate, wikipedia_raw, joseki_knowledge）のみ。shogi_kif_pipeline（DLTパイプライン）は
@@ -34,9 +34,9 @@ import pytest
 
 from tests.helpers.models import JobRunFailedError
 from tests.helpers.monitoring.job_monitoring import JobMonitor
-from tests.integration_exec.fixtures.config_validation import run_bundle_validate_json
+from tests.integration.fixtures.config_validation import run_bundle_validate_json
 
-pytestmark = pytest.mark.integration_exec
+pytestmark = [pytest.mark.integration, pytest.mark.abnormal]
 
 # Issue #209で使用する、実在しないことが確実なcatalog名。
 _NONEXISTENT_CATALOG = "shogi_nonexistent_catalog_for_test_209"

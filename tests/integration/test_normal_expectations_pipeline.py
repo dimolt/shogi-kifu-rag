@@ -23,7 +23,7 @@ from tests.helpers.monitoring.expectations import (
 # Unified expectations for the single shogi_kif_pipeline
 UNIFIED_EXPECTATIONS = {**SILVER_EXPECTATIONS, **GOLD_EXPECTATIONS}
 
-pytestmark = pytest.mark.integration
+pytestmark = [pytest.mark.integration, pytest.mark.normal]
 
 FRESHNESS_THRESHOLD_HOURS = 24
 

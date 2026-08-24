@@ -39,7 +39,7 @@ JOSEKI_KNOWLEDGE_SCHEMA = StructType([
     StructField("source", StringType(), True),
 ])
 
-pytestmark = pytest.mark.integration
+pytestmark = [pytest.mark.integration, pytest.mark.normal]
 
 
 #TODO: wikipediaテーブルの検証も追加したい

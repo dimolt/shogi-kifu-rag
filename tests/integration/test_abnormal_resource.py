@@ -10,7 +10,7 @@ from databricks.sdk import WorkspaceClient
 
 from tests.helpers.monitoring.job_monitoring import JobMonitor
 
-pytestmark = pytest.mark.integration_exec
+pytestmark = [pytest.mark.integration, pytest.mark.abnormal]
 
 
 def test_job並行実行時の挙動を検証する(
