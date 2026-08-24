@@ -5,7 +5,6 @@
 from pathlib import Path
 
 import pytest
-from databricks.sdk import WorkspaceClient
 from pyspark.sql import SparkSession
 
 from tests.helpers.databricks.volume_helpers import (
@@ -13,19 +12,6 @@ from tests.helpers.databricks.volume_helpers import (
     copy_directory_to_volume,
     get_landing_volume_path,
 )
-
-
-@pytest.fixture(scope="session")
-def workspace_client() -> WorkspaceClient:
-    """WorkspaceClientインスタンスを提供する。
-
-    Returns:
-        WorkspaceClient: Databricks Workspaceクライアント。
-    """
-    import os
-
-    profile = os.environ.get("DATABRICKS_CONFIG_PROFILE", "shogi")
-    return WorkspaceClient(profile=profile)
 
 
 @pytest.fixture(scope="session")
