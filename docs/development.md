@@ -336,10 +336,10 @@ max_concurrent_runs: 1
 - データ整合性を確保するため、パイプラインタスクの競合を防止します
 
 ### テストによる挙動確認
-並行実行の挙動は `tests/integration_exec/test_abnormal_resource.py` のテストで確認できます：
+並行実行の挙動は `tests/integration/test_abnormal_resource.py` のテストで確認できます：
 
 ```bash
-uv run pytest tests/integration_exec/test_abnormal_resource.py -v -s
+uv run pytest tests/integration/test_abnormal_resource.py -v -s
 ```
 
 このテストは同一Jobを2回並行起動し、実際の挙動を検証します。テスト出力に並行実行時の挙動が記録されるため、環境ごとの挙動の違いを確認できます。
