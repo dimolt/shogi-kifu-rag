@@ -47,7 +47,7 @@ def get_latest_expectations_df(
     `collect()`の返却順に依存して不定になり、実行途中の中間集計値を
     誤って判定に使ってしまう恐れがある。
 
-    integration層（鮮度チェックが必要）とe2e/integration_exec層（Job完了直後の
+    integration層（鮮度チェックが必要）とe2e層（Job完了直後の
     ため鮮度チェック不要）の両方から共通利用するため、`timestamp`列も含めて返す。
 
     実機検証済み（2026-07-07、pipeline_id=f3a193ea-...）:
