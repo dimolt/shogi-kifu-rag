@@ -20,6 +20,8 @@ FQN（catalog.schema.table）はfixtureではなく tests/table_registry.py の 
 """
 import os
 
+import pytest
+
 # integration層は常にshogi_devを使用
 os.environ["TEST_CATALOG"] = "shogi_dev"
 
@@ -47,3 +49,28 @@ from tests.integration.fixtures.test_data import (  # noqa: F401
     normal_test_data,
     volume_setup,
 )
+
+
+@pytest.hookimpl(tryfirst=True)
+def pytest_collection_modifyitems(config, items):
+    """テスト実行順序を制御するフック。
+
+    望ましい実行順序:
+    1. ジョブ実行フェーズ: shogi_kif_job, joseki_job, floodgate_job
+    2. データ検証フェーズ: Bronze, Silver, Goldテーブル
+    3. 品質検証フェーズ: Expectationsパイプライン
+    """
+    def get_order(item):
+        module_name = item.module.__name__
+        order_map = {
+            "tests.integration.test_normal_shogi_kif_job": 1,      # ジョブ実行フェーズ
+            "tests.integration.test_normal_joseki_job": 2,         # ジョブ実行フェーズ
+            "tests.integration.test_normal_floodgate_job": 3,     # ジョブ実行フェーズ
+            "tests.integration.test_normal_bronze_tables": 4,     # データ検証フェーズ（Bronze）
+            "tests.integration.test_normal_silver_tables": 5,     # データ検証フェーズ（Silver）
+            "tests.integration.test_normal_gold_tables": 6,       # データ検証フェーズ（Gold）
+            "tests.integration.test_normal_expectations_pipeline": 7, # 品質検証フェーズ
+        }
+        return order_map.get(module_name, 999)  # 未指定は最後
+
+    items.sort(key=get_order)
