@@ -152,9 +152,9 @@ wikipedia_raw = "shogi_kif_rag.tasks.bronze.wikipedia_raw:main"
 # markerの誤字を検知するため、未登録markerはエラーにする
 addopts = "--strict-markers"
 markers = [
-    "integration: Layer 2 integration tests (data validation only, no pipeline execution)",
-    "integration_exec: Layer 2.5 integration-execution tests (job/pipeline execution validation)",
+    "integration: Layer 2 integration tests (data validation and job/pipeline execution validation)",
     "e2e: Layer 3 end-to-end tests (full pipeline execution after deployment)",
+    "normal: 正常系テスト",
     "abnormal: 異常系テスト（専用スキーマ/Volumeで実行）",
 ]
 
