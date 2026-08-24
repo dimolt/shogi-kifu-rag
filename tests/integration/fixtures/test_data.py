@@ -72,24 +72,39 @@ def clean_volume(volume_setup, spark: SparkSession, catalog: str):
     cleanup_volume_directory(landing_volume_path)
 
 
-@pytest.fixture
-def normal_test_data(clean_volume, catalog: str):
+@pytest.fixture(scope="session")
+def normal_test_data(volume_setup, spark: SparkSession, catalog: str):
     """正常系テストデータをVolumeにコピーするfixture。
 
     tests/integration/data/normal/ の内容をVolume/analyzed/にコピーする。
+    session scopeのため、最初のテスト実行前に1回だけデータを配置する。
 
     Args:
-        clean_volume: clean_volume fixture。
+        volume_setup: volume_setup fixture。
+        spark: SparkSession。
         catalog: カタログ名。
 
     Yields:
         None: コピー完了後にyield。
     """
-    project_root = Path(__file__).parent.parent.parent.parent
-    normal_data_dir = project_root / "tests" / "integration" / "data" / "normal"
+    # Setup: Volume内のファイルを削除
     landing_volume_path = get_landing_volume_path(catalog)
+    cleanup_volume_directory(landing_volume_path)
+
+    # Bronze/Silver/Goldテーブルを削除
+    for schema in ["bronze", "silver", "gold"]:
+        try:
+            tables = spark.sql(f"SHOW TABLES IN {catalog}.{schema}")
+            for row in tables.collect():
+                table_name = row["tableName"]
+                spark.sql(f"DROP TABLE IF EXISTS {catalog}.{schema}.{table_name}")
+        except Exception:
+            # スキーマが存在しない場合は無視
+            pass
 
     # 正常系データをVolumeにコピー
+    project_root = Path(__file__).parent.parent.parent.parent
+    normal_data_dir = project_root / "tests" / "integration" / "data" / "normal"
     copy_directory_to_volume(normal_data_dir, landing_volume_path)
 
     yield

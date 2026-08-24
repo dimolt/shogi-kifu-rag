@@ -33,10 +33,10 @@ from tests.integration.fixtures.config_validation import (  # noqa: F401
 from tests.integration.fixtures.job_execution import (  # noqa: F401
     floodgate_job_id,
     floodgate_job_run_result,
-    job_id,
-    job_run_result,
     joseki_job_id,
     joseki_job_run_result,
+    shogi_kif_job_id,
+    shogi_kif_job_run_result,
     workspace_client,
 )
 from tests.integration.fixtures.scenarios import (  # noqa: F401

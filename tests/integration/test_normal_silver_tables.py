@@ -48,13 +48,13 @@ pytestmark = [pytest.mark.integration, pytest.mark.normal]
 
 
 def test_positionsテーブルのスキーマがget_analysis_schemaと一致する(
-    positions_df: DataFrame, normal_test_data
+    positions_df: DataFrame
 ) -> None:
     """スキーマ整合性を検証する。"""
     assert positions_df.schema == get_analysis_schema()
 
 
-def test_positionsテーブルにデータが存在する(positions_df: DataFrame, normal_test_data) -> None:
+def test_positionsテーブルにデータが存在する(positions_df: DataFrame) -> None:
     """データ存在確認。"""
     assert positions_df.count() > 0
 
@@ -63,7 +63,7 @@ def test_positionsテーブルにデータが存在する(positions_df: DataFram
 
 
 def test_positionsテーブルのmove_numberがgame_idごとに連番になっている(
-    positions_df: DataFrame, normal_test_data
+    positions_df: DataFrame
 ) -> None:
     """各game_id内でmove_numberが0始まりの連番（欠番・重複なし）になっていることを検証する。"""
     window = Window.partitionBy("game_id").orderBy("move_number")
@@ -80,7 +80,7 @@ def test_positionsテーブルのmove_numberがgame_idごとに連番になっ�
 
 
 def test_positionsテーブルの開始局面はsfenとprev_sfenが一致する(
-    positions_df: DataFrame, normal_test_data
+    positions_df: DataFrame
 ) -> None:
     """move_number=0（開始局面）で、sfenとprev_sfenが同一値であることを検証する。"""
     initial_rows = positions_df.filter(F.col("move_number") == 0)
@@ -92,7 +92,7 @@ def test_positionsテーブルの開始局面はsfenとprev_sfenが一致する(
 
 
 def test_positionsテーブルのsfenチェーンが連続している(
-    positions_df: DataFrame, normal_test_data
+    positions_df: DataFrame
 ) -> None:
     """move_number>=1のprev_sfenが、直前move_numberのsfenと一致することを検証する。"""
     window = Window.partitionBy("game_id").orderBy("move_number")
@@ -106,7 +106,7 @@ def test_positionsテーブルのsfenチェーンが連続している(
 
 
 def test_positionsテーブルのblack_player_white_playerがgame_id内で一貫している(
-    positions_df: DataFrame, normal_test_data
+    positions_df: DataFrame
 ) -> None:
     """同一game_id内でblack_player/white_playerの値がブレていないことを検証する。"""
     result_df = positions_df.groupBy("game_id").agg(
@@ -125,7 +125,7 @@ def test_positionsテーブルのblack_player_white_playerがgame_id内で一貫
 # --- データ品質検証 ---------------------------------------------------------
 
 
-def test_positionsテーブルのデータ品質(positions_df: DataFrame, normal_test_data) -> None:
+def test_positionsテーブルのデータ品質(positions_df: DataFrame) -> None:
     """Silverテーブルpositionsのデータ品質を検証する。
 
     検証項目:
@@ -246,21 +246,21 @@ def test_build_positions_重複するgame_id_move_numberが含まれる場合_�
 
 
 def test_floodgate_positionsテーブルのスキーマがFLOODGATE_POSITIONS_SCHEMAと一致する(
-    floodgate_positions_df: DataFrame, normal_test_data
+    floodgate_positions_df: DataFrame
 ) -> None:
     """スキーマ整合性を検証する。"""
     assert floodgate_positions_df.schema == FLOODGATE_POSITIONS_SCHEMA
 
 
 def test_floodgate_positionsテーブルにデータが存在する(
-    floodgate_positions_df: DataFrame, normal_test_data
+    floodgate_positions_df: DataFrame
 ) -> None:
     """データ存在確認。"""
     assert floodgate_positions_df.count() > 0
 
 
 def test_floodgate_positionsテーブルのmove_numberがgame_idごとに連番になっている(
-    floodgate_positions_df: DataFrame, normal_test_data
+    floodgate_positions_df: DataFrame
 ) -> None:
     """各game_id内でmove_numberが0始まりの連番（欠番・重複なし）になっていることを検証する。"""
     window = Window.partitionBy("game_id").orderBy("move_number")
@@ -277,7 +277,7 @@ def test_floodgate_positionsテーブルのmove_numberがgame_idごとに連番�
 
 
 def test_floodgate_positionsテーブルのblack_player_white_playerがgame_id内で一貫している(
-    floodgate_positions_df: DataFrame, normal_test_data
+    floodgate_positions_df: DataFrame
 ) -> None:
     """同一game_id内でblack_player/white_playerの値がブレていないことを検証する。"""
     result_df = floodgate_positions_df.groupBy("game_id").agg(
@@ -294,7 +294,7 @@ def test_floodgate_positionsテーブルのblack_player_white_playerがgame_id�
 
 
 def test_floodgate_positionsテーブルのデータ品質(
-    floodgate_positions_df: DataFrame, normal_test_data
+    floodgate_positions_df: DataFrame
 ) -> None:
     """Silverテーブルfloodgate_positionsのデータ品質を検証する。
 
@@ -349,21 +349,21 @@ def test_floodgate_positionsテーブルのデータ品質(
 
 
 def test_joseki_knowledgeテーブルのスキーマがJOSEKI_KNOWLEDGE_SCHEMAと一致する(
-    joseki_knowledge_df: DataFrame, normal_test_data
+    joseki_knowledge_df: DataFrame
 ) -> None:
     """スキーマ整合性を検証する。"""
     assert joseki_knowledge_df.schema == JOSEKI_KNOWLEDGE_SCHEMA
 
 
 def test_joseki_knowledgeテーブルにデータが存在する(
-    joseki_knowledge_df: DataFrame, normal_test_data
+    joseki_knowledge_df: DataFrame
 ) -> None:
     """データ存在確認。"""
     assert joseki_knowledge_df.count() > 0
 
 
 def test_joseki_knowledgeテーブルのデータ品質(
-    joseki_knowledge_df: DataFrame, normal_test_data
+    joseki_knowledge_df: DataFrame
 ) -> None:
     """Silverテーブルjoseki_knowledgeのデータ品質を検証する。
 

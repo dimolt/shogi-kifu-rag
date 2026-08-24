@@ -85,7 +85,7 @@ def joseki_job_id(_bundle_resources: dict) -> int:
 
 
 @pytest.fixture(scope="session")
-def shogi_kif_job_run_result(workspace_client: WorkspaceClient, shogi_kif_job_id: int) -> JobRunResult:
+def shogi_kif_job_run_result(workspace_client: WorkspaceClient, shogi_kif_job_id: int, normal_test_data) -> JobRunResult:
     """shogi_kif_jobをSDK経由で起動し、完了するまで待機した結果を提供する。
 
     job_idの取得はCLI経由、Job自体の起動・監視はDatabricks SDK経由という、

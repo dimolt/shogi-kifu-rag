@@ -26,19 +26,19 @@ _EXPECTED_FLOODGATE_RAW_COLUMNS = {
 
 
 def test_wikipedia_rawテーブルのスキーマが仕様通りの列集合と一致する(
-    wikipedia_raw_df: DataFrame, normal_test_data
+    wikipedia_raw_df: DataFrame
 ) -> None:
     """スキーマ整合性を検証する。"""
     actual_columns = set(wikipedia_raw_df.columns)
     assert actual_columns == _EXPECTED_WIKIPEDIA_RAW_COLUMNS
 
 
-def test_wikipedia_rawテーブルにデータが存在する(wikipedia_raw_df: DataFrame, normal_test_data) -> None:
+def test_wikipedia_rawテーブルにデータが存在する(wikipedia_raw_df: DataFrame) -> None:
     """データ存在確認。"""
     assert wikipedia_raw_df.count() > 0
 
 
-def test_wikipedia_rawテーブルのデータ品質(wikipedia_raw_df: DataFrame, normal_test_data) -> None:
+def test_wikipedia_rawテーブルのデータ品質(wikipedia_raw_df: DataFrame) -> None:
     """Bronzeテーブルwikipedia_rawのデータ品質を検証する。
 
     検証項目:
@@ -73,19 +73,19 @@ def test_wikipedia_rawテーブルのデータ品質(wikipedia_raw_df: DataFrame
 
 
 def test_floodgate_rawテーブルのスキーマが仕様通りの列集合と一致する(
-    floodgate_raw_df: DataFrame, normal_test_data
+    floodgate_raw_df: DataFrame
 ) -> None:
     """スキーマ整合性を検証する。"""
     actual_columns = set(floodgate_raw_df.columns)
     assert actual_columns == _EXPECTED_FLOODGATE_RAW_COLUMNS
 
 
-def test_floodgate_rawテーブルにデータが存在する(floodgate_raw_df: DataFrame, normal_test_data) -> None:
+def test_floodgate_rawテーブルにデータが存在する(floodgate_raw_df: DataFrame) -> None:
     """データ存在確認。"""
     assert floodgate_raw_df.count() > 0
 
 
-def test_floodgate_rawテーブルのデータ品質(floodgate_raw_df: DataFrame, normal_test_data) -> None:
+def test_floodgate_rawテーブルのデータ品質(floodgate_raw_df: DataFrame) -> None:
     """Bronzeテーブルfloodgate_rawのデータ品質を検証する。
 
     検証項目:

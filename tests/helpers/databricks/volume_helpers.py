@@ -135,13 +135,13 @@ def copy_directory_to_volume(local_dir: Path, volume_path: str) -> None:
     """
     w = _get_workspace_client()
     for local_file in local_dir.rglob("*"):
-        if local_file.is_file():
+        if local_file.is_file() and local_file.suffix.lower() == ".csv":
             # ローカルパスから相対パスを計算
             relative_path = local_file.relative_to(local_dir)
             remote_path = f"{volume_path}/{relative_path}"
             # ディレクトリが存在しない場合は作成（uploadは自動でディレクトリを作成しないため）
-            w.files.upload(remote_path, local_file.open("rb"), overwrite=True)
-
+            with local_file.open("rb") as f:
+                w.files.upload(remote_path, f, overwrite=True)
 
 def cleanup_volume_directory(volume_path: str) -> None:
     """Volumeディレクトリ内のすべてのファイルを削除する。
