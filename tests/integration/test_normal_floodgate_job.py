@@ -1,11 +1,11 @@
-"""floodgateタスクの統合テスト。
+"""floodgate_jobの統合テスト。
 
-floodgateタスクの実行と出力データを検証する。
+floodgate_jobの実行と出力データを検証する。
 Silver/Goldスキーマのデータを使用してfloodgate処理が正常に行われていることを確認する。
 
 前提:
     本テストの実行前に、floodgate_jobが実行され、
-    floodgateタスクが正常に完了していること。
+    job内のタスクが正常に完了していること。
 """
 import pytest
 from pyspark.sql import DataFrame

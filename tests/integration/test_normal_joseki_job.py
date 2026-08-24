@@ -1,11 +1,11 @@
-"""josekiタスクの統合テスト。
+"""joseki_jobの統合テスト。
 
-josekiタスクの実行と出力データを検証する。
+joseki_jobの実行と出力データを検証する。
 Silver/Goldスキーマのデータを使用してjoseki処理が正常に行われていることを確認する。
 
 前提:
     本テストの実行前に、joseki_jobが実行され、
-    josekiタスクが正常に完了していること。
+    job内のタスクが正常に完了していること。
 """
 import pytest
 from pyspark.sql import DataFrame
