@@ -39,7 +39,7 @@ _TASKS_AFFECTED_BY_CATALOG_OVERRIDE = {"floodgate", "wikipedia_raw", "joseki_kno
 
 def test_silver_pipeline_failure_prevents_gold_execution(
     spark: SparkSession,
-    job_id: int,
+    shogi_kif_job_id: int,
     workspace_client: WorkspaceClient,
     catalog: str,
     shogi_kif_pipeline_id: str,
@@ -68,7 +68,7 @@ def test_silver_pipeline_failure_prevents_gold_execution(
     # Arrange: test_data_volume_setup/clean_volume fixtureがCSVを削除し、空の状態にする
 
     # Act: Job実行（失敗を期待）
-    waiter = workspace_client.jobs.run_now(job_id=job_id)
+    waiter = workspace_client.jobs.run_now(job_id=shogi_kif_job_id)
     run_id = waiter.run_id
 
     with pytest.raises(JobRunFailedError) as exc_info:
@@ -98,7 +98,7 @@ def test_silver_pipeline_failure_prevents_gold_execution(
 
 def test_gold_pipeline_failure_doesnt_affect_silver_output(
     spark: SparkSession,
-    job_id: int,
+    shogi_kif_job_id: int,
     workspace_client: WorkspaceClient,
     catalog: str,
     shogi_kif_pipeline_id: str,
@@ -122,7 +122,7 @@ def test_gold_pipeline_failure_doesnt_affect_silver_output(
 
 
 def test_partial_failure_recovery(
-    job_id: int,
+    shogi_kif_job_id: int,
     workspace_client: WorkspaceClient,
 ) -> None:
     """floodgate/wikipedia_raw/joseki_knowledgeのみを意図的に失敗させ、他タスクが正常完了することを確認する。
@@ -137,7 +137,7 @@ def test_partial_failure_recovery(
     """
     # Arrange & Act
     waiter = workspace_client.jobs.run_now(
-        job_id=job_id,
+        job_id=shogi_kif_job_id,
         job_parameters={"catalog": _NONEXISTENT_CATALOG},
     )
     run_id = waiter.run_id

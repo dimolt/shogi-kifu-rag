@@ -60,7 +60,7 @@ _EXPECTED_CATALOG_BY_TARGET = {
 
 
 def test_job実行時に不正なcatalog名を上書き指定した場合_対象タスクが明確なエラーで失敗する(
-    job_id: int, workspace_client
+    shogi_kif_job_id: int, workspace_client
 ) -> None:
     """存在しないcatalog名をJobレベルパラメータとして実行時上書きすると、対象タスクが失敗する。
 
@@ -68,7 +68,7 @@ def test_job実行時に不正なcatalog名を上書き指定した場合_対象
     （`run_now`の`job_parameters`によるこの実行1回限りの上書き）。
 
     Arrange:
-        既存のdevデプロイから取得した`job_id`を使い、`job_parameters`で
+        既存のdevデプロイから取得した`shogi_kif_job_id`を使い、`job_parameters`で
         catalogを不正な値に上書きしてJobを起動する。
     Act:
         Job完了を待機する。
@@ -78,7 +78,7 @@ def test_job実行時に不正なcatalog名を上書き指定した場合_対象
     """
     # Arrange & Act
     waiter = workspace_client.jobs.run_now(
-        job_id=job_id,
+        job_id=shogi_kif_job_id,
         job_parameters={"catalog": _NONEXISTENT_CATALOG},
     )
 

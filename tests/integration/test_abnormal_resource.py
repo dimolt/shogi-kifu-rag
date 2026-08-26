@@ -15,12 +15,12 @@ pytestmark = [pytest.mark.integration, pytest.mark.abnormal]
 
 def test_job並行実行時の挙動を検証する(
     workspace_client: WorkspaceClient,
-    job_id: int,
+    shogi_kif_job_id: int,
 ) -> None:
     """Issue #208: 同一Jobを並行起動した場合の挙動を検証する。
 
     Arrange:
-        同一job_idを使用して2つのJob実行をほぼ同時に起動する。
+        同一shogi_kif_job_idを使用して2つのJob実行をほぼ同時に起動する。
     Act:
         両方の実行を並行して監視し、完了状態(または例外)を収集する。
     Assert:
@@ -40,9 +40,9 @@ def test_job並行実行時の挙動を検証する(
     """
     # Arrange: 同一Jobを2回並行起動
     # RequestLimitExceededを即座にキャッチしてリトライを回避
-    run1 = workspace_client.jobs.run_now(job_id=job_id)
+    run1 = workspace_client.jobs.run_now(job_id=shogi_kif_job_id)
     try:
-        run2 = workspace_client.jobs.run_now(job_id=job_id)
+        run2 = workspace_client.jobs.run_now(job_id=shogi_kif_job_id)
     # except RequestLimitExceeded as e:
     except Exception as e:
         # Workspaceレベルの上限に達した場合も、並行実行制限として扱う
