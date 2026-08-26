@@ -34,7 +34,8 @@ def _install_dependency_stubs() -> None:
 _install_dependency_stubs()
 
 # Now import after stubs are installed
-from shogi_kif_rag.vector import chromadb_service  #noqa: E402
+from shogi_kif_rag.vector.chromadb import adapter as chromadb_service  #noqa: E402
+from shogi_kif_rag.vector.chromadb import service as new_chromadb_service  #noqa: E402
 
 
 def _install_dependency_stubs() -> None:
@@ -88,9 +89,9 @@ _install_dependency_stubs()
 @pytest.fixture(autouse=True)
 def reset_singleton() -> None:
     """シングルトン状態を各テスト前に初期化する。"""
-    chromadb_service._instance = None
+    chromadb_service.ChromadbService._instance = None
     yield
-    chromadb_service._instance = None
+    chromadb_service.ChromadbService._instance = None
 
 
 def test_get_instance_初回呼び出しで同一インスタンスを返す() -> None:
@@ -112,21 +113,27 @@ def test_ensure_未初期化時にモデルとクライアントを初期化し�
     rebuild_calls: list[tuple[object, str]] = []
 
     monkeypatch.setattr(
-        chromadb_service.chromadb_lib,
+        new_chromadb_service.chromadb_lib,
         "PersistentClient",
         lambda path: fake_client,
     )
     monkeypatch.setattr(
-        chromadb_service.SparkSession,
+        new_chromadb_service.SparkSession,
         "getActiveSession",
         staticmethod(lambda: fake_spark),
     )
-    monkeypatch.setattr(service, "_collection_exists", lambda name: False)
-    monkeypatch.setattr(service, "rebuild_collections", lambda spark=None, catalog='shogi': rebuild_calls.append((spark, catalog)))
+    # ensure() の内部では adapter 自身ではなく、委譲先の service._service
+    # （NewChromadbService）の collection_exists / rebuild_collections が呼ばれる
+    monkeypatch.setattr(service._service, "collection_exists", lambda name: False)
+    monkeypatch.setattr(
+        service._service,
+        "rebuild_collections",
+        lambda spark=None, catalog='shogi': rebuild_calls.append((spark, catalog)),
+    )
 
     service.ensure()
 
-    assert service._client is fake_client
+    assert service._service._client is fake_client
     assert service._embedding_model is not None
     assert rebuild_calls == [(fake_spark, 'shogi')]
 
@@ -151,21 +158,25 @@ def test_ensure_catalog引数を渡して再構築を実行する(
     rebuild_calls: list[tuple[object, str]] = []
 
     monkeypatch.setattr(
-        chromadb_service.chromadb_lib,
+        new_chromadb_service.chromadb_lib,
         "PersistentClient",
         lambda path: fake_client,
     )
     monkeypatch.setattr(
-        chromadb_service.SparkSession,
+        new_chromadb_service.SparkSession,
         "getActiveSession",
         staticmethod(lambda: fake_spark),
     )
-    monkeypatch.setattr(service, "_collection_exists", lambda name: False)
-    monkeypatch.setattr(service, "rebuild_collections", lambda spark=None, catalog='shogi': rebuild_calls.append((spark, catalog)))
+    monkeypatch.setattr(service._service, "collection_exists", lambda name: False)
+    monkeypatch.setattr(
+        service._service,
+        "rebuild_collections",
+        lambda spark=None, catalog='shogi': rebuild_calls.append((spark, catalog)),
+    )
 
     service.ensure(catalog='test_catalog')
 
-    assert service._client is fake_client
+    assert service._service._client is fake_client
     assert service._embedding_model is not None
     assert rebuild_calls == [(fake_spark, 'test_catalog')]
 
@@ -173,55 +184,73 @@ def test_ensure_catalog引数を渡して再構築を実行する(
 def test_rebuild_collections_相互再帰が解消されている(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
-    """rebuild_collections が ensure を呼ばず、_initialize のみを呼ぶことを確認する。"""
+    """rebuild_collections が _initialize_client のみを呼び、各コレクションを再構築することを確認する。
+
+    adapter.rebuild_collections は service._service（NewChromadbService）へ処理を
+    委譲するだけであり、NewChromadbService.rebuild_collections には ensure を
+    呼び出す経路が存在しない。そのため ensure との相互再帰は構造的に発生し得ず、
+    ここでは初期化と3コレクションの再構築が呼ばれることのみを検証する。
+    """
     service = chromadb_service.ChromadbService()
-    fake_client = object()
     fake_spark = object()
     initialize_calls: list[object] = []
-    ensure_calls: list[object] = []
+    rebuild_positions_calls: list[tuple[object, str]] = []
+    rebuild_floodgate_calls: list[tuple[object, str]] = []
+    rebuild_joseki_calls: list[tuple[object, str]] = []
 
     monkeypatch.setattr(
-        chromadb_service.chromadb_lib,
-        "PersistentClient",
-        lambda path: fake_client,
+        service._service,
+        "_initialize_client",
+        lambda: initialize_calls.append(None),
     )
     monkeypatch.setattr(
-        chromadb_service.SparkSession,
-        "getActiveSession",
-        staticmethod(lambda: fake_spark),
+        service._service,
+        "_rebuild_positions",
+        lambda spark, catalog: rebuild_positions_calls.append((spark, catalog)),
     )
-    monkeypatch.setattr(service, "_initialize", lambda: initialize_calls.append(None))
-    monkeypatch.setattr(service, "ensure", lambda catalog='shogi': ensure_calls.append(catalog))
-    monkeypatch.setattr(service, "_rebuild_positions", lambda spark, catalog: None)
-    monkeypatch.setattr(service, "_rebuild_floodgate", lambda spark, catalog: None)
-    monkeypatch.setattr(service, "_rebuild_joseki", lambda spark, catalog: None)
+    monkeypatch.setattr(
+        service._service,
+        "_rebuild_floodgate",
+        lambda spark, catalog: rebuild_floodgate_calls.append((spark, catalog)),
+    )
+    monkeypatch.setattr(
+        service._service,
+        "_rebuild_joseki",
+        lambda spark, catalog: rebuild_joseki_calls.append((spark, catalog)),
+    )
 
     service.rebuild_collections(fake_spark, 'test_catalog')
 
     assert initialize_calls == [None]
-    assert ensure_calls == []
+    assert rebuild_positions_calls == [(fake_spark, 'test_catalog')]
+    assert rebuild_floodgate_calls == [(fake_spark, 'test_catalog')]
+    assert rebuild_joseki_calls == [(fake_spark, 'test_catalog')]
 
 
 def test_initialize_初期化済みの場合は何もしない(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
-    """_initialize が初期化済みの場合は何もしないことを確認する。"""
+    """_initialize_client が初期化済みの場合は何もしないことを確認する。
+
+    クライアントの初期化ロジックは service._service（NewChromadbService）の
+    _initialize_client に存在するため、そちらを直接検証する。
+    """
     service = chromadb_service.ChromadbService()
     fake_client = object()
 
     monkeypatch.setattr(
-        chromadb_service.chromadb_lib,
+        new_chromadb_service.chromadb_lib,
         "PersistentClient",
         lambda path: fake_client,
     )
 
-    service._initialize()
-    assert service._client is fake_client
+    service._service._initialize_client()
+    assert service._service._client is fake_client
     assert service._embedding_model is not None
 
     # 2回目は初期化されない
     first_embedding_model = service._embedding_model
-    service._initialize()
+    service._service._initialize_client()
     # 同じオブジェクトであることを確認（再初期化されていない）
-    assert service._client is fake_client
+    assert service._service._client is fake_client
     assert service._embedding_model is first_embedding_model

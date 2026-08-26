@@ -23,7 +23,7 @@
 
 # COMMAND ----------
 import gradio as gr
-from shogi_kif_rag.vector.chromadb_service import ChromadbService
+from shogi_kif_rag.vector.chromadb.adapter import ChromadbService
 from shogi_kif_rag.rag import rag_query
 
 # COMMAND ----------

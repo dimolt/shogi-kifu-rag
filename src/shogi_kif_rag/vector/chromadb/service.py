@@ -1,81 +1,86 @@
 from __future__ import annotations
 
+import os
+from typing import TYPE_CHECKING
+
 import chromadb as chromadb_lib
+import numpy as np
 import pandas as pd
 from pyspark.sql import SparkSession
 
-from shogi_kif_rag.vector.embedding import SentenceTransformerEmbedding
+if TYPE_CHECKING:
+    from shogi_kif_rag.vector.embedding.base import EmbeddingModel
 
-CHROMA_PATH = '/tmp/shogi/chromadb'
-
-# モジュールレベルのシングルトンキャッシュ
-_instance: ChromadbService | None = None
 
 
 class ChromadbService:
-    """ChromaDB クライアントと Embedding モデルを管理するサービスクラス。
+    """ChromaDB クライアントとコレクション管理を行うサービスクラス。
 
-    クライアント・モデルはインスタンス内部に隠蔽し、
-    ensure() / rebuild_collections() の2つの public メソッドで操作する。
-    モジュールレベルのシングルトンとして利用することを想定している。
+    シングルトンパターンを廃止し、依存注入を可能にした実装。
+    コレクションの再構築機能を提供し、永続ストレージはDatabricks Volumeを使用する。
 
-    使用例:
-        service = ChromadbService.get_instance()
-        service.ensure()
-        service.rebuild_collections()
+    Args:
+        embedding_model: Embeddingモデルのインスタンス。
+        persist_path: 永続ストレージパス。省略時は環境変数
+            CHROMADB_PERSIST_PATH またはデフォルトパスを使用。
     """
 
-    def __init__(self) -> None:
-        self._client: chromadb_lib.ClientAPI | None = None
-        self._embedding_model: SentenceTransformerEmbedding | None = None
+    def __init__(
+        self,
+        embedding_model: EmbeddingModel,
+        persist_path: str | None = None,
+    ) -> None:
+        """ChromadbServiceを初期化する。
 
-    # ------------------------------------------------------------------
-    # シングルトンアクセサ
-    # ------------------------------------------------------------------
-
-    @classmethod
-    def get_instance(cls) -> ChromadbService:
-        """モジュールレベルのシングルトンインスタンスを返す。
-
-        Returns:
-            ChromadbService の唯一のインスタンス。
+        Args:
+            embedding_model: Embeddingモデルのインスタンス。
+            persist_path: 永続ストレージパス。省略時は環境変数
+                CHROMADB_PERSIST_PATH またはデフォルトパスを使用。
         """
-        global _instance
-        if _instance is None:
-            _instance = cls()
-        return _instance
+        if persist_path is None:
+            persist_path = os.environ.get(
+                'CHROMADB_PERSIST_PATH',
+                '/Volumes/shogi/default/chromadb'
+            )
 
-    # ------------------------------------------------------------------
-    # Public メソッド
-    # ------------------------------------------------------------------
+        self._persist_path = persist_path
+        self._embedding_model = embedding_model
+        self._client: chromadb_lib.ClientAPI | None = None
 
-    def _initialize(self) -> None:
-        """クライアントとモデルを初期化する。
+    def _initialize_client(self) -> None:
+        """ChromaDBクライアントを初期化する。
 
         既に初期化済みの場合は何もしない。
         """
-        if self._is_ready():
+        if self._client is not None:
             return
 
-        self._embedding_model = SentenceTransformerEmbedding()
-        self._client = chromadb_lib.PersistentClient(path=CHROMA_PATH)
+        self._client = chromadb_lib.PersistentClient(path=self._persist_path)
 
+    def ensure_collection(self, collection_name: str) -> chromadb_lib.Collection:
+        """コレクションが使用可能な状態にする。
 
-    def ensure(self, catalog: str = 'shogi') -> None:
-        """ChromaDB が使用可能な状態にする。
-
-        未初期化の場合はクライアントとモデルを生成する。
-        positions コレクションが存在しない場合は全コレクションを再構築する。
-        初期化済みの場合は何もしない。
+        未初期化の場合はクライアントを生成する。
+        コレクションが存在しない場合は作成する。
 
         Args:
-            catalog: カタログ名。デフォルトは 'shogi'。
-        """
-        self._initialize()
+            collection_name: コレクション名。
 
-        if not self._collection_exists('positions'):
-            spark = SparkSession.getActiveSession()
-            self.rebuild_collections(spark, catalog)
+        Returns:
+            Collectionオブジェクト。
+        """
+        self._initialize_client()
+
+        if self._client is None:
+            raise RuntimeError("Client initialization failed")
+
+        try:
+            return self._client.get_collection(collection_name)
+        except Exception:
+            return self._client.create_collection(
+                name=collection_name,
+                metadata={'hnsw:space': 'cosine'},
+            )
 
     def rebuild_collections(
         self,
@@ -84,13 +89,13 @@ class ChromadbService:
     ) -> None:
         """すべてのコレクションを再構築する。
 
-        クライアント・モデルが未初期化の場合は先に初期化する。
+        クライアントが未初期化の場合は先に初期化する。
 
         Args:
             spark: SparkSession。省略時は getActiveSession() から取得する。
             catalog: カタログ名。デフォルトは 'shogi'。
         """
-        self._initialize()
+        self._initialize_client()
         if spark is None:
             spark = SparkSession.getActiveSession()
         if spark is None:
@@ -99,23 +104,6 @@ class ChromadbService:
         self._rebuild_positions(spark, catalog)
         self._rebuild_floodgate(spark, catalog)
         self._rebuild_joseki(spark, catalog)
-
-    # ------------------------------------------------------------------
-    # 内部ユーティリティ
-    # ------------------------------------------------------------------
-
-    def encode_query(self, query: str) -> list[float]:
-        """クエリテキストを Embedding ベクトルに変換する。
-
-        Args:
-            query: クエリテキスト。
-
-        Returns:
-            Embedding ベクトル（float のリスト）。
-        """
-        if self._embedding_model is None:
-            raise RuntimeError("Model is not initialized")
-        return self._embedding_model.encode(query)
 
     def get_collection(self, name: str) -> chromadb_lib.Collection:
         """コレクションを取得する。
@@ -127,24 +115,14 @@ class ChromadbService:
             指定した Collection オブジェクト。
 
         Raises:
+            RuntimeError: クライアントが初期化されていない場合。
             Exception: コレクションが存在しない場合。
         """
         if self._client is None:
             raise RuntimeError("Client is not initialized")
         return self._client.get_collection(name)
 
-    def _is_ready(self) -> bool:
-        """クライアントとモデルが両方初期化済みか確認する。
-
-        Returns:
-            両方初期化済みの場合は True。
-        """
-        return (
-            self._client is not None
-            and self._embedding_model is not None
-        )
-
-    def _collection_exists(self, name: str) -> bool:
+    def collection_exists(self, name: str) -> bool:
         """コレクションの存在を確認する。
 
         Args:
@@ -161,7 +139,7 @@ class ChromadbService:
         except Exception:
             return False
 
-    def _encode(self, texts: list[str]) -> list:
+    def encode_batch(self, texts: list[str]) -> list[list[float]]:
         """テキストリストを Embedding に変換する。
 
         Args:
@@ -170,12 +148,10 @@ class ChromadbService:
         Returns:
             Embedding のリスト。
         """
-        if self._embedding_model is None:
-            raise RuntimeError("Model is not initialized")
         return self._embedding_model.encode_batch(texts)
 
     @staticmethod
-    def _clean_position_features(df: pd.DataFrame) -> pd.DataFrame:
+    def clean_position_features(df: pd.DataFrame) -> pd.DataFrame:
         """position_features DataFrame から無効な search_text 行を除去する。
 
         Args:
@@ -216,10 +192,6 @@ class ChromadbService:
             metadata={'hnsw:space': 'cosine'},
         )
 
-    # ------------------------------------------------------------------
-    # コレクション別再構築
-    # ------------------------------------------------------------------
-
     def _rebuild_positions(self, spark: SparkSession, catalog: str) -> None:
         """positions コレクションを再構築する。
 
@@ -233,15 +205,19 @@ class ChromadbService:
         collection = self._drop_and_create('positions')
 
         df = spark.table(f'{catalog}.shogi_gold.position_features').toPandas()
-        df = self._clean_position_features(df)
+        df = self.clean_position_features(df)
 
         if len(df) == 0:
             print('positions: 有効なデータがないためスキップします。')
             return
 
         texts = df['search_text'].tolist()
+        embeddings = np.asarray(
+            self.encode_batch(texts),
+            dtype=np.float32,
+        )
         collection.add(
-            embeddings=self._encode(texts),
+            embeddings=embeddings,
             documents=texts,
             metadatas=[{
                 'game_id': str(row['game_id']),
@@ -285,8 +261,12 @@ class ChromadbService:
             f"局面: {row['sfen']} 指し手: {row['move_usi']}"
             for _, row in df.iterrows()  # type: ignore[attr-defined]
         ]
+        embeddings = np.asarray(
+            self.encode_batch(search_texts),
+            dtype=np.float32,
+        )
         collection.add(
-            embeddings=self._encode(search_texts),
+            embeddings=embeddings,
             documents=search_texts,
             metadatas=[{
                 'game_id': str(row['game_id']),
@@ -322,8 +302,12 @@ class ChromadbService:
         collection = self._drop_and_create('joseki_knowledge')
 
         search_texts = df['search_text'].tolist()  # type: ignore[index]
+        embeddings = np.asarray(
+            self.encode_batch(search_texts),
+            dtype=np.float32,
+        )
         collection.add(
-            embeddings=self._encode(search_texts),
+            embeddings=embeddings,
             documents=search_texts,
             metadatas=[{
                 'strategy': str(row['strategy']),
