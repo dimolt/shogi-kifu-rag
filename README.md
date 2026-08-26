@@ -254,18 +254,45 @@ tests/
   - `test_silver_tables.py`: Silverテーブル（`positions`）のスキーマ整合性・連番・sfenチェーン等、単体テストでは検証できないビジネス不変条件
   - `test_gold_tables.py`: Goldテーブル（`position_features` / `game_summary`）のスキーマ整合性・行数整合性・null検証
   - `test_expectations_pipeline.py`: `event_log()` TVF経由で`@dp.expect`が実際に発火し`failed_records=0`であることを確認する品質ゲート検証。`silver_pipeline` / `gold_pipeline`はresource keyが分かれているため、[silver_pipeline_id](cci:1://file:///c:/shogi-kif-rag/tests/conftest.py:91:0-103:79) / [gold_pipeline_id](cci:1://file:///c:/shogi-kif-rag/tests/conftest.py:106:0-118:77)の2fixtureで個別に検証する
-  - `test_abnormal_input_data.py`: 異常系テスト（Issue #200, #202）。専用スキーマ/Volumeを使用して不正データのexpectation発火を検証
+  - `test_abnormal_input_data.py`: 異常系テスト（Issue #200, #202）。正常系・異常系の差異はソースデータのみで、clean_volume fixtureによるデータクリアで分離
 - **実行タイミング**:
   - test環境: CD `deploy-test` ジョブ内でe2eテスト後に自動実行
   - dev環境: 手動実行（`ci-integration.yml` ワークフロー）
+
+### テストデータ管理
+
+Integration Testでは、テストデータの「原本」と「実行用データ」を分離して管理しています。
+
+**原本（Git管理）**:
+- `tests/integration/data/normal/`: 正常系テストデータ原本
+  - `basic/`: 基本的な正常系テストデータ
+  - `edge_cases/`: 境界値の正常系テストデータ（将来拡張用）
+- `tests/integration/data/abnormal/`: 異常系テストデータ原本
+  - `schema_errors/`: スキーマ違反のテストデータ
+  - `format_errors/`: フォーマットエラーのテストデータ（将来拡張用）
+
+**実行用データ（Volume）**:
+- `/Volumes/{catalog}/landing/analyzed/`: Pipelineが読む場所
+- テスト実行時にfixture経由で原本からコピーされる
+- テスト完了後にクリーンアップされる
+
+**Fixture構造**:
+- `volume_setup`: セッション開始時にVolume初期化
+- `clean_volume`: 各テスト前後のVolume/テーブルクリーンアップ
+- `normal_test_data`: 正常系データのVolumeコピー
+- `abnormal_test_data`: 異常系データのVolumeコピー
+
+**データ分離**:
+- 正常系・異常系の差異はソースデータのみ
+- データ分離はclean_volume fixtureによる毎回のクリアで行う
+- 専用スキーマは使用せず、通常のlanding/silver/gold schemaを使用
 
 ### 異常系テストについて
 
 `test_abnormal_input_data.py` は異常系テスト専用のモジュールで、以下の特徴があります：
 
-- **専用スキーマ/Volume**: `test_abnormal` スキーマと `test_abnormal.landing` Volumeを使用
-- **データ分離**: テスト完了時にスキーマをDROP CASCADEで削除し、他のテストへの影響を防止
-- **パラメータ動的切り替え**: 既存pipelineを再利用しつつ、異常系テスト用スキーマを指定して実行
+- **データ分離**: clean_volume fixtureによる毎回のクリアでデータ分離を行う
+- **共通pipeline**: 正常系・異常系で同じpipeline起動関数を使用
 - **CIでの分離**: 通常テストと異常系テストは別ジョブで実行（`ci-integration.yml`）
 
 **ローカル実行**:
