@@ -4,7 +4,37 @@ import types
 import pandas as pd
 import pytest
 
-from shogi_kif_rag.vector import chromadb_service
+
+def _install_dependency_stubs() -> None:
+    """import時に必要な外部依存をスタブ化する。"""
+    chromadb_module = types.ModuleType("chromadb")
+
+    class _FakeClientAPI:
+        pass
+
+    chromadb_module.ClientAPI = _FakeClientAPI
+    chromadb_module.PersistentClient = lambda path: object()
+    chromadb_module.Collection = object
+    sys.modules.setdefault("chromadb", chromadb_module)
+
+    pyspark_module = types.ModuleType("pyspark")
+    pyspark_sql_module = types.ModuleType("pyspark.sql")
+
+    class _FakeSparkSession:
+        @staticmethod
+        def getActiveSession():
+            return None
+
+    pyspark_module.sql = pyspark_sql_module
+    pyspark_sql_module.SparkSession = _FakeSparkSession
+    sys.modules.setdefault("pyspark", pyspark_module)
+    sys.modules.setdefault("pyspark.sql", pyspark_sql_module)
+
+
+_install_dependency_stubs()
+
+# Now import after stubs are installed
+from shogi_kif_rag.vector import chromadb_service  #noqa: E402
 
 
 def _install_dependency_stubs() -> None:
@@ -19,19 +49,24 @@ def _install_dependency_stubs() -> None:
     chromadb_module.Collection = object
     sys.modules.setdefault("chromadb", chromadb_module)
 
-    sentence_transformers_module = types.ModuleType("sentence_transformers")
+    # 新しいEmbeddingモジュールのスタブ
+    shogi_kif_rag_vector_embedding_module = types.ModuleType("shogi_kif_rag.vector.embedding")
 
-    class _FakeSentenceTransformer:
-        def __init__(self, model_name: str) -> None:
+    class _FakeSentenceTransformerEmbedding:
+        def __init__(self, model_name: str, batch_size: int) -> None:
             self.model_name = model_name
+            self.batch_size = batch_size
 
-        def encode(self, texts, batch_size=None, show_progress_bar=False):
-            if isinstance(texts, list):
-                return [[0.0] for _ in texts]
+        def encode(self, text: str) -> list[float]:
             return [0.0]
 
-    sentence_transformers_module.SentenceTransformer = _FakeSentenceTransformer
-    sys.modules.setdefault("sentence_transformers", sentence_transformers_module)
+        def encode_batch(self, texts: list[str]) -> list[list[float]]:
+            return [[0.0] for _ in texts]
+
+    shogi_kif_rag_vector_embedding_module.SentenceTransformerEmbedding = (
+        _FakeSentenceTransformerEmbedding
+    )
+    sys.modules.setdefault("shogi_kif_rag.vector.embedding", shogi_kif_rag_vector_embedding_module)
 
     pyspark_module = types.ModuleType("pyspark")
     pyspark_sql_module = types.ModuleType("pyspark.sql")
@@ -74,7 +109,6 @@ def test_ensure_未初期化時にモデルとクライアントを初期化し�
     service = chromadb_service.ChromadbService()
     fake_client = object()
     fake_spark = object()
-    fake_model = object()
     rebuild_calls: list[tuple[object, str]] = []
 
     monkeypatch.setattr(
@@ -82,7 +116,6 @@ def test_ensure_未初期化時にモデルとクライアントを初期化し�
         "PersistentClient",
         lambda path: fake_client,
     )
-    monkeypatch.setattr(chromadb_service, "SentenceTransformer", lambda model_name: fake_model)
     monkeypatch.setattr(
         chromadb_service.SparkSession,
         "getActiveSession",
@@ -94,7 +127,7 @@ def test_ensure_未初期化時にモデルとクライアントを初期化し�
     service.ensure()
 
     assert service._client is fake_client
-    assert service._model is fake_model
+    assert service._embedding_model is not None
     assert rebuild_calls == [(fake_spark, 'shogi')]
 
 
@@ -115,7 +148,6 @@ def test_ensure_catalog引数を渡して再構築を実行する(
     service = chromadb_service.ChromadbService()
     fake_client = object()
     fake_spark = object()
-    fake_model = object()
     rebuild_calls: list[tuple[object, str]] = []
 
     monkeypatch.setattr(
@@ -123,7 +155,6 @@ def test_ensure_catalog引数を渡して再構築を実行する(
         "PersistentClient",
         lambda path: fake_client,
     )
-    monkeypatch.setattr(chromadb_service, "SentenceTransformer", lambda model_name: fake_model)
     monkeypatch.setattr(
         chromadb_service.SparkSession,
         "getActiveSession",
@@ -135,7 +166,7 @@ def test_ensure_catalog引数を渡して再構築を実行する(
     service.ensure(catalog='test_catalog')
 
     assert service._client is fake_client
-    assert service._model is fake_model
+    assert service._embedding_model is not None
     assert rebuild_calls == [(fake_spark, 'test_catalog')]
 
 
@@ -146,7 +177,6 @@ def test_rebuild_collections_相互再帰が解消されている(
     service = chromadb_service.ChromadbService()
     fake_client = object()
     fake_spark = object()
-    fake_model = object()
     initialize_calls: list[object] = []
     ensure_calls: list[object] = []
 
@@ -155,7 +185,6 @@ def test_rebuild_collections_相互再帰が解消されている(
         "PersistentClient",
         lambda path: fake_client,
     )
-    monkeypatch.setattr(chromadb_service, "SentenceTransformer", lambda model_name: fake_model)
     monkeypatch.setattr(
         chromadb_service.SparkSession,
         "getActiveSession",
@@ -179,21 +208,20 @@ def test_initialize_初期化済みの場合は何もしない(
     """_initialize が初期化済みの場合は何もしないことを確認する。"""
     service = chromadb_service.ChromadbService()
     fake_client = object()
-    fake_model = object()
 
     monkeypatch.setattr(
         chromadb_service.chromadb_lib,
         "PersistentClient",
         lambda path: fake_client,
     )
-    monkeypatch.setattr(chromadb_service, "SentenceTransformer", lambda model_name: fake_model)
 
     service._initialize()
     assert service._client is fake_client
-    assert service._model is fake_model
+    assert service._embedding_model is not None
 
     # 2回目は初期化されない
+    first_embedding_model = service._embedding_model
     service._initialize()
     # 同じオブジェクトであることを確認（再初期化されていない）
     assert service._client is fake_client
-    assert service._model is fake_model
+    assert service._embedding_model is first_embedding_model

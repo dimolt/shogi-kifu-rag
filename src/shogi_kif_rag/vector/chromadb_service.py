@@ -3,11 +3,10 @@ from __future__ import annotations
 import chromadb as chromadb_lib
 import pandas as pd
 from pyspark.sql import SparkSession
-from sentence_transformers import SentenceTransformer
+
+from shogi_kif_rag.vector.embedding import SentenceTransformerEmbedding
 
 CHROMA_PATH = '/tmp/shogi/chromadb'
-EMBEDDING_MODEL_NAME = 'sentence-transformers/all-MiniLM-L6-v2'
-EMBED_BATCH_SIZE = 32
 
 # モジュールレベルのシングルトンキャッシュ
 _instance: ChromadbService | None = None
@@ -28,7 +27,7 @@ class ChromadbService:
 
     def __init__(self) -> None:
         self._client: chromadb_lib.ClientAPI | None = None
-        self._model: SentenceTransformer | None = None
+        self._embedding_model: SentenceTransformerEmbedding | None = None
 
     # ------------------------------------------------------------------
     # シングルトンアクセサ
@@ -58,7 +57,7 @@ class ChromadbService:
         if self._is_ready():
             return
 
-        self._model = SentenceTransformer(EMBEDDING_MODEL_NAME)
+        self._embedding_model = SentenceTransformerEmbedding()
         self._client = chromadb_lib.PersistentClient(path=CHROMA_PATH)
 
 
@@ -114,9 +113,9 @@ class ChromadbService:
         Returns:
             Embedding ベクトル（float のリスト）。
         """
-        if self._model is None:
+        if self._embedding_model is None:
             raise RuntimeError("Model is not initialized")
-        return self._model.encode(query).tolist()
+        return self._embedding_model.encode(query)
 
     def get_collection(self, name: str) -> chromadb_lib.Collection:
         """コレクションを取得する。
@@ -140,7 +139,10 @@ class ChromadbService:
         Returns:
             両方初期化済みの場合は True。
         """
-        return self._client is not None and self._model is not None
+        return (
+            self._client is not None
+            and self._embedding_model is not None
+        )
 
     def _collection_exists(self, name: str) -> bool:
         """コレクションの存在を確認する。
@@ -159,23 +161,18 @@ class ChromadbService:
         except Exception:
             return False
 
-    def _encode(self, texts: list[str], batch_size: int = EMBED_BATCH_SIZE) -> list:
+    def _encode(self, texts: list[str]) -> list:
         """テキストリストを Embedding に変換する。
 
         Args:
             texts: エンコード対象のテキストリスト。
-            batch_size: バッチサイズ。
 
         Returns:
             Embedding のリスト。
         """
-        if self._model is None:
+        if self._embedding_model is None:
             raise RuntimeError("Model is not initialized")
-        return self._model.encode(
-            texts,
-            batch_size=batch_size,
-            show_progress_bar=False,
-        ).tolist()
+        return self._embedding_model.encode_batch(texts)
 
     @staticmethod
     def _clean_position_features(df: pd.DataFrame) -> pd.DataFrame:

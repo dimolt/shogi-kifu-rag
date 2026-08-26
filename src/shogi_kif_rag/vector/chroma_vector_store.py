@@ -1,5 +1,10 @@
 from __future__ import annotations
 
+from typing import TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from shogi_kif_rag.vector.embedding.base import EmbeddingModel
+
 from shogi_kif_rag.vector.base import VectorStore
 from shogi_kif_rag.vector.chromadb_service import ChromadbService
 from shogi_kif_rag.vector.models import Document, SearchResult
@@ -9,14 +14,23 @@ class ChromaVectorStore(VectorStore):
     """ChromaDBのVectorStore実装。
 
     ChromadbServiceを内部で使用し、VectorStore共通インターフェースを提供する。
+    EmbeddingModelが指定された場合はそれを使用し、指定されない場合は
+    ChromadbServiceのデフォルトEmbeddingを使用する。
     """
 
-    def __init__(self, collection_name: str = 'positions') -> None:
+    def __init__(
+        self,
+        collection_name: str = 'positions',
+        embedding_model: EmbeddingModel | None = None,
+    ) -> None:
         """ChromaVectorStoreを初期化する。
 
         Args:
             collection_name: 使用するコレクション名。デフォルトは'positions'。
+            embedding_model: Embeddingモデルのインスタンス。
+                省略時はChromadbServiceのデフォルトEmbeddingを使用する。
         """
+        super().__init__(embedding_model=embedding_model)
         self._collection_name = collection_name
         self._service = ChromadbService.get_instance()
 
@@ -36,7 +50,10 @@ class ChromaVectorStore(VectorStore):
         ids = [doc['id'] for doc in documents]
         metadatas = [doc['metadata'] for doc in documents]
 
-        embeddings = self._service._encode(texts)
+        if self._embedding_model is not None:
+            embeddings = self._embedding_model.encode_batch(texts)
+        else:
+            embeddings = self._service._encode(texts)
 
         collection.add(
             embeddings=embeddings,
@@ -56,7 +73,11 @@ class ChromaVectorStore(VectorStore):
             検索結果のリスト。スコアの昇順（類似度が高い順）でソートされている。
         """
         self._service.ensure()
-        query_embedding = self._service.encode_query(query)
+
+        if self._embedding_model is not None:
+            query_embedding = self._embedding_model.encode(query)
+        else:
+            query_embedding = self._service.encode_query(query)
 
         try:
             collection = self._service.get_collection(self._collection_name)
@@ -101,11 +122,14 @@ class ChromaVectorStore(VectorStore):
         self._service.ensure()
         collection = self._service.get_collection(self._collection_name)
 
-        embedding = self._service._encode([document['text']])
+        if self._embedding_model is not None:
+            embedding = self._embedding_model.encode_batch([document['text']])[0]
+        else:
+            embedding = self._service._encode([document['text']])[0]
 
         collection.update(
             ids=[document_id],
-            embeddings=embedding,
+            embeddings=[embedding],
             documents=[document['text']],
             metadatas=[document['metadata']],
         )
