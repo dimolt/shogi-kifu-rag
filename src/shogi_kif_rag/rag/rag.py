@@ -1,5 +1,5 @@
 
-from shogi_kif_rag.vector.chromadb_service import ChromadbService
+from shogi_kif_rag.vector import VectorStore
 
 from .generator import generate_response
 from .llm_client import LLMClient
@@ -7,19 +7,17 @@ from .retriever import retrieve_relevant_documents
 
 
 def rag_query(
-    chromadb: ChromadbService,
+    vector_store: VectorStore,
     query: str,
-    collection_name: str = "positions",
     n_results: int = 5,
     llm_client=None,
 ) -> dict:
     """RAGクエリを実行
 
     Args:
+        vector_store: VectorStore インスタンス
         query: クエリテキスト
         n_results: 取得するドキュメント数
-        chroma_client: ChromaDBクライアント（オプション）
-        embedding_model: Embeddingモデル（オプション）
         llm_client: LLMクライアント（オプション）
 
     Returns:
@@ -29,7 +27,7 @@ def rag_query(
         llm_client = LLMClient()
 
     documents = retrieve_relevant_documents(
-        chromadb, query, n_results
+        vector_store, query, n_results
     )
     if not documents:
         return {
