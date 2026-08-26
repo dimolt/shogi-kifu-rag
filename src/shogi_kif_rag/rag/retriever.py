@@ -1,45 +1,35 @@
-from shogi_kif_rag.vector.chromadb_service import ChromadbService
+from shogi_kif_rag.vector import VectorStore
 
 
 def retrieve_relevant_documents(
-    chromadb: ChromadbService,
+    vector_store: VectorStore,
     query: str,
-    collection_name: str = 'positions',
     n_results: int = 5,
 ) -> list[dict]:
-    """ChromaDBから関連ドキュメントを取得する。
+    """VectorStoreから関連ドキュメントを取得する。
 
-    ChromadbService のシングルトンを通じてクライアントとモデルを取得する。
+    VectorStore共通インターフェースを通じて検索を行う。
 
     Args:
-        chromadb: ChromadbService インスタンス。
+        vector_store: VectorStore インスタンス。
         query: クエリテキスト。
-        collection_name: 検索対象のコレクション名。
         n_results: 取得するドキュメント数。
 
     Returns:
-        関連ドキュメントのリスト。各要素は text / metadata / distance キーを持つ辞書。
+        関連ドキュメントのリスト。各要素は text / metadata / score キーを持つ辞書。
         取得に失敗した場合は空リストを返す。
     """
-
-    chromadb.ensure()
-    query_embedding = chromadb.encode_query(query)
-
     try:
-        collection = chromadb.get_collection(collection_name)
-        results = collection.query(
-            query_embeddings=[query_embedding],
-            n_results=n_results,
-        )
+        search_results = vector_store.search(query, top_k=n_results)
         documents = []
-        for i in range(len(results['documents'][0])):
+        for result in search_results:
             documents.append({
-                'text': results['documents'][0][i],
-                'metadata': results['metadatas'][0][i],
-                'distance': results['distances'][0][i],
+                'text': result['document']['text'],
+                'metadata': result['document']['metadata'],
+                'score': result['score'],
             })
         return documents
     except Exception as e:
-        # コレクションが存在しない・空などの場合は空リストで続行
+        # 検索が失敗した場合は空リストで続行
         print(f'Retrieval error: {e}')
         return []

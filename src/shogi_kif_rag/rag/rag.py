@@ -17,7 +17,6 @@ def rag_query(
 
     Args:
         query: クエリテキスト
-        collection_name: コレクション名
         n_results: 取得するドキュメント数
         chroma_client: ChromaDBクライアント（オプション）
         embedding_model: Embeddingモデル（オプション）
@@ -30,7 +29,7 @@ def rag_query(
         llm_client = LLMClient()
 
     documents = retrieve_relevant_documents(
-        chromadb, query, collection_name, n_results
+        chromadb, query, n_results
     )
     if not documents:
         return {
