@@ -6,7 +6,7 @@ if TYPE_CHECKING:
     from shogi_kif_rag.vector.embedding.base import EmbeddingModel
 
 from shogi_kif_rag.vector.base import VectorStore
-from shogi_kif_rag.vector.chromadb_service import ChromadbService
+from shogi_kif_rag.vector.chromadb.adapter import ChromadbService
 from shogi_kif_rag.vector.models import Document, SearchResult
 
 
