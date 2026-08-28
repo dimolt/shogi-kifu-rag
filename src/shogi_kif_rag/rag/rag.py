@@ -1,5 +1,5 @@
 
-from shogi_kif_rag.vector import VectorStore
+from shogi_kif_rag.vector.base import SearchIndex
 
 from .generator import generate_response
 from .llm_client import LLMClient
@@ -7,7 +7,7 @@ from .retriever import retrieve_relevant_documents
 
 
 def rag_query(
-    vector_store: VectorStore,
+    search_index: SearchIndex,
     query: str,
     n_results: int = 5,
     llm_client=None,
@@ -15,7 +15,7 @@ def rag_query(
     """RAGクエリを実行
 
     Args:
-        vector_store: VectorStore インスタンス
+        search_index: SearchIndex インスタンス
         query: クエリテキスト
         n_results: 取得するドキュメント数
         llm_client: LLMクライアント（オプション）
@@ -27,7 +27,7 @@ def rag_query(
         llm_client = LLMClient()
 
     documents = retrieve_relevant_documents(
-        vector_store, query, n_results
+        search_index, query, n_results
     )
     if not documents:
         return {
