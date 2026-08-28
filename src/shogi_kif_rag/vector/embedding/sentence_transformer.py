@@ -2,8 +2,10 @@ from __future__ import annotations
 
 from sentence_transformers import SentenceTransformer
 
+from shogi_kif_rag.vector.embedding.base import EmbeddingModel
 
-class SentenceTransformerEmbedding:
+
+class SentenceTransformerEmbedding(EmbeddingModel):
     """SentenceTransformerを使用したEmbeddingModel実装。
 
     既存のSentenceTransformer使用をラップし、共通インターフェースを提供する。

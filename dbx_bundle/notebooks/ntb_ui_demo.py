@@ -23,7 +23,9 @@
 
 # COMMAND ----------
 import gradio as gr
-from shogi_kif_rag.vector.chromadb.adapter import ChromadbService
+from shogi_kif_rag.vector.embedding import SentenceTransformerEmbedding
+from shogi_kif_rag.vector.chromadb.index_builder import ChromaIndexBuilder
+from shogi_kif_rag.vector.chromadb.serach_index import ChromaSearchIndex
 from shogi_kif_rag.rag import rag_query
 
 # COMMAND ----------
@@ -37,9 +39,11 @@ dbutils.widgets.dropdown("catalog", "shogi_dev", ["shogi_dev", "shogi_test", "sh
 catalog = dbutils.widgets.get("catalog")
 
 # COMMAND ----------
-# ChromadbServiceの初期化
-chromadb = ChromadbService.get_instance()
-chromadb.ensure(catalog=catalog)
+embedding_model = SentenceTransformerEmbedding()
+chroma_index_builder = ChromaIndexBuilder(
+    persist_path=f"{catalog}.vector.chromadb",
+    embedding_model=embedding_model,
+)
 
 # COMMAND ----------
 def query_rag(query: str, collection: str, n_results: int):
@@ -53,9 +57,17 @@ def query_rag(query: str, collection: str, n_results: int):
     Returns:
         回答と参照ドキュメント
     """
+    chroma_index_builder.ensure_collection(collection)
+    chroma_index_builder.rebuild_collections(spark=spark, catalog=catalog)
+
+    search_index = ChromaSearchIndex(
+        persist_path=f"{catalog}.vector.chromadb",
+        embedding_model =embedding_model,
+        collection_name = collection,
+    )
 
     result = rag_query(
-        chromadb=chromadb,
+        SearchIndex=search_index,
         query=query,
         collection_name=collection,
         n_results=n_results,
