@@ -1,17 +1,17 @@
-from shogi_kif_rag.vector import VectorStore
+from shogi_kif_rag.vector import SearchIndex
 
 
 def retrieve_relevant_documents(
-    vector_store: VectorStore,
+    search_index: SearchIndex,
     query: str,
     n_results: int = 5,
 ) -> list[dict]:
-    """VectorStoreから関連ドキュメントを取得する。
+    """SearchIndexから関連ドキュメントを取得する。
 
-    VectorStore共通インターフェースを通じて検索を行う。
+    SearchIndex共通インターフェースを通じて検索を行う。
 
     Args:
-        vector_store: VectorStore インスタンス。
+        search_index: SearchIndex インスタンス。
         query: クエリテキスト。
         n_results: 取得するドキュメント数。
 
@@ -20,7 +20,7 @@ def retrieve_relevant_documents(
         取得に失敗した場合は空リストを返す。
     """
     try:
-        search_results = vector_store.search(query, top_k=n_results)
+        search_results = search_index.search(query, top_k=n_results)
         documents = []
         for result in search_results:
             documents.append({

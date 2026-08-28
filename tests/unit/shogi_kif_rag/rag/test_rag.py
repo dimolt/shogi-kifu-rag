@@ -10,12 +10,12 @@ def test_rag_query_ドキュメントが見つかった場合_回答と参照ド
     mock_retrieve.return_value = mock_documents
     mock_generate = mocker.patch("shogi_kif_rag.rag.rag.generate_response")
     mock_generate.return_value = "これは回答です。"
-    mock_vector_store = mocker.Mock()
+    mock_search_index = mocker.Mock()
     mock_llm_client = mocker.Mock()
 
     # Act
     result = rag_query(
-        vector_store=mock_vector_store,
+        search_index=mock_search_index,
         query="四間飛車とは何ですか？",
         llm_client=mock_llm_client,
     )
@@ -27,12 +27,12 @@ def test_rag_query_ドキュメントが見つかった場合_回答と参照ド
 def test_rag_query_ドキュメントが見つからない場合_デフォルトメッセージを返す(mocker):
     # Arrange
     mocker.patch("shogi_kif_rag.rag.rag.retrieve_relevant_documents", return_value=[])
-    mock_vector_store = mocker.Mock()
+    mock_search_index = mocker.Mock()
     mock_llm_client = mocker.Mock()
 
     # Act
     result = rag_query(
-        vector_store=mock_vector_store,
+        search_index=mock_search_index,
         query="存在しないクエリ",
         llm_client=mock_llm_client,
     )
@@ -45,12 +45,12 @@ def test_rag_query_ドキュメントが見つからない場合_generate_respon
     # Arrange
     mocker.patch("shogi_kif_rag.rag.rag.retrieve_relevant_documents", return_value=[])
     mock_generate = mocker.patch("shogi_kif_rag.rag.rag.generate_response")
-    mock_vector_store = mocker.Mock()
+    mock_search_index = mocker.Mock()
     mock_llm_client = mocker.Mock()
 
     # Act
     rag_query(
-        vector_store=mock_vector_store,
+        search_index=mock_search_index,
         query="存在しないクエリ",
         llm_client=mock_llm_client,
     )
@@ -67,10 +67,10 @@ def test_rag_query_llm_clientが指定されない場合_LLMClientを新規生�
     )
     mocker.patch("shogi_kif_rag.rag.rag.generate_response", return_value="回答")
     mock_llm_client_class = mocker.patch("shogi_kif_rag.rag.rag.LLMClient")
-    mock_vector_store = mocker.Mock()
+    mock_search_index = mocker.Mock()
 
     # Act
-    rag_query(vector_store=mock_vector_store, query="クエリ")
+    rag_query(search_index=mock_search_index, query="クエリ")
 
     # Assert
     mock_llm_client_class.assert_called_once_with()
@@ -84,11 +84,11 @@ def test_rag_query_llm_clientが指定された場合_LLMClientを新規生成�
     )
     mocker.patch("shogi_kif_rag.rag.rag.generate_response", return_value="回答")
     mock_llm_client_class = mocker.patch("shogi_kif_rag.rag.rag.LLMClient")
-    mock_vector_store = mocker.Mock()
+    mock_search_index = mocker.Mock()
     mock_llm_client = mocker.Mock()
 
     # Act
-    rag_query(vector_store=mock_vector_store, query="クエリ", llm_client=mock_llm_client)
+    rag_query(search_index=mock_search_index, query="クエリ", llm_client=mock_llm_client)
 
     # Assert
     mock_llm_client_class.assert_not_called()
@@ -101,12 +101,12 @@ def test_rag_query_引数を指定した場合_retrieve_relevant_documentsに正
         return_value=[{"content": "内容"}],
     )
     mocker.patch("shogi_kif_rag.rag.rag.generate_response", return_value="回答")
-    mock_vector_store = mocker.Mock()
+    mock_search_index = mocker.Mock()
     mock_llm_client = mocker.Mock()
 
     # Act
     rag_query(
-        vector_store=mock_vector_store,
+        search_index=mock_search_index,
         query="矢倉の指し方",
         n_results=10,
         llm_client=mock_llm_client,
@@ -114,7 +114,7 @@ def test_rag_query_引数を指定した場合_retrieve_relevant_documentsに正
 
     # Assert
     mock_retrieve.assert_called_once_with(
-        mock_vector_store, "矢倉の指し方", 10
+        mock_search_index, "矢倉の指し方", 10
     )
 
 
@@ -126,11 +126,11 @@ def test_rag_query_ドキュメントが見つかった場合_generate_response�
         return_value=mock_documents,
     )
     mock_generate = mocker.patch("shogi_kif_rag.rag.rag.generate_response", return_value="回答")
-    mock_vector_store = mocker.Mock()
+    mock_search_index = mocker.Mock()
     mock_llm_client = mocker.Mock()
 
     # Act
-    rag_query(vector_store=mock_vector_store, query="四間飛車とは", llm_client=mock_llm_client)
+    rag_query(search_index=mock_search_index, query="四間飛車とは", llm_client=mock_llm_client)
 
     # Assert
     mock_generate.assert_called_once_with("四間飛車とは", mock_documents, mock_llm_client)
