@@ -8,12 +8,12 @@ import chromadb as chromadb_lib
 if TYPE_CHECKING:
     from shogi_kif_rag.vector.embedding.base import EmbeddingModel
 
-from shogi_kif_rag.vector.base import VectorStore
+from shogi_kif_rag.vector.base import SearchIndex
 from shogi_kif_rag.vector.models import Document, SearchResult
 
 
-class ChromaDBVectorStore(VectorStore):
-    """ChromaDBのVectorStore実装。
+class ChromaDBVectorStore(SearchIndex):
+    """ChromaDBのSearchIndex実装。
 
     シングルトンパターンを廃止し、依存注入を可能にした実装。
     EmbeddingModelを直接使用し、永続ストレージはDatabricks Volumeを使用する。
@@ -95,33 +95,6 @@ class ChromaDBVectorStore(VectorStore):
                 metadata={'hnsw:space': 'cosine'},
             )
 
-    def add(self, documents: list[Document]) -> None:
-        """ドキュメントをVectorStoreに追加する。
-
-        Args:
-            documents: 追加するドキュメントのリスト。
-        """
-        if len(documents) == 0:
-            return
-
-        self._ensure_collection_exists()
-        collection = self._get_collection()
-
-        texts = [doc['text'] for doc in documents]
-        ids = [doc['id'] for doc in documents]
-        metadatas = [doc['metadata'] for doc in documents]
-
-        if self._embedding_model is not None:
-            embeddings = self._embedding_model.encode_batch(texts)
-        else:
-            raise RuntimeError("EmbeddingModel is required for add operation")
-
-        collection.add(
-            embeddings=embeddings,
-            documents=texts,
-            metadatas=metadatas,
-            ids=ids,
-        )
 
     def search(self, query: str, top_k: int = 5) -> list[SearchResult]:
         """クエリに基づいて類似ドキュメントを検索する。
@@ -174,35 +147,3 @@ class ChromaDBVectorStore(VectorStore):
         except Exception as e:
             print(f'ChromaDB検索エラー: {e}')
             return []
-
-    def delete(self, document_ids: list[str]) -> None:
-        """指定したIDのドキュメントを削除する。
-
-        Args:
-            document_ids: 削除対象のドキュメントIDリスト。
-        """
-        self._ensure_collection_exists()
-        collection = self._get_collection()
-        collection.delete(ids=document_ids)
-
-    def update(self, document_id: str, document: Document) -> None:
-        """指定したIDのドキュメントを更新する。
-
-        Args:
-            document_id: 更新対象のドキュメントID。
-            document: 更新後のドキュメント。
-        """
-        self._ensure_collection_exists()
-        collection = self._get_collection()
-
-        if self._embedding_model is None:
-            raise RuntimeError("EmbeddingModel is required for update operation")
-
-        embedding = self._embedding_model.encode_batch([document['text']])[0]
-
-        collection.update(
-            ids=[document_id],
-            embeddings=[embedding],
-            documents=[document['text']],
-            metadatas=[document['metadata']],
-        )
