@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-import os
 from typing import TYPE_CHECKING
 
 import chromadb as chromadb_lib
@@ -12,43 +11,31 @@ from shogi_kif_rag.vector.base import SearchIndex
 from shogi_kif_rag.vector.models import Document, SearchResult
 
 
-class ChromaDBVectorStore(SearchIndex):
+class ChromaSearchIndex(SearchIndex):
     """ChromaDBのSearchIndex実装。
 
-    シングルトンパターンを廃止し、依存注入を可能にした実装。
-    EmbeddingModelを直接使用し、永続ストレージはDatabricks Volumeを使用する。
-
-    Args:
-        collection_name: 使用するコレクション名。デフォルトは'positions'。
-        embedding_model: Embeddingモデルのインスタンス。
-        persist_path: 永続ストレージパス。デフォルトは環境変数または
-            '/Volumes/shogi/default/chromadb'。
+    DI可能な設計で、EmbeddingModelと永続化パスを外部から注入できる。
+    `search` のみを提供し、コレクションを変更する操作は持たない。
+    コレクションの構築（Embedding→登録）は`ChromaIndexBuilder` が担当する。
     """
+
 
     def __init__(
         self,
-        collection_name: str = 'positions',
-        embedding_model: EmbeddingModel | None = None,
-        persist_path: str | None = None,
+        persist_path: str,
+        embedding_model: EmbeddingModel,
+        collection_name: str,
     ) -> None:
-        """ChromaDBVectorStoreを初期化する。
+        """ChromaSearchIndexを初期化する。
 
         Args:
-            collection_name: 使用するコレクション名。デフォルトは'positions'。
-            embedding_model: Embeddingモデルのインスタンス。
-            persist_path: 永続ストレージパス。省略時は環境変数
-                CHROMADB_PERSIST_PATH またはデフォルトパスを使用。
+            persist_path: 永続ストレージパス
+            embedding_model: Embeddingモデルのインスタンス
+            collection_name: 使用するコレクション名
         """
-        super().__init__(embedding_model=embedding_model)
-        self._collection_name = collection_name
-
-        if persist_path is None:
-            persist_path = os.environ.get(
-                'CHROMADB_PERSIST_PATH',
-                '/Volumes/shogi/default/chromadb'
-            )
-
         self._persist_path = persist_path
+        self._embedding_model = embedding_model
+        self._collection_name = collection_name
         self._client: chromadb_lib.ClientAPI | None = None
 
     def _initialize_client(self) -> None:
@@ -72,7 +59,8 @@ class ChromaDBVectorStore(SearchIndex):
             Exception: コレクションが存在しない場合。
         """
         if self._client is None:
-            raise RuntimeError("Client is not initialized. Call _initialize_client() first.")   #noqa: E501
+            msg = 'Client is not initialized. Call _initialize_client() first.'
+            raise RuntimeError(msg)
 
         return self._client.get_collection(self._collection_name)
 
@@ -107,9 +95,6 @@ class ChromaDBVectorStore(SearchIndex):
             検索結果のリスト。スコアの昇順（類似度が高い順）でソートされている。
         """
         self._ensure_collection_exists()
-
-        if self._embedding_model is None:
-            raise RuntimeError("EmbeddingModel is required for search operation")
 
         query_embedding = self._embedding_model.encode(query)
 
