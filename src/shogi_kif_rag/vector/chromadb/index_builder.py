@@ -12,15 +12,8 @@ if TYPE_CHECKING:
 
 
 class ChromaIndexBuilder:
-    """ChromaDB クライアントとコレクション管理を行うサービスクラス。
-
-    シングルトンパターンを廃止し、依存注入を可能にした実装。
-    コレクションの再構築機能を提供し、永続ストレージはDatabricks Volumeを使用する。
-
-    Args:
-        embedding_model: Embeddingモデルのインスタンス。
-        persist_path: 永続ストレージパス。省略時は環境変数
-            CHROMADB_PERSIST_PATH またはデフォルトパスを使用。
+    """ChromaDBコレクションの構築（Embedding生成→登録）を行うビルダークラス。
+    コレクションの検索は`ChromaSearchIndex` が担当する。
     """
 
     def __init__(
@@ -31,13 +24,12 @@ class ChromaIndexBuilder:
         """ChromadbServiceを初期化する。
 
         Args:
-            embedding_model: Embeddingモデルのインスタンス。
-            persist_path: 永続ストレージパス。省略時は環境変数
-                CHROMADB_PERSIST_PATH またはデフォルトパスを使用。
+            embedding_model: Embeddingモデルのインスタンス
+            persist_path: 永続ストレージパス
         """
         self._persist_path = persist_path
         self._embedding_model = embedding_model
-        self._client = chromadb_lib.PersistentClient(path=self._persist_path)
+        self._client: chromadb_lib.ClientAPI | None = None
 
     def _initialize_client(self) -> None:
         """ChromaDBクライアントを初期化する。
@@ -77,22 +69,18 @@ class ChromaIndexBuilder:
 
     def rebuild_collections(
         self,
-        spark: SparkSession | None = None,
-        catalog: str = 'shogi',
+        spark: SparkSession,
+        catalog: str,
     ) -> None:
         """すべてのコレクションを再構築する。
 
         クライアントが未初期化の場合は先に初期化する。
 
         Args:
-            spark: SparkSession。省略時は getActiveSession() から取得する。
-            catalog: カタログ名。デフォルトは 'shogi'。
+            spark: SparkSession
+            catalog: カタログ名
         """
         self._initialize_client()
-        if spark is None:
-            spark = SparkSession.getActiveSession()
-        if spark is None:
-            raise RuntimeError("SparkSession is not available")
 
         self._rebuild_positions(spark, catalog)
         self._rebuild_floodgate(spark, catalog)
@@ -135,7 +123,7 @@ class ChromaIndexBuilder:
             return False
 
 
-    def encode_batch(self, texts: list[str]) -> list[list[float]]:
+    def _encode_batch(self, texts: list[str]) -> list[list[float]]:
         """テキストリストを Embedding に変換する。
 
         Args:
@@ -212,7 +200,7 @@ class ChromaIndexBuilder:
 
         texts = df['search_text'].tolist()
         embeddings = np.asarray(
-            self.encode_batch(texts),
+            self._encode_batch(texts),
             dtype=np.float32,
         )
         collection.add(
@@ -262,7 +250,7 @@ class ChromaIndexBuilder:
             for _, row in df.iterrows()  # type: ignore[attr-defined]
         ]
         embeddings = np.asarray(
-            self.encode_batch(search_texts),
+            self._encode_batch(search_texts),
             dtype=np.float32,
         )
         collection.add(
@@ -304,7 +292,7 @@ class ChromaIndexBuilder:
 
         search_texts = df['search_text'].tolist()  # type: ignore[index]
         embeddings = np.asarray(
-            self.encode_batch(search_texts),
+            self._encode_batch(search_texts),
             dtype=np.float32,
         )
         collection.add(

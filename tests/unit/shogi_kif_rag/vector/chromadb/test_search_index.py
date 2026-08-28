@@ -4,7 +4,7 @@ import sys
 import types
 from typing import Any
 
-from shogi_kif_rag.vector.chromadb.chroma_serach_index import ChromaSearchIndex
+from shogi_kif_rag.vector.chromadb.serach_index import ChromaSearchIndex
 
 
 def _install_dependency_stubs() -> None:
