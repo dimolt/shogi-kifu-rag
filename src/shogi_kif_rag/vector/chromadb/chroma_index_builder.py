@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-import os
 from typing import TYPE_CHECKING
 
 import chromadb as chromadb_lib
@@ -12,8 +11,7 @@ if TYPE_CHECKING:
     from shogi_kif_rag.vector.embedding.base import EmbeddingModel
 
 
-
-class ChromadbService:
+class ChromaIndexBuilder:
     """ChromaDB クライアントとコレクション管理を行うサービスクラス。
 
     シングルトンパターンを廃止し、依存注入を可能にした実装。
@@ -28,7 +26,7 @@ class ChromadbService:
     def __init__(
         self,
         embedding_model: EmbeddingModel,
-        persist_path: str | None = None,
+        persist_path: str,
     ) -> None:
         """ChromadbServiceを初期化する。
 
@@ -37,15 +35,9 @@ class ChromadbService:
             persist_path: 永続ストレージパス。省略時は環境変数
                 CHROMADB_PERSIST_PATH またはデフォルトパスを使用。
         """
-        if persist_path is None:
-            persist_path = os.environ.get(
-                'CHROMADB_PERSIST_PATH',
-                '/Volumes/shogi/default/chromadb'
-            )
-
         self._persist_path = persist_path
         self._embedding_model = embedding_model
-        self._client: chromadb_lib.ClientAPI | None = None
+        self._client = chromadb_lib.PersistentClient(path=self._persist_path)
 
     def _initialize_client(self) -> None:
         """ChromaDBクライアントを初期化する。
@@ -82,6 +74,7 @@ class ChromadbService:
                 metadata={'hnsw:space': 'cosine'},
             )
 
+
     def rebuild_collections(
         self,
         spark: SparkSession | None = None,
@@ -105,6 +98,7 @@ class ChromadbService:
         self._rebuild_floodgate(spark, catalog)
         self._rebuild_joseki(spark, catalog)
 
+
     def get_collection(self, name: str) -> chromadb_lib.Collection:
         """コレクションを取得する。
 
@@ -121,6 +115,7 @@ class ChromadbService:
         if self._client is None:
             raise RuntimeError("Client is not initialized")
         return self._client.get_collection(name)
+
 
     def collection_exists(self, name: str) -> bool:
         """コレクションの存在を確認する。
@@ -139,6 +134,7 @@ class ChromadbService:
         except Exception:
             return False
 
+
     def encode_batch(self, texts: list[str]) -> list[list[float]]:
         """テキストリストを Embedding に変換する。
 
@@ -149,6 +145,7 @@ class ChromadbService:
             Embedding のリスト。
         """
         return self._embedding_model.encode_batch(texts)
+
 
     @staticmethod
     def clean_position_features(df: pd.DataFrame) -> pd.DataFrame:
@@ -172,6 +169,7 @@ class ChromadbService:
         )
         return cleaned_df[is_valid]
 
+
     def _drop_and_create(self, name: str) -> chromadb_lib.Collection:
         """コレクションを削除して新規作成する。
 
@@ -191,6 +189,7 @@ class ChromadbService:
             name=name,
             metadata={'hnsw:space': 'cosine'},
         )
+
 
     def _rebuild_positions(self, spark: SparkSession, catalog: str) -> None:
         """positions コレクションを再構築する。
@@ -230,6 +229,7 @@ class ChromadbService:
             } for _, row in df.iterrows()],
             ids=[f'pos_{i}' for i in range(len(df))],
         )
+
 
     def _rebuild_floodgate(self, spark: SparkSession, catalog: str) -> None:
         """floodgate_positions コレクションを再構築する。
@@ -277,6 +277,7 @@ class ChromadbService:
             } for _, row in df.iterrows()],  # type: ignore[attr-defined]
             ids=[f'floodgate_{i}' for i in range(len(df))],
         )
+
 
     def _rebuild_joseki(self, spark: SparkSession, catalog: str) -> None:
         """joseki_knowledge コレクションを再構築する。

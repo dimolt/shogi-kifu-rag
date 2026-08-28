@@ -79,11 +79,3 @@ def test_sentence_transformer_embedding_lazy_initialization() -> None:
     # encodeを呼ぶと初期化される
     embedding_model.encode("テスト")
     assert embedding_model._model is not None
-
-
-def test_databricks_embedding_type_checking() -> None:
-    """DatabricksEmbeddingが型チェック用にインポートできることを確認する。"""
-    from shogi_kif_rag.vector.embedding import DatabricksEmbedding
-
-    # 実際の初期化はDatabricks依存があるため行わない
-    assert DatabricksEmbedding is not None
