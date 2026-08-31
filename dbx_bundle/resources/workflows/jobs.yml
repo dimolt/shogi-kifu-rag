@@ -77,3 +77,28 @@ resources:
             pipeline_id: ${resources.pipelines.joseki_pipeline.id}
           depends_on:
             - task_key: wikipedia_raw
+
+    search_documents_job:
+      name: search_documents_job
+      parameters:
+        - name: catalog
+          default: ${var.catalog}
+      environments:
+        - environment_key: default
+          spec:
+            environment_version: "4"
+            dependencies: ${var.wheel_dependencies}
+      queue:
+        enabled: false
+      max_concurrent_runs: 1
+      tasks:
+        - task_key: search_documents
+          environment_key: default
+          max_retries: 0
+          disable_auto_optimization: true
+          python_wheel_task:
+            package_name: shogi-kif-rag
+            entry_point: search_documents
+            named_parameters:
+              catalog: "{{job.parameters.catalog}}"
+              gold_schema: ${var.gold_schema}
