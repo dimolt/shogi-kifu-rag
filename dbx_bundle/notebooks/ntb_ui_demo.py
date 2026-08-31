@@ -29,6 +29,10 @@ from shogi_kif_rag.vector.chromadb.serach_index import ChromaSearchIndex
 from shogi_kif_rag.rag import rag_query
 
 # COMMAND ----------
+# VolumeはI/Oエラーとなる。Driver上のローカルパスとする
+PERSIT_PATH = '/tmp/shogi/chromadb'
+
+# COMMAND ----------
 # -----------------------------------------------------------------------------
 # 実行パラメータ
 #
@@ -41,7 +45,7 @@ catalog = dbutils.widgets.get("catalog")
 # COMMAND ----------
 embedding_model = SentenceTransformerEmbedding()
 chroma_index_builder = ChromaIndexBuilder(
-    persist_path=f"{catalog}.vector.chromadb",
+    persist_path=PERSIT_PATH,
     embedding_model=embedding_model,
 )
 
@@ -61,21 +65,20 @@ def query_rag(query: str, collection: str, n_results: int):
     chroma_index_builder.rebuild_collections(spark=spark, catalog=catalog)
 
     search_index = ChromaSearchIndex(
-        persist_path=f"{catalog}.vector.chromadb",
+        persist_path=PERSIT_PATH,
         embedding_model =embedding_model,
         collection_name = collection,
     )
 
     result = rag_query(
-        SearchIndex=search_index,
+        search_index=search_index,
         query=query,
-        collection_name=collection,
         n_results=n_results,
     )
     answer = result["answer"]
     docs = result["documents"]
     doc_text = "\n\n".join([
-        f"ドキュメント {i+1} (距離: {doc['distance']:.4f})\n{doc['text']}\nメタデータ: {doc['metadata']}"
+        f"ドキュメント {i+1} {doc['text']}\nメタデータ: {doc['metadata']}"
         for i, doc in enumerate(docs)
     ])
     return answer, doc_text
